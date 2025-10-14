@@ -282,7 +282,7 @@ export function SignUpForm() {
               >
                 {message}
               </p>
-            )
+            )}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             Pastikan email aktif untuk menerima dan memverifikasi token.

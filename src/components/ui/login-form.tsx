@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import logo from "@/assets/images/logo.png";
 import { GraduationCap } from "lucide-react";
-import Turnstile from "react-turnstile"; // ✅ using the npm package
+import Turnstile from "react-turnstile";
 
 const logoPlaceholder = "https://placehold.co/256x256/00008b/ffffff?text=U+G+N";
 
@@ -18,41 +18,57 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [password, setPassword] = useState("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [verifying, setVerifying] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
+  // 👉 Fungsi login ke backend
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!captchaToken) {
-      alert("Mohon selesaikan verifikasi keamanan terlebih dahulu.");
+      alert("⚠️ Mohon selesaikan verifikasi keamanan terlebih dahulu.");
       return;
     }
 
     setLoading(true);
-    setVerifying(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      const res = await fetch("/api/verify-turnstile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: captchaToken }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            captchaToken: captchaToken || "dummy-captcha-token",
+          }),
+        }
+      );
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-      if (data.success) {
-        alert("✅ CAPTCHA diverifikasi! Lanjut login...");
-        // TODO: lanjut logic login kamu di sini
+      if (res.ok) {
+        // ✅ Login sukses
+        setSuccessMessage("✅ Login berhasil! Mengarahkan ke dashboard...");
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userEmail", data.user?.email || "");
+        localStorage.setItem("userRole", data.user?.role || "");
+
+        setTimeout(() => {
+          window.location.href = "/data-diri";
+        }, 1000);
       } else {
-        alert("❌ CAPTCHA gagal diverifikasi. Silakan coba lagi.");
-        setCaptchaToken(null);
+        // ❌ Login gagal
+        setErrorMessage(data.message || "Email atau password salah.");
       }
     } catch (err) {
       console.error(err);
-      alert("Terjadi kesalahan jaringan. Silakan coba lagi.");
+      setErrorMessage("Terjadi kesalahan koneksi ke server.");
     } finally {
       setLoading(false);
-      setVerifying(false);
     }
   };
 
@@ -68,7 +84,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <TabsTrigger value="register">Buat Akun</TabsTrigger>
               </TabsList>
 
-              {/* --- Login Form --- */}
+              {/* --- LOGIN TAB --- */}
               <TabsContent
                 value="login"
                 className="space-y-6 min-h-[300px] flex flex-col"
@@ -81,6 +97,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     Silakan login untuk melanjutkan
                   </p>
                 </div>
+
+                {errorMessage && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 text-sm p-2 rounded">
+                    {errorMessage}
+                  </div>
+                )}
+                {successMessage && (
+                  <div className="bg-green-100 border border-green-400 text-green-700 text-sm p-2 rounded">
+                    {successMessage}
+                  </div>
+                )}
 
                 <form onSubmit={handleLogin} className="space-y-4 flex-1">
                   {/* Email */}
@@ -138,11 +165,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                         theme="light"
                       />
                     </div>
-                    {verifying && (
-                      <p className="text-xs text-gray-500 mt-2">
-                        Memverifikasi CAPTCHA...
-                      </p>
-                    )}
                   </div>
 
                   <Button
@@ -155,7 +177,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 </form>
               </TabsContent>
 
-              {/* --- Register Tab --- */}
+              {/* --- REGISTER TAB --- */}
               <TabsContent
                 value="register"
                 className="space-y-6 min-h-[300px] flex flex-col"

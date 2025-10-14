@@ -1,72 +1,66 @@
-"use client"
+"use client";
 
-import React, { useState, useCallback } from "react" // Menambahkan useState dan useCallback
-import { cn } from "@/lib/utils" // Asumsi utility class untuk tailwind
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import logo from "@/assets/images/logo.png"
-import { GraduationCap, RotateCcw } from "lucide-react" // Menambahkan RotateCcw
+import React, { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import logo from "@/assets/images/logo.png";
+import { GraduationCap } from "lucide-react";
+import Turnstile from "react-turnstile"; // ✅ using the npm package
 
-// Placeholder for logo (Mendefinisikan placeholder jika import gagal)
-const logoPlaceholder = "https://placehold.co/256x256/00008b/ffffff?text=U+G+N"
+const logoPlaceholder = "https://placehold.co/256x256/00008b/ffffff?text=U+G+N";
 
-// CAPTCHA generation utility (4-digit numeric)
-const generateCaptcha = () => {
-    // Menghasilkan string 4 digit angka acak
-    return String(Math.floor(1000 + Math.random() * 9000));
-};
+export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-    // States untuk Login
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    
-    // States untuk CAPTCHA
-    const [captchaCode, setCaptchaCode] = useState(() => generateCaptcha());
-    const [captchaInput, setCaptchaInput] = useState('');
-    const [captchaError, setCaptchaError] = useState('');
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    const handleRefreshCaptcha = useCallback(() => {
-        setCaptchaCode(generateCaptcha());
-        setCaptchaInput('');
-        setCaptchaError('');
-    }, []);
+    if (!captchaToken) {
+      alert("Mohon selesaikan verifikasi keamanan terlebih dahulu.");
+      return;
+    }
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
+    setLoading(true);
+    setVerifying(true);
 
-        setCaptchaError('');
+    try {
+      const res = await fetch("/api/verify-turnstile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: captchaToken }),
+      });
 
-        // 1. Validasi CAPTCHA (4-digit numeric check)
-        if (captchaInput !== captchaCode) {
-            setCaptchaError("Kode CAPTCHA salah. Silakan coba lagi.");
-            handleRefreshCaptcha();
-            return;
-        }
+      const data = await res.json();
 
-        // 2. Simulated Login Logic (Success)
-        console.log("Login Berhasil! CAPTCHA terverifikasi. Melakukan login...");
-
-        // Clear sensitive fields and refresh CAPTCHA after success
-        setEmail('');
-        setPassword('');
-        setCaptchaInput('');
-        handleRefreshCaptcha();
-        
-        // Di sini akan ada navigasi ke dashboard
-    };
+      if (data.success) {
+        alert("✅ CAPTCHA diverifikasi! Lanjut login...");
+        // TODO: lanjut logic login kamu di sini
+      } else {
+        alert("❌ CAPTCHA gagal diverifikasi. Silakan coba lagi.");
+        setCaptchaToken(null);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan jaringan. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
+      setVerifying(false);
+    }
+  };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 rounded-lg shadow-lg">
         <CardContent className="grid p-0 md:grid-cols-2">
-          {/* 👉 Left side: Forms */}
+          {/* 👉 Left side: Form */}
           <div className="p-6 md:p-8">
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid grid-cols-2 mb-6">
@@ -89,74 +83,79 @@ export function LoginForm({
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-4 flex-1">
-                    {/* Email Input */}
-                    <div className="grid gap-3">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="example@ugn.ac.id"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                  {/* Email */}
+                  <div className="grid gap-3">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="example@ugn.ac.id"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div className="grid gap-3">
+                    <div className="flex items-center">
+                      <Label htmlFor="password">Kata Sandi</Label>
+                      <a
+                        href="#"
+                        className="ml-auto text-sm underline-offset-2 hover:underline"
+                      >
+                        Lupa kata sandi?
+                      </a>
+                    </div>
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+
+                  {/* ✅ Cloudflare Turnstile */}
+                  <div className="pt-2 w-full">
+                    <Label>Verifikasi Keamanan</Label>
+                    <div className="mt-2">
+                      <Turnstile
+                        sitekey="0x4AAAAAAB6AdQ7RikUW15dg"
+                        size="flexible"
+                        onVerify={(token) => {
+                          console.log("✅ Turnstile token:", token);
+                          setCaptchaToken(token);
+                        }}
+                        onExpire={() => {
+                          console.warn("⚠️ CAPTCHA expired, please retry.");
+                          setCaptchaToken(null);
+                        }}
+                        onError={() => {
+                          console.error("❌ CAPTCHA error.");
+                          setCaptchaToken(null);
+                        }}
+                        theme="light"
                       />
                     </div>
+                    {verifying && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Memverifikasi CAPTCHA...
+                      </p>
+                    )}
+                  </div>
 
-                    {/* Password Input */}
-                    <div className="grid gap-3">
-                      <div className="flex items-center">
-                        <Label htmlFor="password">Kata Sandi</Label>
-                        <a
-                          href="#"
-                          className="ml-auto text-sm underline-offset-2 hover:underline"
-                        >
-                          Lupa kata sandi?
-                        </a>
-                      </div>
-                      <Input 
-                        id="password" 
-                        type="password" 
-                        required 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                    </div>
-
-                    {/* CAPTCHA Input (4-digit numeric style) - DITAMBAH DI SINI */}
-                    <div className="grid gap-3 pt-2">
-                        <Label htmlFor="captcha">Verifikasi Keamanan (CAPTCHA)</Label>
-                        <div className="flex gap-2 items-start">
-                            {/* CAPTCHA Display */}
-                            <div className="flex-shrink-0 w-32 h-10 bg-gray-200 rounded-md border border-gray-300 flex items-center justify-center text-xl font-mono tracking-widest select-none font-bold text-gray-700">
-                                {captchaCode}
-                            </div>
-                            <Input
-                                id="captcha"
-                                type="text"
-                                placeholder="Masukkan kode"
-                                required
-                                maxLength={4}
-                                className="flex-grow text-center"
-                                value={captchaInput}
-                                onChange={(e) => setCaptchaInput(e.target.value)}
-                            />
-                            <Button type="button" variant="outline" size="icon" onClick={handleRefreshCaptcha} title="Refresh CAPTCHA">
-                                <RotateCcw className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        {captchaError && (
-                            <p className="text-xs text-red-500 mt-1">{captchaError}</p>
-                        )}
-                    </div>
-                    
-                    {/* Tombol Masuk */}
-                    <Button type="submit" className="w-full mt-auto">
-                      Masuk
-                    </Button>
+                  <Button
+                    type="submit"
+                    className="w-full mt-auto"
+                    disabled={loading}
+                  >
+                    {loading ? "Memproses..." : "Masuk"}
+                  </Button>
                 </form>
               </TabsContent>
 
-              {/* --- Register Redirect --- */}
+              {/* --- Register Tab --- */}
               <TabsContent
                 value="register"
                 className="space-y-6 min-h-[300px] flex flex-col"
@@ -185,13 +184,13 @@ export function LoginForm({
               src={logo}
               alt="Universitas Global Nusantara"
               className="h-64 w-64 object-contain"
-              onError={(e) => { 
-                (e.target as HTMLImageElement).src = logoPlaceholder; 
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = logoPlaceholder;
               }}
             />
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

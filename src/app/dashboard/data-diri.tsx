@@ -61,17 +61,20 @@ export default function DataDiriPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar (DIPERTAHANKAN SESUAI ASLI) */}
-      <aside className="w-64 bg-primary/5 border-r flex flex-col">
-        <div className="h-16 flex items-center justify-center font-serif font-bold text-primary">
-          Portal Mahasiswa
+      <aside className="w-64 bg-gray-100 border-r flex flex-col sticky top-0 h-screen overflow-y-auto">        
+        <div className="h-16 flex items-center justify-start p-6 gap-2 font-bold text-black">
+          <img src="/favicon.png" alt="UGN" className="h-6 w-6 object-contain rounded-sm" />
+          <span>Ujian Masuk UGN</span>
         </div>
+        <hr />
         <nav className="flex-1 px-4 py-6 text-sm">
           <div className="space-y-1">
             <Link
               to="/data-diri"
-              className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/10 font-medium text-primary"
+              className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary font-medium text-white"
+
             >
               <Home className="h-4 w-4" /> Data Diri
             </Link>
@@ -79,15 +82,22 @@ export default function DataDiriPage() {
               to="/pendaftaran"
               className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10"
             >
-              <GraduationCap className="h-4 w-4" /> Admissions
-            </Link>
+              <GraduationCap className="h-4 w-4" /> Pendaftaran
+            </Link>  
+            <button
+                onClick={() => {
+                const confirmLogout = window.confirm("Apakah Anda yakin ingin logout?")
+                if (confirmLogout) {
+                    localStorage.removeItem("auth_token") // contoh hapus token
+                    window.location.href = "/login" // redirect manual
+                }
+                }}
+                className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10 cursor-pointer "
+            >
+                <LogOut className="h-4 w-4" /> Logout
+            </button>
           </div>
         </nav>
-        <div className="p-4">
-          <Button variant="outline" className="w-full flex items-center gap-2">
-            <LogOut className="h-4 w-4" /> Logout
-          </Button>
-        </div>
       </aside>
 
       {/* Main Content */}
@@ -100,7 +110,7 @@ export default function DataDiriPage() {
               <Button variant="ghost" className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={profilePic || "/avatar.png"} alt="User" />
-                  <AvatarFallback>UGM</AvatarFallback>
+                  <AvatarFallback>SU</AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium">Sumbuludun</span>
               </Button>
@@ -123,12 +133,10 @@ export default function DataDiriPage() {
           
           {/* FOTO PROFIL */}
           <Card className="shadow-sm border rounded-lg">
-            {/* Padding dikurangi ke pb-2, mb-3 Dihapus */}
-            <CardHeader className="pb-2 border-b border-gray-200"> 
+            <CardHeader className="border-b border-gray-200"> 
               <h1 className="text-xl font-bold">Foto Profil</h1>
             </CardHeader>
-            {/* Ditambahkan mt-3 untuk menjaga jarak minimal dari divider */}
-            <CardContent className="flex items-center gap-6 mt-3"> 
+            <CardContent className="flex items-center gap-6 "> 
               <div className="relative">
                 <Avatar className="h-28 w-28 border-2 border-primary shadow-lg">
                   <AvatarImage src={profilePic || "/avatar.png"} alt="Profile" />
@@ -165,12 +173,10 @@ export default function DataDiriPage() {
 
           {/* TABS DATA */}
           <Card className="shadow-sm border rounded-lg">
-            {/* Padding dikurangi ke pb-2, mb-3 Dihapus */}
-            <CardHeader className="pb-2 border-b border-gray-200">
+            <CardHeader className="border-b border-gray-200">
               <h1 className="text-xl font-bold">Periksa & Edit Data Anda</h1>
             </CardHeader>
-            {/* Ditambahkan mt-3 untuk menjaga jarak minimal dari divider */}
-            <CardContent className="mt-3">
+            <CardContent>
               <Tabs defaultValue="pribadi" className="w-full">
                 <TabsList className="mb-6 flex flex-wrap h-auto p-1 bg-muted/50 border border-dashed rounded-lg">
                   <TabsTrigger value="pribadi" className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm">Data Pribadi</TabsTrigger>
@@ -291,11 +297,9 @@ export default function DataDiriPage() {
 
           {/* PERMANENT DATA */}
           <Card className="shadow-sm border border-red-300 bg-red-50/50 rounded-lg">
-            {/* Padding dikurangi ke pb-2, mb-3 Dihapus */}
             <CardHeader className="pb-2 border-b border-red-300"> 
               <h1 className="text-xl font-bold text-red-700">Penguncian Data Permanen</h1>
             </CardHeader>
-            {/* Ditambahkan mt-3 untuk menjaga jarak minimal dari divider */}
             <CardContent className="mt-3">
               <div className="flex items-start gap-3 mb-4">
                 <Checkbox id="agree" className="mt-1 border-red-500 data-[state=checked]:bg-red-500" />

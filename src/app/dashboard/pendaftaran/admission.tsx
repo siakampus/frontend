@@ -1,7 +1,3 @@
-// src/components/ProsesPendaftaranPage.tsx (detail pendaftaran)
-
-"use client"
-
 import {
   LogOut,
   Home,
@@ -43,7 +39,7 @@ const getStatusProps = (status: "Sudah diisi" | "Belum diisi" | "Revisi" | "Belu
     case "Sudah diisi":
       return { icon: CheckCircle, color: "text-green-700", badge: "bg-green-100 text-green-700 border-green-200" }
     case "Belum diisi":
-      return { icon: Clock, color: "text-orange-700", badge: "bg-orange-100 text-orange-700 border-orange-200" }
+      return { icon: Clock, color: "text-orange-400", badge: "bg-orange-100 text-orange-700 border-orange-200" }
     case "Revisi":
       return { icon: AlertCircle, color: "text-red-700", badge: "bg-red-100 text-red-700 border-red-200" }
     case "Belum dibuka":
@@ -52,17 +48,16 @@ const getStatusProps = (status: "Sudah diisi" | "Belum diisi" | "Revisi" | "Belu
   }
 }
 
-// Komponen Card Ringkasan (TETAP SAMA)
 const StatusSummaryCard: React.FC<{ title: string; count: number; status: "Sudah diisi" | "Belum diisi" | "Revisi" | "Belum dibuka" }> = ({ title, count, status }) => {
   const { icon: Icon, color } = getStatusProps(status);
   const isRevision = status === "Revisi";
 
   return (
     <Card className="shadow-sm hover:shadow-md transition rounded-lg border">
-      <CardContent className="p-4 flex items-center justify-between gap-4">
+      <CardContent className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-sm text-muted-foreground">{title}</h3>
-          <p className={`text-3xl font-bold ${color}`}>{count}</p>
+          <p className="text-sm text-primary">{title}</p>
+          <p className={`text-3xl font-bold text-text-primary`}>{count}</p>
         </div>
         
         <div className={`p-2 rounded-lg bg-muted/50 border border-dashed flex-shrink-0 ${isRevision ? 'border-red-300' : 'border-gray-300'}`}>
@@ -230,10 +225,12 @@ export default function ProsesPendaftaranPage() {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-primary/5 border-r flex flex-col">
-        <div className="h-16 flex items-center justify-center font-serif font-bold text-primary">
-          Portal Mahasiswa
+      <aside className="w-64 bg-gray-100 border-r flex flex-col sticky top-0 h-screen overflow-y-auto">        
+        <div className="h-16 flex items-center justify-start p-6 gap-2 font-bold text-black">
+          <img src="/favicon.png" alt="UGN" className="h-6 w-6 object-contain rounded-sm" />
+          <span>Ujian Masuk UGN</span>
         </div>
+        <hr />
         <nav className="flex-1 px-4 py-6 text-sm">
           <div className="space-y-1">
             <Link
@@ -243,23 +240,29 @@ export default function ProsesPendaftaranPage() {
               <Home className="h-4 w-4" /> Data Diri
             </Link>
             <Link
-              // Link di sidebar diubah
               to="/pendaftaran"
-              className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/10 font-medium text-primary"
+              className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary font-medium text-white"
             >
               <GraduationCap className="h-4 w-4" /> Pendaftaran
             </Link>
+            <button
+                onClick={() => {
+                const confirmLogout = window.confirm("Apakah Anda yakin ingin logout?")
+                if (confirmLogout) {
+                    localStorage.removeItem("auth_token") // contoh hapus token
+                    window.location.href = "/login" // redirect manual
+                }
+                }}
+                className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10 cursor-pointer "
+            >
+                <LogOut className="h-4 w-4" /> Logout
+            </button>
           </div>
         </nav>
-        <div className="p-4">
-          <Button variant="outline" className="w-full flex items-center gap-2">
-            <LogOut className="h-4 w-4" /> Logout
-          </Button>
-        </div>
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-gray-50">
         {/* Navbar */}
         <header className="h-16 border-b flex items-center justify-between px-6 bg-white">
           {/* Judul diubah menjadi Breadcrumb/Detail */}
@@ -278,7 +281,7 @@ export default function ProsesPendaftaranPage() {
               <Button variant="ghost" className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/avatar.png" alt="User" />
-                  <AvatarFallback>UGM</AvatarFallback>
+                  <AvatarFallback>SU</AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium">Sumbuludun</span>
               </Button>
@@ -300,10 +303,10 @@ export default function ProsesPendaftaranPage() {
         <main className="flex-1 overflow-y-auto bg-muted/30 p-6 space-y-6">
         
         {/* Info Pendaftaran */}
-        <Card className="shadow-sm border rounded-lg p-4 bg-primary/10 border-primary/20">
+        <Card className="shadow-sm border rounded-lg p-4 bg-primary/5 border-primary/20">
             <div className="flex justify-between items-center text-sm font-medium text-primary">
                 <span>ID Pendaftaran: {programId}</span>
-                <Badge variant="secondary" className="bg-primary text-white hover:bg-primary/90">
+                <Badge variant="secondary" className="bg-blue-700 text-white">
                     AKTIF
                 </Badge>
             </div>
@@ -312,7 +315,7 @@ export default function ProsesPendaftaranPage() {
 
         {/* RINGKASAN USER */}
         <Card className="shadow-sm border rounded-lg">
-          <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <CardContent className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4 flex-grow">
                 <Avatar className="h-14 w-14 border-2 border-primary">
                     <AvatarImage src="/avatar.png" alt="User" />
@@ -350,8 +353,13 @@ export default function ProsesPendaftaranPage() {
             {steps.map((step, index) => {
               const isDisabled = step.status === "Belum dibuka"
               const content = (
-                <Card className={`transition-all duration-200 ${isDisabled ? "opacity-50 pointer-events-none" : "hover:shadow-md"}`}>
-                  <CardContent className="flex items-start justify-between">
+            <Card
+              className={`transition-all duration-200 transform ${
+                isDisabled
+                  ? "opacity-50 pointer-events-none"
+                  : "hover:shadow-lg hover:scale-[1.01] transition-transform"
+              }`}
+            > <CardContent className="flex items-start justify-between">
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
                         <step.icon className="h-5 w-5 text-primary" />

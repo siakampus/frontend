@@ -45,30 +45,42 @@ export default function EnrollmentPage() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-50" >
       {/* Sidebar */}
-      <aside className="w-64 bg-primary/5 border-r flex flex-col">
-        <div className="h-16 flex items-center justify-center font-serif font-bold text-primary">
-          Portal Mahasiswa
+      <aside className="w-64 bg-gray-100 border-r flex flex-col sticky top-0 h-screen overflow-y-auto">        
+        <div className="h-16 flex items-center justify-start p-6 gap-2 font-bold text-black">
+          <img src="/favicon.png" alt="UGN" className="h-6 w-6 object-contain rounded-sm" />
+          <span>Ujian Masuk UGN</span>
         </div>
+        <hr />
         <nav className="flex-1 px-4 py-6 text-sm">
           <div className="space-y-1">
-            <Link to="/data-diri" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10">
+            <Link
+              to="/data-diri"
+              className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10"
+            >
               <Home className="h-4 w-4" /> Data Diri
             </Link>
             <Link
               to="/pendaftaran"
-              className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary/10 font-medium text-primary"
+              className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary font-medium text-white"
             >
               <GraduationCap className="h-4 w-4" /> Pendaftaran
             </Link>
+            <button
+                onClick={() => {
+                const confirmLogout = window.confirm("Apakah Anda yakin ingin logout?")
+                if (confirmLogout) {
+                    localStorage.removeItem("auth_token") // contoh hapus token
+                    window.location.href = "/login" // redirect manual
+                }
+                }}
+                className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10 cursor-pointer "
+            >
+                <LogOut className="h-4 w-4" /> Logout
+            </button>
           </div>
         </nav>
-        <div className="p-4">
-          <Button variant="outline" className="w-full flex items-center gap-2">
-            <LogOut className="h-4 w-4" /> Logout
-          </Button>
-        </div>
       </aside>
 
       {/* Main Content */}
@@ -89,7 +101,7 @@ export default function EnrollmentPage() {
               <Button variant="ghost" className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/avatar.png" alt="User" />
-                  <AvatarFallback>UGM</AvatarFallback>
+                  <AvatarFallback>SU</AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium">Sumbuludun</span>
               </Button>

@@ -59,6 +59,9 @@ export default function DetailPendaftaranPage() {
             <Link to="/pendaftaran" className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary font-medium text-white">
               <GraduationCap className="h-4 w-4" /> Pendaftaran
             </Link>
+            
+            <hr className="my-4"/>
+
             <button
               onClick={() => {
                 const confirmLogout = window.confirm("Apakah Anda yakin ingin logout?")

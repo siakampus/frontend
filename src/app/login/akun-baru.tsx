@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,6 +8,7 @@ import { GraduationCap, LogIn, CheckCircle, XCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Turnstile from "react-turnstile"
 
+// ✅ Alert reusable component
 function AlertBox({
   type,
   message,
@@ -47,6 +48,12 @@ export default function LoginAkunBaru({
   const [captchaToken, setCaptchaToken] = useState("dummy-captcha-token")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  // 👉 Redirect user kalau sudah login (token sudah ada)
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    if (token) navigate("/data-diri")
+  }, [navigate])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,7 +99,7 @@ export default function LoginAkunBaru({
       >
         <Card className="overflow-hidden p-0 rounded-lg shadow-lg">
           <CardContent className="m-0 p-0">
-            {/* LEFT SIDE - FORM */}
+            {/* FORM AREA */}
             <div className="p-6 md:p-8 space-y-6">
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-xl font-bold font-serif text-black">
@@ -108,7 +115,9 @@ export default function LoginAkunBaru({
                 {successMessage && (
                   <AlertBox type="success" message={successMessage} />
                 )}
-                {errorMessage && <AlertBox type="error" message={errorMessage} />}
+                {errorMessage && (
+                  <AlertBox type="error" message={errorMessage} />
+                )}
 
                 {/* EMAIL */}
                 <div className="grid gap-2">
@@ -172,8 +181,18 @@ export default function LoginAkunBaru({
               </form>
             </div>
 
-            {/* RIGHT SIDE */}
-            
+            {/* RIGHT PANEL (optional aesthetic placeholder) */}
+            <div className="hidden md:flex bg-primary text-white items-center justify-center p-8">
+              <div className="text-center">
+                <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-90" />
+                <h2 className="text-lg font-serif font-bold">
+                  Portal Pendaftaran Mahasiswa
+                </h2>
+                <p className="text-sm opacity-80 mt-1">
+                  Masuk untuk melanjutkan proses administrasi Anda
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -8,11 +8,42 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import logo from "@/assets/images/logo.png";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, CheckCircle, XCircle } from "lucide-react";
 import Turnstile from "react-turnstile";
 
+// Placeholder kalau logo gagal dimuat
 const logoPlaceholder = "https://placehold.co/256x256/00008b/ffffff?text=U+G+N";
 
+// 🔔 Alert Box Reusable Component
+function AlertBox({
+  type,
+  message,
+}: {
+  type: "success" | "error";
+  message: string;
+}) {
+  if (!message) return null;
+  const isSuccess = type === "success";
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-3 border rounded-lg px-4 py-3 text-sm mb-3",
+        isSuccess
+          ? "bg-green-100 border-green-400 text-green-700"
+          : "bg-red-100 border-red-400 text-red-700"
+      )}
+    >
+      {isSuccess ? (
+        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+      ) : (
+        <XCircle className="h-4 w-4 text-red-500 mt-0.5" />
+      )}
+      <span className="font-medium">{message}</span>
+    </div>
+  );
+}
+
+// 🧠 Main Login Component
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,12 +52,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // 👉 Fungsi login ke backend
+  // 🔐 Handle Login API
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!captchaToken) {
-      alert("⚠️ Mohon selesaikan verifikasi keamanan terlebih dahulu.");
+      setErrorMessage("⚠️ Mohon selesaikan verifikasi keamanan terlebih dahulu.");
       return;
     }
 
@@ -66,7 +97,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
     } catch (err) {
       console.error(err);
-      setErrorMessage("Terjadi kesalahan koneksi ke server.");
+      setErrorMessage("❌ Terjadi kesalahan koneksi ke server.");
     } finally {
       setLoading(false);
     }
@@ -76,7 +107,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 rounded-lg shadow-lg">
         <CardContent className="grid p-0 md:grid-cols-2">
-          {/* 👉 Left side: Form */}
+          {/* 🧭 Left side: Login Form */}
           <div className="p-6 md:p-8">
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid grid-cols-2 mb-6">
@@ -84,12 +115,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 <TabsTrigger value="register">Buat Akun</TabsTrigger>
               </TabsList>
 
-              {/* --- LOGIN TAB --- */}
+              {/* === LOGIN TAB === */}
               <TabsContent
                 value="login"
                 className="space-y-6 min-h-[300px] flex flex-col"
               >
-                <div className="flex flex-col items-center text-center">
+                <div className="flex flex-col items-center text-center mb-2">
                   <h1 className="text-xl font-bold font-serif">
                     Sistem Informasi Akademik
                   </h1>
@@ -98,17 +129,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   </p>
                 </div>
 
+                {/* ALERTS */}
                 {errorMessage && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 text-sm p-2 rounded">
-                    {errorMessage}
-                  </div>
+                  <AlertBox type="error" message={errorMessage} />
                 )}
                 {successMessage && (
-                  <div className="bg-green-100 border border-green-400 text-green-700 text-sm p-2 rounded">
-                    {successMessage}
-                  </div>
+                  <AlertBox type="success" message={successMessage} />
                 )}
 
+                {/* FORM */}
                 <form onSubmit={handleLogin} className="space-y-4 flex-1">
                   {/* Email */}
                   <div className="grid gap-3">
@@ -143,7 +172,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     />
                   </div>
 
-                  {/* ✅ Cloudflare Turnstile */}
+                  {/* Turnstile CAPTCHA */}
                   <div className="pt-2 w-full">
                     <Label>Verifikasi Keamanan</Label>
                     <div className="mt-2">
@@ -167,6 +196,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     </div>
                   </div>
 
+                  {/* Submit Button */}
                   <Button
                     type="submit"
                     className="w-full mt-auto"
@@ -177,12 +207,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                 </form>
               </TabsContent>
 
-              {/* --- REGISTER TAB --- */}
+              {/* === REGISTER TAB === */}
               <TabsContent
                 value="register"
                 className="space-y-6 min-h-[300px] flex flex-col"
               >
-                <div className="flex flex-col items-center pt-12 text-center gap-1">
+                <div className="flex flex-col items-center pt-12 text-center gap-2">
                   <div className="bg-primary/10 text-primary flex h-16 w-16 items-center justify-center rounded-full">
                     <GraduationCap className="h-8 w-8" />
                   </div>
@@ -200,7 +230,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             </Tabs>
           </div>
 
-          {/* 👉 Right side: Logo */}
+          {/* 🏛️ Right side: Logo area */}
           <div className="bg-primary hidden md:flex items-center justify-center">
             <img
               src={logo}

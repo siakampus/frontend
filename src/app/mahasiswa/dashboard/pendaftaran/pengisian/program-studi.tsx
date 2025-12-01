@@ -171,16 +171,16 @@ export default function PemilihanProgramStudiPage() {
         <main className="flex-1 overflow-y-auto bg-muted/30 p-6 space-y-6">
           <form onSubmit={handleSubmit}>
             {/* Card dibatasi lebarnya dan diposisikan di tengah */}
-            <Card className="shadow-sm border rounded-lg max-w-4xl mx-auto">
+            <Card className="shadow-sm border rounded-lg max-w-4xl gap-2 mx-auto">
                 <CardHeader className="pb-2 border-b border-gray-200">
                     <h1 className="text-xl font-bold flex items-center gap-2">
-                        <GraduationCap className="h-5 w-5 text-primary"/> Langkah 3: Pemilihan Program Studi
+                        <GraduationCap className="h-5 w-5 text-primary"/>Pemilihan Program Studi
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
                         Pilih dua (2) Program Studi Sarjana yang Anda minati. Pilihan pertama adalah prioritas utama.
                     </p>
                 </CardHeader>
-                <CardContent className="mt-6 space-y-8 p-6">
+                <CardContent className="space-y-8 p-6">
                     
                     {/* Render Pilihan 1 */}
                     {renderPilihanForm(1)}

@@ -48,11 +48,8 @@ const dummyRegistrations: Registration[] = [
 
 // 🧩 Sidebar Items (bisa reuse di semua halaman admin)
 const adminSidebarItems = [
-  { to: "/admin/settings", label: "Pengaturan Platform" },
+  { to: "/admin/settings", label: "Pengaturan Pendaftaran" },
   { to: "/admin/pendaftaran", label: "Data Pendaftaran" },
-  { to: "/admin/upload", label: "Upload Data" },
-  { to: "/admin/feedback", label: "Feedback Pendaftar" },
-  { to: "/admin/hasil", label: "Hasil Pendaftaran" },
 ]
 
 export default function AdminRegistrationsPage() {

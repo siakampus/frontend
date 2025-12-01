@@ -12,6 +12,7 @@ import {
   Bell,
   Lock,
   ChevronLeft,
+  XCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,12 +34,13 @@ import { Progress } from "@/components/ui/progress"
 import { Link } from "react-router-dom"
 import React from "react"
 
-// Utility function to map status to a CSS class and Icon (TETAP SAMA)
-const getStatusProps = (status: "Sudah diisi" | "Belum diisi" | "Revisi" | "Belum dibuka") => {
+type StepStatus = "Selesai" | "Belum Selesai" | "Revisi" | "Belum dibuka"
+
+const getStatusProps = (status: StepStatus) => {
   switch (status) {
-    case "Sudah diisi":
+    case "Selesai":
       return { icon: CheckCircle, color: "text-green-700", badge: "bg-green-100 text-green-700 border-green-200" }
-    case "Belum diisi":
+    case "Belum Selesai":
       return { icon: Clock, color: "text-orange-400", badge: "bg-orange-100 text-orange-700 border-orange-200" }
     case "Revisi":
       return { icon: AlertCircle, color: "text-red-700", badge: "bg-red-100 text-red-700 border-red-200" }
@@ -48,61 +50,47 @@ const getStatusProps = (status: "Sudah diisi" | "Belum diisi" | "Revisi" | "Belu
   }
 }
 
-const StatusSummaryCard: React.FC<{ title: string; count: number; status: "Sudah diisi" | "Belum diisi" | "Revisi" | "Belum dibuka" }> = ({ title, count, status }) => {
-  const { icon: Icon, color } = getStatusProps(status);
-  const isRevision = status === "Revisi";
-
-  return (
-    <Card className="shadow-sm hover:shadow-md transition rounded-lg border">
-      <CardContent className="flex items-center justify-between gap-4">
+const CustomAlert: React.FC<{ title: string; description: React.ReactNode; variant?: "default" | "destructive" }> = ({ title, description, variant = "default" }) => (
+    <div className={`p-4 rounded-lg border flex items-start space-x-3 ${variant === 'destructive' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+        <XCircle className={`h-5 w-5 flex-shrink-0 ${variant === 'destructive' ? 'text-red-600' : 'text-blue-600'}`} />
         <div>
-          <p className="text-sm text-primary">{title}</p>
-          <p className={`text-3xl font-bold text-text-primary`}>{count}</p>
+            <h4 className="font-bold text-base">{title}</h4>
+            <div className="text-sm mt-1">{description}</div>
         </div>
-        
-        <div className={`p-2 rounded-lg bg-muted/50 border border-dashed flex-shrink-0 ${isRevision ? 'border-red-300' : 'border-gray-300'}`}>
-          <Icon className={`h-5 w-5 ${color}`} />
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+    </div>
+);
 
 
 export default function ProsesPendaftaranPage() {
   
-  // Informasi spesifik pendaftaran ini
   const programTitle = "Sarjana Reguler 2025"
   const programId = "SM-SARJANA-2025"
 
+  const getOverallStatus = (steps: typeof initialSteps) => {
+    if (steps.some(s => s.status === "Revisi")) return "PERLU REVISI"
+    if (steps.some(s => s.status === "Belum Selesai")) return "DALAM PROSES"
+    if (steps.filter(s => s.status !== "Belum dibuka").every(s => s.status === "Selesai")) return "MENUNGGU HASIL"
+    return "AKTIF"
+  }
 
-  const steps: {
+
+  const initialSteps: {
     id: string
     title: string
     description: string
     schedule: string
     icon: React.ElementType
-    status: "Belum diisi" | "Sudah diisi" | "Revisi" | "Belum dibuka"
+    status: StepStatus
     path: string
+    comment?: string
   }[] = [
-    {
-      id: "enrollment",
-      title: "Pendaftaran (Enrollment)",
-      description: "Isi formulir awal untuk mengikuti pendaftaran.",
-      schedule: "1 - 5 Juli 2025",
-      icon: FileText,
-      status: "Sudah diisi",
-      // Rute diubah
-      path: "/pendaftaran/enrollment",
-    },
     {
       id: "data-entry",
       title: "Pengisian Data Diri",
       description: "Lengkapi biodata dan informasi pribadi.",
       schedule: "2 - 6 Juli 2025",
       icon: FileText,
-      status: "Revisi",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/data-diri",
     },
     {
@@ -111,8 +99,7 @@ export default function ProsesPendaftaranPage() {
       description: "Pilih jurusan / program studi yang diminati.",
       schedule: "3 - 7 Juli 2025",
       icon: GraduationCap,
-      status: "Belum diisi",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/program-studi",
     },
     {
@@ -121,9 +108,10 @@ export default function ProsesPendaftaranPage() {
       description: "Unggah berkas yang diperlukan.",
       schedule: "4 - 8 Juli 2025",
       icon: Upload,
-      status: "Belum dibuka",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/upload",
+      comment: "Pas foto yang diunggah resolusinya terlalu rendah. Mohon unggah ulang dengan resolusi minimal 600dpi.",
+
     },
     {
       id: "lock",
@@ -131,8 +119,7 @@ export default function ProsesPendaftaranPage() {
       description: "Kunci data agar tidak bisa diubah kembali.",
       schedule: "5 - 9 Juli 2025",
       icon: Lock,
-      status: "Belum dibuka",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/lock",
     },
     {
@@ -141,8 +128,7 @@ export default function ProsesPendaftaranPage() {
       description: "Generate tagihan biaya pendaftaran.",
       schedule: "6 - 10 Juli 2025",
       icon: CreditCard,
-      status: "Belum dibuka",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/billing",
     },
     {
@@ -151,8 +137,7 @@ export default function ProsesPendaftaranPage() {
       description: "Lakukan pembayaran biaya pendaftaran.",
       schedule: "7 - 12 Juli 2025",
       icon: CreditCard,
-      status: "Belum dibuka",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/payment",
     },
     {
@@ -161,8 +146,7 @@ export default function ProsesPendaftaranPage() {
       description: "Pilih sesi ujian berbasis komputer (CBT).",
       schedule: "10 - 15 Juli 2025",
       icon: FileText,
-      status: "Belum dibuka",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/cbt",
     },
     {
@@ -171,8 +155,7 @@ export default function ProsesPendaftaranPage() {
       description: "Cetak bukti pendaftaran Anda.",
       schedule: "12 - 16 Juli 2025",
       icon: Printer,
-      status: "Belum dibuka",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/print-form",
     },
     {
@@ -181,8 +164,7 @@ export default function ProsesPendaftaranPage() {
       description: "Cetak kartu ujian resmi.",
       schedule: "15 - 18 Juli 2025",
       icon: Printer,
-      status: "Belum dibuka",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/print-card",
     },
     {
@@ -191,40 +173,49 @@ export default function ProsesPendaftaranPage() {
       description: "Lihat hasil seleksi pendaftaran.",
       schedule: "20 Juli 2025",
       icon: Bell,
-      status: "Belum dibuka",
-      // Rute diubah
+      status: "Belum Selesai",
       path: "/pendaftaran/announcement",
     },
   ]
+  
+  const steps = initialSteps 
 
   const totalSteps = steps.length
-  const completedSteps = steps.filter((s) => s.status === "Sudah diisi").length
-  const revisiSteps = steps.filter((s) => s.status === "Revisi").length
-  const belumDibukaSteps = steps.filter((s) => s.status === "Belum dibuka").length
-  const belumDiisiSteps = steps.filter((s) => s.status === "Belum diisi").length
+  const completedSteps = steps.filter((s) => s.status === "Selesai").length
+  const revisiSteps = steps.filter((s) => s.status === "Revisi")
   const progress = Math.round((completedSteps / totalSteps) * 100)
 
-  // Data for the summary cards
-  const summaryData = [
-    { title: "Sudah Diisi", count: completedSteps, status: "Sudah diisi" as const },
-    { title: "Belum Diisi", count: belumDiisiSteps, status: "Belum diisi" as const },
-    { title: "Revisi", count: revisiSteps, status: "Revisi" as const },
-    { title: "Belum Dibuka", count: belumDibukaSteps, status: "Belum dibuka" as const },
-  ]
+  const overallStatus = getOverallStatus(steps)
 
-  const renderStatus = (status: "Sudah diisi" | "Belum diisi" | "Revisi" | "Belum dibuka") => {
-    const { icon: Icon, badge: badgeClass } = getStatusProps(status)
-    return (
-      <Badge className={`flex items-center gap-1 ${badgeClass}`}>
-        <Icon className="h-3 w-3" />
-        {status}
-      </Badge>
-    )
+  const renderStatus = (status: StepStatus) => {
+    if (status === "Revisi" || status === "Belum dibuka") {
+      const { icon: Icon, badge: badgeClass } = getStatusProps(status)
+      return (
+        <Badge className={`flex items-center gap-1 ${badgeClass}`}>
+          <Icon className="h-3 w-3" />
+          {status}
+        </Badge>
+      )
+    }
+    return null
   }
+
+  const RevisionAlert = () => {
+      if (revisiSteps.length === 0) return null
+
+      return (
+          <CustomAlert 
+              variant="destructive"
+              title={`Perhatian: Terdapat ${revisiSteps.length} Langkah Perlu Revisi!`}
+              description={"mohon segera periksa langkah-langkah di bawah ini yang memerlukan revisi sesuai catatan dari admin untuk melanjutkan proses pendaftaran."
+              }
+          />
+      )
+  }
+
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
       <aside className="w-64 bg-gray-100 border-r flex flex-col sticky top-0 h-screen overflow-y-auto">        
         <div className="h-16 flex items-center justify-start p-6 gap-2 font-bold text-black">
           <img src="/favicon.png" alt="UGN" className="h-6 w-6 object-contain rounded-sm" />
@@ -252,8 +243,8 @@ export default function ProsesPendaftaranPage() {
                 onClick={() => {
                 const confirmLogout = window.confirm("Apakah Anda yakin ingin logout?")
                 if (confirmLogout) {
-                    localStorage.removeItem("auth_token") // contoh hapus token
-                    window.location.href = "/login" // redirect manual
+                    localStorage.removeItem("auth_token")
+                    window.location.href = "/login"
                 }
                 }}
                 className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10 cursor-pointer "
@@ -264,13 +255,9 @@ export default function ProsesPendaftaranPage() {
         </nav>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col bg-gray-50">
-        {/* Navbar */}
         <header className="h-16 border-b flex items-center justify-between px-6 bg-white">
-          {/* Judul diubah menjadi Breadcrumb/Detail */}
           <div className="flex items-center gap-3">
-             {/* Link kembali diubah */}
              <Link to="/pendaftaran" className="text-muted-foreground hover:text-primary transition">
                 <ChevronLeft className="h-5 w-5" />
             </Link>
@@ -302,21 +289,26 @@ export default function ProsesPendaftaranPage() {
           </DropdownMenu>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-y-auto bg-muted/30 p-6 space-y-6">
         
-        {/* Info Pendaftaran */}
         <Card className="shadow-sm border rounded-lg p-4 bg-primary/5 border-primary/20">
             <div className="flex justify-between items-center text-sm font-medium text-primary">
                 <span>ID Pendaftaran: {programId}</span>
-                <Badge variant="secondary" className="bg-blue-700 text-white">
-                    AKTIF
+                <Badge 
+                    variant="secondary" 
+                    className={
+                        overallStatus === "PERLU REVISI" ? "bg-red-700 text-white" : 
+                        overallStatus === "DALAM PROSES" ? "bg-orange-600 text-white" : 
+                        "bg-blue-700 text-white"
+                    }
+                >
+                    {overallStatus}
                 </Badge>
             </div>
         </Card>
 
+        <RevisionAlert />
 
-        {/* RINGKASAN USER */}
         <Card className="shadow-sm border rounded-lg">
           <CardContent className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4 flex-grow">
@@ -344,33 +336,37 @@ export default function ProsesPendaftaranPage() {
           </CardContent>
         </Card>
 
-        {/* SUMMARY CARDS */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {summaryData.map(({ title, count, status }) => (
-                <StatusSummaryCard key={title} title={title} count={count} status={status} />
-            ))}
-        </div>
-
-          {/* Stepper */}
           <div className="relative border-l-2 border-gray-200 border-dashed space-y-6">
             {steps.map((step, index) => {
               const isDisabled = step.status === "Belum dibuka"
+              const isRevision = step.status === "Revisi"
               const content = (
             <Card
-              className={`transition-all duration-200 transform ${
+              className={`transition-all duration-200 transform p-0 ${
                 isDisabled
                   ? "opacity-50 pointer-events-none"
                   : "hover:shadow-lg hover:scale-[1.01] transition-transform"
-              }`}
-            > <CardContent className="flex items-start justify-between">
+              } ${isRevision ? 'border-border bg-white' : ''}`}
+            > <CardContent className="flex items-start justify-between p-4">
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2">
                         <step.icon className="h-5 w-5 text-primary" />
                         <h2 className="font-bold">{step.title}</h2>
-                        {renderStatus(step.status)}
+                        {renderStatus(step.status)} 
                       </div>
                       <p className="text-sm text-muted-foreground">{step.description}</p>
-                      <div className="bg-muted/50 border border-dashed rounded p-2 text-xs text-muted-foreground">
+
+                      {isRevision && step.comment && (
+                          <div className="bg-red-100/70 border border-red-300 rounded p-3 text-sm mt-3">
+                              <p className="font-semibold flex items-center gap-2 text-red-800">
+                                  <AlertCircle className="h-4 w-4" /> Catatan Revisi Admin:
+                              </p>
+                              <p className="mt-1 text-red-700">{step.comment}</p>
+                          </div>
+                      )}
+
+
+                      <div className="bg-muted/50 border border-dashed rounded p-2 text-xs text-muted-foreground mt-2">
                         Jadwal Pelaksanaan:{" "}
                         <span className="font-medium text-foreground">{step.schedule}</span>
                       </div>
@@ -384,11 +380,9 @@ export default function ProsesPendaftaranPage() {
                   key={step.id}
                   className={`relative pl-4 ${isDisabled ? "opacity-70" : ""}`}
                 >
-                  {/* Number Circle */}
                   <div className="absolute -left-[14px] top-2 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">
                     {index + 1}
                   </div>
-                  {/* Link ke detail langkah diubah */}
                   {isDisabled ? content : <Link to={step.path} className="block group">{content}</Link>}
                 </div>
               )

@@ -162,6 +162,7 @@ export function SignUpForm() {
 
       if (res.ok) {
         setVerified(true)
+        setToken(token)
         setTokenMessage("✅ Email berhasil diverifikasi!")
       } else {
         setVerified(false)

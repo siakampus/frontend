@@ -180,19 +180,6 @@ export default function LoginAkunBaru({
                 </Button>
               </form>
             </div>
-
-            {/* RIGHT PANEL (optional aesthetic placeholder) */}
-            <div className="hidden md:flex bg-primary text-white items-center justify-center p-8">
-              <div className="text-center">
-                <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-90" />
-                <h2 className="text-lg font-serif font-bold">
-                  Portal Pendaftaran Mahasiswa
-                </h2>
-                <p className="text-sm opacity-80 mt-1">
-                  Masuk untuk melanjutkan proses administrasi Anda
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

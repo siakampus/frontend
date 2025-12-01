@@ -42,10 +42,10 @@ export function AppHeader({
           </Link>
         )}
         <div>
-          {subtitle && (
-            <p className="text-sm text-muted-foreground font-medium">{subtitle}</p>
-          )}
           <h1 className="font-serif font-bold text-lg">{title}</h1>
+          {subtitle && (
+            <p className="text-xs text-muted-foreground font-regular">{subtitle}</p>
+          )}
         </div>
       </div>
 

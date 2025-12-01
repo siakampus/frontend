@@ -131,16 +131,16 @@ export default function DataDiriPendaftaranPage() {
         <main className="flex-1 overflow-y-auto bg-muted/30 p-6 space-y-6">
           <form onSubmit={handleSubmit}>
             {/* Card dibatasi lebarnya dan diposisikan di tengah */}
-            <Card className="shadow-sm border rounded-lg max-w-4xl mx-auto">
+            <Card className="shadow-sm border rounded-lg max-w-4xl gap-2 mx-auto">
                 <CardHeader className="pb-2 border-b border-gray-200">
                     <h1 className="text-xl font-bold flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-primary"/> Langkah 2: Pengisian Data Diri
+                        <FileText className="h-5 w-5 text-primary"/> Pengisian Data Diri
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
                         Lengkapi identitas, alamat, riwayat pendidikan, dan informasi tambahan Anda untuk proses seleksi.
                     </p>
                 </CardHeader>
-                <CardContent className="mt-3 space-y-8 p-6">
+                <CardContent className="space-y-8 p-6">
 
                     {/* Identitas */}
                     <div className="space-y-4 border-b pb-4">

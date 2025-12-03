@@ -1,5 +1,3 @@
-"use client"
-
 import { ChevronLeft, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,20 +14,105 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Link } from "react-router-dom"
+import { useState, useEffect } from "react"
+
+// --- Interface dan Helpers ---
 
 interface AppHeaderProps {
   title?: string
   subtitle?: string
   backTo?: string
-  userName?: string
 }
+
+// PERBAIKAN 1: Sesuaikan interface dengan respons API yang sebenarnya
+interface UserData {
+    email: string;
+    // Anda bisa menambahkan field lain yang Anda butuhkan di sini (misalnya id, role)
+}
+interface UserProfileResponse {
+    user: UserData;
+    message: string;
+}
+
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(/\s+/);
+  
+  if (parts.length === 0) {
+      return "GU"; 
+  }
+  
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  }
+  
+  return name.substring(0, 2).toUpperCase();
+};
+
+// --- Komponen Utama ---
 
 export function AppHeader({
   title = "Halaman",
   subtitle,
   backTo,
-  userName = "Admin",
 }: AppHeaderProps) {
+    
+  const [currentUserName, setCurrentUserName] = useState("Pengguna"); 
+  const [currentInitials, setCurrentInitials] = useState("GU");     
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost:3000/auth/profile", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`, 
+            },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Gagal mengambil profil (${response.status}). Respons Backend Error:`, errorText.substring(0, 100) + '...');
+          
+          if (response.status === 401 || response.status === 403) {
+            console.warn("Token ditolak (Unauthorized/Forbidden). Memaksa logout.");
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+            return; 
+          }
+          
+          throw new Error(`Gagal mengambil profil pengguna: Status ${response.status}`);
+        }
+
+        // Catatan: Mengganti UserProfile ke UserProfileResponse
+        const data: UserProfileResponse = await response.json(); 
+        
+        console.log("✅ Data Profil berhasil diterima:", data);
+        
+        // PERBAIKAN 2: Ambil email dari data.user
+        const username = data.user.email || "Pengguna"; 
+        const initials = getInitials(username);      
+
+        setCurrentUserName(username);
+        setCurrentInitials(initials);
+      } catch (error) {
+        console.error("Kesalahan saat mengambil profil:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []); 
+
   return (
     <header className="h-16 border-b flex items-center justify-between px-6 bg-white">
       <div className="flex items-center gap-3">
@@ -54,16 +137,13 @@ export function AppHeader({
           <Button variant="ghost" className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src="/avatar.png" alt="User" />
-              <AvatarFallback>AD</AvatarFallback>
+              <AvatarFallback>{currentInitials}</AvatarFallback>
             </Avatar>
-            <span className="text-sm font-medium">{userName}</span>
+            <span className="text-sm font-medium">{currentUserName}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             className="text-red-500"

@@ -230,6 +230,7 @@ export function SignUpForm() {
       const data = await res.json().catch(() => ({}))
 
       if (res.status === 201) {
+        localStorage.removeItem("token")
         setRegisterMessage("✅ User registered successfully")
         alert("✅ Akun berhasil dibuat! Silakan login dengan akun baru Anda.")
         window.location.href = "/pendaftaran/berhasil/login"
@@ -466,7 +467,7 @@ export function SignUpForm() {
               <a href="/login">Batalkan</a>
             </Button>
             <div className="flex flex-col items-end">
-              <Button type="submit">
+              <Button type="submit" >
                 <a> Lakukan Pendaftaran</a>
               </Button>
               

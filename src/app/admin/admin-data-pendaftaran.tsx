@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +14,6 @@ import {
 } from "lucide-react"
 import { AppLayout } from "@/components/ui/app-layout"
 
-// 🧩 Type definition
 type Registration = {
   id: number | null
   name: string
@@ -26,7 +23,6 @@ type Registration = {
   registeredAt: string
 }
 
-// 🧩 Dummy data awal
 const dummyRegistrations: Registration[] = [
   {
     id: 1,
@@ -46,12 +42,6 @@ const dummyRegistrations: Registration[] = [
   },
 ]
 
-// 🧩 Sidebar Items (bisa reuse di semua halaman admin)
-const adminSidebarItems = [
-  { to: "/admin/settings", label: "Pengaturan Pendaftaran" },
-  { to: "/admin/pendaftaran", label: "Data Pendaftaran" },
-]
-
 export default function AdminRegistrationsPage() {
   const [registrations, setRegistrations] =
     useState<Registration[]>(dummyRegistrations)
@@ -65,7 +55,6 @@ export default function AdminRegistrationsPage() {
     status: "Menunggu",
   })
 
-  // 🔍 Filter hasil pencarian
   const filtered = registrations.filter(
     (r) =>
       r.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -73,7 +62,6 @@ export default function AdminRegistrationsPage() {
       r.program.toLowerCase().includes(search.toLowerCase())
   )
 
-  // 💾 Simpan (Tambah/Edit)
   const handleSave = () => {
     if (!formData.name || !formData.email || !formData.program) {
       alert("Mohon lengkapi semua data!")
@@ -91,16 +79,13 @@ export default function AdminRegistrationsPage() {
     }
 
     if (formData.id) {
-      // edit existing
       setRegistrations((prev) =>
         prev.map((r) => (r.id === formData.id ? updated : r))
       )
     } else {
-      // add new
       setRegistrations((prev) => [...prev, updated])
     }
 
-    // reset form
     setShowForm(false)
     setFormData({
       id: null,
@@ -111,13 +96,11 @@ export default function AdminRegistrationsPage() {
     })
   }
 
-  // ✏️ Edit data
   const handleEdit = (entry: Registration) => {
     setFormData(entry)
     setShowForm(true)
   }
 
-  // 🗑️ Hapus data
   const handleDelete = (id: number | null) => {
     if (id === null) return
     if (confirm("Yakin ingin menghapus pendaftaran ini?")) {
@@ -127,12 +110,11 @@ export default function AdminRegistrationsPage() {
 
   return (
     <AppLayout
-      sidebarItems={adminSidebarItems}
+      menuTemplate="admin"
       title="Data Pendaftaran"
       subtitle="Kelola daftar calon mahasiswa"
     >
       <Card className="p-6 shadow-sm border rounded-lg">
-        {/* 🔧 Toolbar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="relative w-full md:w-1/3">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -152,7 +134,7 @@ export default function AdminRegistrationsPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => alert("🔄 Data di-refresh (dummy only).")}
+              onClick={() => alert("Data di-refresh (dummy only).")}
               className="flex items-center gap-1"
             >
               <RefreshCcw className="h-4 w-4" /> Refresh
@@ -160,7 +142,6 @@ export default function AdminRegistrationsPage() {
           </div>
         </div>
 
-        {/* 🧾 Tabel */}
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
@@ -200,7 +181,7 @@ export default function AdminRegistrationsPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => alert(`👁️ Detail: ${r.name}`)}
+                      onClick={() => alert(`Detail: ${r.name}`)}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -238,7 +219,6 @@ export default function AdminRegistrationsPage() {
         </div>
       </Card>
 
-      {/* 📋 FORM MODAL */}
       {showForm && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl border space-y-4">

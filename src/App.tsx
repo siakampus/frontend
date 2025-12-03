@@ -6,7 +6,6 @@ import DataDiriPage from "./app/mahasiswa/dashboard/data-diri";
 import { AdmissionsPage } from "./app/mahasiswa/dashboard/pendaftaran/admission-list";
 import DataDiriPendaftaranPage from "./app/mahasiswa/dashboard/pendaftaran/pengisian/data-diri";
 import PemilihanProgramStudiPage from "./app/mahasiswa/dashboard/pendaftaran/pengisian/program-studi";
-import EnrollmentPage from "./app/mahasiswa/dashboard/pendaftaran/pengisian/enrollment";
 import LoginAkunBaru from "./app/mahasiswa/login/akun-baru";
 import DetailPendaftaranPage from "./app/mahasiswa/dashboard/pendaftaran/detail-pendaftaran";
 
@@ -48,10 +47,9 @@ export default function App() {
             <Route path="/pendaftaran" element={<AdmissionsPage />} />
             <Route path="/pendaftaran/berhasil/login" element={<LoginAkunBaru />} />
             <Route path="/pendaftaran/sarjana-2025" element={<ProsesPendaftaran />} />
-            <Route path="/pendaftaran/enrollment" element={<EnrollmentPage />} />
             <Route path="/pendaftaran/data-diri" element={<DataDiriPendaftaranPage />} />
             <Route path="/pendaftaran/program-studi" element={<PemilihanProgramStudiPage />} />
-            <Route path="/pendaftaran/detail-pendaftaran" element={<DetailPendaftaranPage />} />
+            <Route path="/pendaftaran/detail-pendaftaran/:id" element={<DetailPendaftaranPage />} />
             <Route path="/pendaftaran/upload" element={<UploadDokumenPendaftaranPage />} />
             <Route path="/pendaftaran/lock" element={<LockDataPendaftaranPage />} />
             <Route path="/pendaftaran/billing" element={<BillingPendaftaranPage />} />

@@ -1,34 +1,16 @@
 import {
-  LogOut,
-  Home,
-  GraduationCap,
-  ChevronLeft,
   Upload,
-  FileText,
   CheckCircle,
   AlertCircle,
   Clock,
   Save,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Link } from "react-router-dom"
 import React from "react"
+// --- PATH IMPORT APP LAYOUT YANG BENAR ---
+import { AppLayout } from "@/components/ui/app-layout"
 
 // Data dokumen yang wajib diunggah
 const documents = [
@@ -123,94 +105,23 @@ export default function UploadDokumenPendaftaranPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (canContinue) {
-            alert("Semua dokumen telah diunggah! Melanjutkan ke Penguncian Data.");
+            // Mengganti alert dengan console.log/custom modal
+            console.log("Semua dokumen telah diunggah! Melanjutkan ke Penguncian Data.");
         } else {
-            alert("Harap unggah semua dokumen yang diperlukan sebelum melanjutkan.");
+            console.log("Harap unggah semua dokumen yang diperlukan sebelum melanjutkan.");
         }
     }
 
     return (
-        <div className="flex min-h-screen">
-          {/* Sidebar */}
-          <aside className="w-64 bg-gray-100 border-r flex flex-col sticky top-0 h-screen overflow-y-auto">        
-            <div className="h-16 flex items-center justify-start p-6 gap-2 font-bold text-black">
-              <img src="/favicon.png" alt="UGN" className="h-6 w-6 object-contain rounded-sm" />
-              <span>Ujian Masuk UGN</span>
-            </div>
-            <hr />
-            <nav className="flex-1 px-4 py-6 text-sm">
-              <div className="space-y-1">
-                <Link
-                  to="/data-diri"
-                  className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10"
-                >
-                  <Home className="h-4 w-4" /> Data Diri
-                </Link>
-                <Link
-                  to="/pendaftaran"
-                  className="flex items-center gap-2 px-3 py-2 rounded-md bg-primary font-medium text-white"
-                >
-                  <GraduationCap className="h-4 w-4" /> Pendaftaran
-                </Link>
-
-                <hr className="my-4"/>
-
-                <button
-                    onClick={() => {
-                    const confirmLogout = window.confirm("Apakah Anda yakin ingin logout?")
-                    if (confirmLogout) {
-                        localStorage.removeItem("auth_token")
-                        window.location.href = "/login"
-                    }
-                    }}
-                    className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10 cursor-pointer "
-                >
-                    <LogOut className="h-4 w-4" /> Logout
-                </button>
-              </div>
-            </nav>
-          </aside>
-    
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col bg-gray-50">
-            {/* Navbar */}
-            <header className="h-16 border-b flex items-center justify-between px-6 bg-white">
-              <div className="flex items-center gap-3">
-                 <Link 
-                    to="/pendaftaran/sarjana-2025" 
-                    className="text-muted-foreground hover:text-primary transition">
-                    <ChevronLeft className="h-5 w-5" />
-                </Link>
-                <div>
-                  <p className="text-sm text-muted-foreground font-medium">Upload Dokumen</p>
-                  <h1 className="font-serif font-bold text-lg">Sarjana Reguler 2025</h1>
-                </div>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src="/avatar.png" alt="User" />
-                      <AvatarFallback>SU</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">Sumbuludun</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-500">
-                    <LogOut className="h-4 w-4 mr-2" /> Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </header>
-    
-            {/* Content */}
-            <main className="flex-1 overflow-y-auto bg-muted/30 p-6 space-y-6">
+        // Menggunakan AppLayout untuk menyediakan Sidebar dan Header
+        <AppLayout
+            menuTemplate="admisi" // Menggunakan menu untuk admisi
+            title="Sarjana Reguler 2025" // Judul utama di Header
+            subtitle="Upload Dokumen" // Subtitle di Header
+            backTo="/pendaftaran/sarjana-2025" // Rute kembali ke detail pendaftaran
+        >
+            {/* Content Halaman (children) */}
+            <main className="flex-1 overflow-y-auto p-6 space-y-6">
               <form onSubmit={handleSubmit}>
                 <Card className="shadow-sm border rounded-lg max-w-4xl gap-2 mx-auto">
                     <CardHeader className="pb-2 border-b border-gray-200">
@@ -253,7 +164,7 @@ export default function UploadDokumenPendaftaranPage() {
                 </Card>
               </form>
             </main>
-          </div>
-        </div>
+            {/* Akhir Konten Halaman */}
+        </AppLayout>
       )
     }

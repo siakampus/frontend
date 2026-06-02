@@ -11,4 +11,36 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/auth": {
+        target: "http://192.168.100.22:8000",
+        changeOrigin: true,
+      },
+      "/admissiondata": {
+        target: "http://192.168.100.22:8000",
+        changeOrigin: true,
+      },
+      "/admin": {
+        target: "http://192.168.100.22:8000",
+        changeOrigin: true,
+      },
+      "/user": {
+        target: "http://192.168.100.22:8000",
+        changeOrigin: true,
+      },
+      "/admission-paths": {
+        target: "http://192.168.100.22:8000",
+        changeOrigin: true,
+      },
+      "/api": {
+        target: "http://192.168.100.22:8000",
+        changeOrigin: true,
+      },
+      "/health": {
+        target: "http://192.168.100.22:8000",
+        changeOrigin: true,
+      },
+    },
+  },
 })

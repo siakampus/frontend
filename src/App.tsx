@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import DashboardPage from "./app/dashboard/page";
 import LoginPage from "./app/mahasiswa/login/login-akun-lama";
+import ForgotPasswordPage from "./app/mahasiswa/login/forgot-password";
+import ResetPasswordPage from "./app/mahasiswa/login/reset-password";
 import SignUpPage from "./app/mahasiswa/sign-up/page";
 import ProsesPendaftaran from "./app/mahasiswa/dashboard/pendaftaran/admission";
 import DataDiriPage from "./app/mahasiswa/dashboard/data-diri";
@@ -40,8 +43,11 @@ export default function App() {
           <Routes>
 
             {/* ===================== USER SIDE ===================== */}
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/" element={<LoginPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/data-diri" element={<DataDiriPage />} />
             <Route path="/pendaftaran" element={<AdmissionsPage />} />

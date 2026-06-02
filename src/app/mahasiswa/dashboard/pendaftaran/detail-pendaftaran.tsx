@@ -27,7 +27,7 @@ export default function DetailPendaftaranPage() {
     
     // 💡 State untuk menangani proses loading/submission
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    const API_URL = "";
     const token = localStorage.getItem("token");
 
     const formatDate = (dateString: string) => {

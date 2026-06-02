@@ -116,7 +116,7 @@ export function SignUpForm() {
       setVerified(false)
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/request-verification`,
+        `/auth/request-verification`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -152,7 +152,7 @@ export function SignUpForm() {
       setTokenMessage("⏳ Memverifikasi kode...")
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/verify-code`,
+        `/auth/verify-code`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -219,7 +219,7 @@ export function SignUpForm() {
       }
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/register`,
+        `/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

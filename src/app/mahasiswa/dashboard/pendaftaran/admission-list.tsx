@@ -133,7 +133,7 @@ export function AdmissionsPage() {
   const [activePaths, setActivePaths] = useState<AdmissionPath[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL = "";
   const token = localStorage.getItem("token");
 
   useEffect(() => {

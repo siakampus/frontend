@@ -63,19 +63,30 @@ export default function LoginAkunBaru({
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/login`,
+        `/api/auth/sign-in/email`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, captchaToken }),
+          body: JSON.stringify({ email, password }),
         }
       )
 
       const data = await res.json().catch(() => ({}))
+      console.log("🔍 Login response:", JSON.stringify(data, null, 2))
 
       if (res.ok) {
+        const token = data.token || data.accessToken || data.access_token
+
+        if (!token) {
+          console.error("⚠️ No token found in response:", data)
+          setErrorMessage("Login berhasil tetapi token tidak ditemukan. Hubungi admin.")
+          return
+        }
+
         setSuccessMessage("✅ Login berhasil! Mengarahkan ke halaman berikutnya...")
-        if (data.token) localStorage.setItem("token", data.token)
+        localStorage.setItem("token", token)
+        localStorage.setItem("userEmail", data.user?.email || data.email || "")
+        localStorage.setItem("userRole", data.user?.role || data.role || "")
 
         setTimeout(() => {
           navigate("/data-diri")

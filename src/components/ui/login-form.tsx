@@ -1,5 +1,7 @@
 "use client";
 
+import { Link } from "react-router-dom";
+
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -67,26 +69,34 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/auth/login`,
+        `/api/auth/sign-in/email`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
             password,
-            captchaToken: captchaToken || "dummy-captcha-token",
           }),
         }
       );
 
       const data = await res.json().catch(() => ({}));
+      console.log("🔍 Login response:", JSON.stringify(data, null, 2));
 
       if (res.ok) {
-        // ✅ Login sukses
+        // ✅ Login sukses — extract token from response
+        const token = data.token || data.accessToken || data.access_token;
+
+        if (!token) {
+          console.error("⚠️ No token found in response:", data);
+          setErrorMessage("Login berhasil tetapi token tidak ditemukan. Hubungi admin.");
+          return;
+        }
+
         setSuccessMessage("✅ Login berhasil! Mengarahkan ke dashboard...");
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("userEmail", data.user?.email || "");
-        localStorage.setItem("userRole", data.user?.role || "");
+        localStorage.setItem("token", token);
+        localStorage.setItem("userEmail", data.user?.email || data.email || "");
+        localStorage.setItem("userRole", data.user?.role || data.role || "");
 
         setTimeout(() => {
           window.location.href = "/data-diri";
@@ -156,12 +166,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   <div className="grid gap-3">
                     <div className="flex items-center">
                       <Label htmlFor="password">Kata Sandi</Label>
-                      <a
-                        href="#"
+                      <Link
+                        to="/forgot-password"
                         className="ml-auto text-sm underline-offset-2 hover:underline"
                       >
                         Lupa kata sandi?
-                      </a>
+                      </Link>
                     </div>
                     <Input
                       id="password"

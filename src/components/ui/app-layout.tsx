@@ -42,7 +42,10 @@ export const getSidebarItems = (template: MenuTemplateType): SidebarItem[] => {
 
 interface AppLayoutProps {
   children: ReactNode
-  menuTemplate: MenuTemplateType
+  menuTemplate?: MenuTemplateType
+  sidebarItems?: SidebarItem[]
+  sidebarTitle?: string
+  sidebarLogo?: string
   title?: string
   subtitle?: string
   backTo?: string
@@ -51,16 +54,19 @@ interface AppLayoutProps {
 export function AppLayout({
   children,
   menuTemplate,
+  sidebarItems: customSidebarItems,
+  sidebarTitle,
+  sidebarLogo,
   title,
   subtitle,
   backTo,
 }: AppLayoutProps) {
   
-  const sidebarItems: SidebarItem[] = getSidebarItems(menuTemplate); 
+  const sidebarItems: SidebarItem[] = customSidebarItems || (menuTemplate ? getSidebarItems(menuTemplate) : []); 
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <AppSidebar items={sidebarItems} /> 
+      <AppSidebar items={sidebarItems} title={sidebarTitle} logo={sidebarLogo} /> 
       
       <div className="flex-1 flex flex-col">
         <AppHeader title={title} subtitle={subtitle} backTo={backTo} />

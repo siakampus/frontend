@@ -97,8 +97,8 @@ export function AppHeader({
         
         console.log("✅ Data Profil berhasil diterima:", data);
         
-        // PERBAIKAN 2: Ambil email dari data.user
-        const username = data.user.email || "Pengguna"; 
+        // PERBAIKAN 2: Ambil email dengan aman menggunakan optional chaining
+        const username = data?.user?.email || (data as any)?.email || (data as any)?.name || "Pengguna"; 
         const initials = getInitials(username);      
 
         setCurrentUserName(username);

@@ -4,7 +4,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @layer base {
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: serif;
   }
 }
@@ -16,8 +22,8 @@
 
   /* Base setup */
   color-scheme: light;
-  color: #213547;              
-  background-color: #ffffff;   
+  color: #213547;
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -36,10 +42,12 @@
   --popover: #ffffff;
   --popover-foreground: #111827;
 
-  --primary: #015023;               /* blue-600 */
+  --primary: #015023;
+  /* blue-600 */
   --primary-foreground: #ffffff;
 
-  --secondary: #f3f4f6;             /* gray-100 */
+  --secondary: #f3f4f6;
+  /* gray-100 */
   --secondary-foreground: #111827;
 
   --muted: #f9f9f9;
@@ -114,6 +122,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

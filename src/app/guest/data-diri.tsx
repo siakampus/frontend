@@ -38,73 +38,201 @@ export default function DataDiriPage() {
   const [agree, setAgree] = useState(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
 
-  const [pribadi, setPribadi] = useState<Record<string, any>>({});
-  const [kontak, setKontak] = useState<Record<string, any>>({});
-  const [dokumen, setDokumen] = useState<{ kk_file?: File | null; ktp_file?: File | null }>({});
+  const defaultPribadi = {
+    "Nama Lengkap": "",
+    "NIK": "",
+    "Tempat Lahir": "",
+    "Tanggal Lahir": "",
+    "Jenis Kelamin": "",
+    "Agama": "",
+  };
+
+  const defaultKontak = {
+    "Email": "",
+    "No. Telepon": "",
+    "Alamat Lengkap": "",
+    "Provinsi": "",
+    "Kota/Kabupaten": "",
+  };
+
+  const [pribadi, setPribadi] = useState<Record<string, any>>(defaultPribadi);
+  const [kontak, setKontak] = useState<Record<string, any>>(defaultKontak);
+  const [dokumen, setDokumen] = useState<Record<string, any>>({}); // includes File objects + URL strings from API
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const API_URL = "";
   const token = localStorage.getItem("token");
+  
+  const getAuthHeaders = () => {
+    return token ? { "Authorization": `Bearer ${token}` } : {};
+  };
+
+  // Map backend camelCase → UI display keys
+  const mapApiToPribadi = (d: Record<string, any>, user: any) => ({
+    "Nama Lengkap":   d.fullName     || user?.name  || "",
+    "NIK":            d.nik                          || "",
+    "Tempat Lahir":   d.birthPlace                   || "",
+    "Tanggal Lahir":  d.dateOfBirth ? d.dateOfBirth.split("T")[0] : "",
+    "Jenis Kelamin":  d.gender                       || "",
+    "Agama":          d.religion                     || "",
+  });
+
+  const mapApiToKontak = (d: Record<string, any>, user: any) => ({
+    "Email":           d.email        || user?.email || "",
+    "No. Telepon":     d.phoneNumber                 || "",
+    "Alamat Lengkap":  d.address                     || "",
+    "Provinsi":        d.province                    || "",
+    "Kota/Kabupaten":  d.city                        || "",
+  });
+
+  // Map UI display keys → backend field names for PUT
+  const mapPribadiToApi = (p: Record<string, any>) => {
+    let dob = p["Tanggal Lahir"];
+    if (dob && !dob.includes("T")) {
+      dob = `${dob}T00:00:00.000Z`;
+    }
+    return {
+      fullName:    p["Nama Lengkap"],
+      nik:         p["NIK"],
+      birthPlace:  p["Tempat Lahir"],
+      dateOfBirth: dob,
+      gender:      p["Jenis Kelamin"],
+      religion:    p["Agama"],
+    };
+  };
+
+  const mapKontakToApi = (k: Record<string, any>) => ({
+    email:       k["Email"],
+    phoneNumber: k["No. Telepon"],
+    address:     k["Alamat Lengkap"],
+    province:    k["Provinsi"],
+    city:        k["Kota/Kabupaten"],
+  });
 
   useEffect(() => {
-    if (!token) {
-      window.location.href = "/login";
-      return;
-    }
-
-    const fetchLockStatus = async () => {
-        try {
-            const res = await fetch(`${API_URL}/admissiondata/locked`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const json = await res.json();
-                const isLocked = Boolean(json.isPersonalDataLocked);
-                setLocked(isLocked);
-                localStorage.setItem("data_locked", String(isLocked));
-                if (isLocked) {
-                    setIsEditPribadi(false);
-                    setIsEditKontak(false);
-                    setIsEditDokumen(false);
-                }
-            } else {
-                console.error("Gagal mengambil status lock data.");
-            }
-        } catch (err) {
-            console.error("Kesalahan saat mengambil status lock:", err);
-        }
-    }
-
-
-    const fetchAllData = async () => {
+    // Check BetterAuth session via cookie (no localStorage token needed)
+    const checkSessionAndFetch = async () => {
+      let userSession = null;
       try {
-        setLoading(true);
-        await fetchLockStatus();
+        const sessionRes = await fetch("/api/auth/get-session", {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        });
+        if (!sessionRes.ok || sessionRes.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        const session = await sessionRes.json();
+        if (!session?.user) {
+          window.location.href = "/login";
+          return;
+        }
+        userSession = session.user;
+      } catch {
+        window.location.href = "/login";
+        return;
+      }
 
-        const endpoints = [
-          { type: 1, setter: setPribadi },
-          { type: 2, setter: setKontak },
-          { type: 3, setter: setDokumen },
-        ];
-
-        for (const { type, setter } of endpoints) {
-          const res = await fetch(`${API_URL}/admissiondata/${type}`, {
-            headers: { Authorization: `Bearer ${token}` },
+      const fetchLockStatus = async () => {
+        try {
+          const res = await fetch(`${API_URL}/admissiondata/locked`, {
+            credentials: "include",
+            headers: getAuthHeaders(),
           });
           if (res.ok) {
             const json = await res.json();
-            setter(json.data || {});
+            console.log("Lock Status Response:", json);
+            // More aggressive check for locked status
+            const isLocked = typeof json === "boolean" ? json : Boolean(
+              json === true ||
+              json.isLocked === true ||
+              json.isPersonalDataLocked === true || 
+              json.locked === true || 
+              json.data?.isLocked === true ||
+              json.data?.isPersonalDataLocked === true || 
+              json.data?.locked === true ||
+              json.status === "LOCKED" ||
+              json.data === true
+            );
+            setLocked(isLocked);
+            localStorage.setItem("data_locked", String(isLocked));
+            if (isLocked) {
+              setIsEditPribadi(false);
+              setIsEditKontak(false);
+              setIsEditDokumen(false);
+            }
+          } else {
+            console.error("Gagal mengambil status lock data.");
           }
+        } catch (err) {
+          console.error("Kesalahan saat mengambil status lock:", err);
         }
-      } catch (err) {
-        console.error("❌ Gagal mengambil data:", err);
-      } finally {
-        setLoading(false);
-      }
+      };
+
+      const fetchAllData = async (user: any) => {
+        try {
+          setLoading(true);
+          await fetchLockStatus();
+
+          // Fetch type 1 (Pribadi)
+          const res1 = await fetch(`${API_URL}/admissiondata/1`, {
+            credentials: "include",
+            headers: getAuthHeaders(),
+          });
+          if (res1.ok) {
+            const json = await res1.json();
+            const d = json.data || {};
+            setPribadi(mapApiToPribadi(d, user));
+          } else {
+            setPribadi(mapApiToPribadi({}, user));
+          }
+
+          // Fetch type 2 (Kontak)
+          const res2 = await fetch(`${API_URL}/admissiondata/2`, {
+            credentials: "include",
+            headers: getAuthHeaders(),
+          });
+          if (res2.ok) {
+            const json = await res2.json();
+            const d = json.data || {};
+            setKontak(mapApiToKontak(d, user));
+          } else {
+            setKontak(mapApiToKontak({}, user));
+          }
+
+          // Fetch type 3 (Dokumen)
+          const res3 = await fetch(`${API_URL}/admissiondata/3`, {
+            credentials: "include",
+            headers: getAuthHeaders(),
+          });
+          if (res3.ok) {
+            const json = await res3.json();
+            const raw = json.data || {};
+            // Normalize common API field name variants → kk_file / ktp_file
+            if (!raw.kk_file) {
+              raw.kk_file =
+                raw.kkFile || raw.kkFileUrl || raw.kk_url ||
+                raw.kkUrl || raw.kartuKeluarga || "";
+            }
+            if (!raw.ktp_file) {
+              raw.ktp_file =
+                raw.ktpFile || raw.ktpFileUrl || raw.ktp_url ||
+                raw.ktpUrl || raw.kartaTandaPenduduk || "";
+            }
+            setDokumen(raw);
+          }
+        } catch (err) {
+          console.error("❌ Gagal mengambil data:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchAllData(userSession);
     };
 
-    fetchAllData();
-  }, [API_URL, token]);
+    checkSessionAndFetch();
+  }, [API_URL]);
 
   const triggerFileInput = () => fileInputRef.current?.click();
 
@@ -125,42 +253,99 @@ export default function DataDiriPage() {
     
     try {
       setSaving(true);
-      const formData = new FormData();
 
-      Object.entries(data).forEach(([k, v]) => {
-        if (v instanceof File) {
-          formData.append(k, v);
-        } else {
-          if (v !== null && v !== undefined) {
-             formData.append(k, v);
+      // Map UI labels → backend field names
+      let apiData: Record<string, any> = data;
+      if (type === 1) apiData = mapPribadiToApi(data);
+      if (type === 2) apiData = mapKontakToApi(data);
+
+      let res: Response;
+
+      if (type === 3) {
+        // Type 3 has file uploads → use FormData
+        const formData = new FormData();
+        Object.entries(apiData).forEach(([k, v]) => {
+          if (v instanceof File) {
+            formData.append(k, v);
+          } else if (v !== null && v !== undefined && v !== "") {
+            formData.append(k, String(v));
           }
-        }
-      });
-      
-      const res = await fetch(`${API_URL}/admissiondata/${type}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+        });
+        res = await fetch(`${API_URL}/admissiondata/${type}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: getAuthHeaders(),
+          body: formData,
+        });
+      } else {
+        // Types 1 & 2 are plain data → send JSON
+        // Remove empty values
+        const cleanData = Object.fromEntries(
+          Object.entries(apiData).filter(([, v]) => v !== null && v !== undefined && v !== "")
+        );
+        res = await fetch(`${API_URL}/admissiondata/${type}`, {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeaders(),
+          },
+          body: JSON.stringify(cleanData),
+        });
+      }
 
       if (res.ok) {
         alert("✅ Data berhasil disimpan!");
         onSuccess();
         if (type === 3) {
             const resData = await fetch(`${API_URL}/admissiondata/${type}`, {
-                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include",
+                headers: getAuthHeaders(),
             });
             if (resData.ok) {
                 const json = await resData.json();
-                setDokumen(json.data || {});
+                const raw = json.data || {};
+                // Normalize common API field name variants → kk_file / ktp_file
+                const normalized: Record<string, any> = { ...raw };
+                if (!normalized.kk_file) {
+                    normalized.kk_file =
+                        raw.kkFile || raw.kkFileUrl || raw.kk_url ||
+                        raw.kkUrl || raw.kartuKeluarga || "";
+                }
+                if (!normalized.ktp_file) {
+                    normalized.ktp_file =
+                        raw.ktpFile || raw.ktpFileUrl || raw.ktp_url ||
+                        raw.ktpUrl || raw.kartaTandaPenduduk || "";
+                }
+                // Merge with current state: keep File objects if API didn't return a URL
+                setDokumen((prev) => ({
+                    ...normalized,
+                    kk_file:  normalized.kk_file  || prev.kk_file,
+                    ktp_file: normalized.ktp_file || prev.ktp_file,
+                }));
+            } else {
+                // Re-fetch failed — preserve current state so status stays correct
+                setDokumen((prev) => ({ ...prev }));
             }
         }
       } else {
-        alert("❌ Gagal menyimpan data.");
+        const errorText = await res.text();
+        console.error("Backend Error:", errorText);
+        
+        // Handle case where backend locks the data but frontend missed it
+        if (errorText.toLowerCase().includes("personal data is locked")) {
+          alert("❌ Data Anda telah dikunci secara permanen dan tidak dapat diubah lagi.");
+          setLocked(true);
+          setIsEditPribadi(false);
+          setIsEditKontak(false);
+          setIsEditDokumen(false);
+        } else {
+          alert(`❌ Gagal menyimpan data.\nError: ${errorText.substring(0, 100)}`);
+        }
       }
     } catch (err) {
       console.error(err);
-      alert("❌ Kesalahan server.");
+      alert("❌ Kesalahan server saat menyimpan data.");
     } finally {
       setSaving(false);
     }
@@ -172,13 +357,35 @@ export default function DataDiriPage() {
       return;
     }
 
+    // Validate personal + contact data completeness
+    const isPribadiLengkap = Object.values(pribadi).every((v) => v !== "" && v !== null && v !== undefined);
+    const isKontakLengkap = Object.values(kontak).every((v) => v !== "" && v !== null && v !== undefined);
+
+    // Dokumen: accept either a File object (newly selected) or a truthy string (URL from API meaning already uploaded)
+    const kkOk  = (dokumen.kk_file instanceof File)  || (typeof dokumen.kk_file  === "string" && dokumen.kk_file  !== "")
+                || (dokumen.kk_url  && dokumen.kk_url  !== "");
+    const ktpOk = (dokumen.ktp_file instanceof File) || (typeof dokumen.ktp_file === "string" && dokumen.ktp_file !== "")
+                || (dokumen.ktp_url && dokumen.ktp_url !== "");
+    const isDokumenLengkap = kkOk && ktpOk;
+
+    const missingParts: string[] = [];
+    if (!isPribadiLengkap) missingParts.push("Data Pribadi");
+    if (!isKontakLengkap)  missingParts.push("Data Kontak");
+    if (!isDokumenLengkap) missingParts.push("Dokumen (KK & KTP)");
+
+    if (missingParts.length > 0) {
+      alert(`Data belum lengkap! Harap lengkapi: ${missingParts.join(", ")} sebelum mengunci data.`);
+      return;
+    }
+
     if (!confirm("Setelah dikunci, data tidak bisa diubah. Yakin?")) return;
 
     try {
       setSaving(true);
       const res = await fetch(`${API_URL}/admissiondata/lock`, {
         method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+        headers: getAuthHeaders(),
       });
 
       if (res.ok) {
@@ -189,7 +396,12 @@ export default function DataDiriPage() {
         setIsEditKontak(false);
         setIsEditDokumen(false);
       } else {
-        alert("❌ Gagal mengunci data. Pastikan semua data sudah terisi lengkap.");
+        let errMsg = "Gagal mengunci data.";
+        try {
+          const errBody = await res.json();
+          errMsg = errBody.message || errBody.error || JSON.stringify(errBody);
+        } catch {}
+        alert(`❌ ${errMsg}`);
       }
     } catch (err) {
       console.error(err);
@@ -301,6 +513,7 @@ export default function DataDiriPage() {
                     <div key={k} className="space-y-2">
                         <Label>{k}</Label>
                         <Input
+                        type={k === "Tanggal Lahir" ? "date" : "text"}
                         value={safeVal(v)}
                         disabled={!isEditPribadi || locked}
                         onChange={(e) =>
@@ -400,7 +613,12 @@ export default function DataDiriPage() {
                         }
                     />
                     <p className="text-xs text-muted-foreground">
-                        Status: {dokumen.kk_file ? "Sudah diunggah" : "Belum diunggah"}
+                        Status:{" "}
+                        {(dokumen.kk_file instanceof File) ||
+                         (typeof dokumen.kk_file === "string" && dokumen.kk_file !== "") ||
+                         (dokumen.kk_url && dokumen.kk_url !== "")
+                          ? <span className="text-green-600 font-medium">Sudah diunggah</span>
+                          : <span className="text-red-500">Belum diunggah</span>}
                     </p>
                     </div>
                     <div className="space-y-2">
@@ -418,7 +636,12 @@ export default function DataDiriPage() {
                         }
                     />
                     <p className="text-xs text-muted-foreground">
-                        Status: {dokumen.ktp_file ? "Sudah diunggah" : "Belum diunggah"}
+                        Status:{" "}
+                        {(dokumen.ktp_file instanceof File) ||
+                         (typeof dokumen.ktp_file === "string" && dokumen.ktp_file !== "") ||
+                         (dokumen.ktp_url && dokumen.ktp_url !== "")
+                          ? <span className="text-green-600 font-medium">Sudah diunggah</span>
+                          : <span className="text-red-500">Belum diunggah</span>}
                     </p>
                     </div>
                 </div>

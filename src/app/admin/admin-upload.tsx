@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Upload, FileText, Trash2, RefreshCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { AppLayout } from "@/components/ui/app-layout"
 
 // 🧩 Sidebar Items (reuse dari semua halaman admin)
 const adminSidebarItems = [
@@ -46,11 +45,7 @@ export default function AdminUploadPage() {
   }
 
   return (
-    <AppLayout
-      sidebarItems={adminSidebarItems}
-      title="Upload Data Pendaftaran"
-      subtitle="Unggah file Excel atau CSV untuk data calon mahasiswa"
-    >
+    <>
       <Card className="p-6 shadow-sm border rounded-lg space-y-6">
         {/* Upload area */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -113,6 +108,6 @@ export default function AdminUploadPage() {
           )}
         </div>
       </Card>
-    </AppLayout>
+    </>
   )
 }

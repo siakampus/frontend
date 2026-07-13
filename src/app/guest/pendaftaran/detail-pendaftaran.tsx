@@ -86,7 +86,7 @@ export default function DetailPendaftaranPage() {
                 alert(`Pendaftaran ke jalur ${pathDetail.name} berhasil! Silakan lanjutkan ke proses berikutnya.`);
                 
                 // Redirect ke halaman detail proses/stepper pendaftaran
-                navigate(`/pendaftaran/detail-proses/${id}`); 
+                navigate(`/pendaftaran/sarjana-2025`); 
             } else if (response.status === 401) {
                 // Handle Unauthorized
                 alert("Sesi berakhir atau token tidak valid. Silakan login kembali.");

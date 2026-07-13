@@ -18,11 +18,17 @@ interface AppSidebarProps {
 
 export function AppSidebar({
   items,
-  title = "Ujian Masuk UGN",
+  title = "UNIVERSITAS GLOBAL NUSANTARA ",
   logo = "/favicon.png",
 }: AppSidebarProps) {
   const location = useLocation()
-  const isActive = (path: string) => location.pathname.startsWith(path)
+  const isActive = (path: string) => {
+    // Exact match for index-like paths to avoid /admin matching /admin/users etc.
+    if (path === location.pathname) return true;
+    // Prefix match only when path is not a bare segment (has a sub-path)
+    if (path.split("/").length > 2) return location.pathname.startsWith(path);
+    return false;
+  }
 
   return (
     <aside className="w-64 bg-gray-100 border-r flex flex-col sticky top-0 h-screen overflow-y-auto">
@@ -55,10 +61,24 @@ export function AppSidebar({
           <hr className="my-4" />
 
           <button
-            onClick={() => {
-              if (confirm("Apakah Anda yakin ingin logout?")) {
-                localStorage.removeItem("token")
-                window.location.href = "/login"
+            onClick={async () => {
+              if (!confirm("Apakah Anda yakin ingin logout?")) return;
+              try {
+                const token = localStorage.getItem("token");
+                // Invalidate the server-side session + cookie
+                await fetch("/api/auth/sign-out", {
+                  method: "POST",
+                  credentials: "include",
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+                  },
+                });
+              } catch (_) {
+                // silently ignore network errors — still logout locally
+              } finally {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
               }
             }}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-primary/10 cursor-pointer text-left"

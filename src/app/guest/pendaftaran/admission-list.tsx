@@ -163,7 +163,17 @@ export function AdmissionsPage() {
       }
 
       const data = await res.json();
-      return Boolean(data?.isPersonalDataLocked);
+      return typeof data === "boolean" ? data : Boolean(
+        data === true ||
+        data?.isLocked === true ||
+        data?.isPersonalDataLocked === true || 
+        data?.locked === true || 
+        data?.data?.isLocked === true ||
+        data?.data?.isPersonalDataLocked === true || 
+        data?.data?.locked === true ||
+        data?.status === "LOCKED" ||
+        data?.data === true
+      );
     };
 
     const fetchActivePaths = async () => {

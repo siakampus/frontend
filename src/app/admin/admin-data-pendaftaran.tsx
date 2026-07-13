@@ -1,295 +1,281 @@
-import { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { adminRegistrationsApi, adminUsersApi } from "@/lib/api"
 import {
-  Plus,
-  Pencil,
-  Trash2,
   Eye,
   Search,
+  RefreshCw,
+  Lock,
+  Unlock,
+  CheckCircle,
   X,
-  Save,
-  RefreshCcw,
 } from "lucide-react"
-import { AppLayout } from "@/components/ui/app-layout"
+import { useNavigate } from "react-router-dom"
 
-type Registration = {
-  id: number | null
-  name: string
-  email: string
-  program: string
+interface Registration {
+  id: string
+  userId: string
   status: string
-  registeredAt: string
+  isLocked: boolean
+  isPersonalDataLocked: boolean
+  isValidated: boolean
+  user?: {
+    email?: string
+    name?: string
+  }
+  registrationData?: {
+    fullName?: string
+    program?: string
+    faculty?: string
+  }
 }
 
-const dummyRegistrations: Registration[] = [
-  {
-    id: 1,
-    name: "Hassan Aldhi",
-    email: "hassan@example.com",
-    program: "Sarjana Informatika",
-    status: "Menunggu",
-    registeredAt: "2025-07-18",
-  },
-  {
-    id: 2,
-    name: "Sumbuludun",
-    email: "sumbul@example.com",
-    program: "Magister Manajemen",
-    status: "Diterima",
-    registeredAt: "2025-07-10",
-  },
-]
+const STATUS_STYLE: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-700",
+  submitted: "bg-blue-100 text-blue-700",
+  validated: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-700",
+}
 
 export default function AdminRegistrationsPage() {
-  const [registrations, setRegistrations] =
-    useState<Registration[]>(dummyRegistrations)
+  const [registrations, setRegistrations] = useState<Registration[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState<Partial<Registration>>({
-    id: null,
-    name: "",
-    email: "",
-    program: "",
-    status: "Menunggu",
-  })
+  const [actionMsg, setActionMsg] = useState("")
+  const [selected, setSelected] = useState<Registration | null>(null)
+  const navigate = useNavigate()
 
-  const filtered = registrations.filter(
-    (r) =>
-      r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.email.toLowerCase().includes(search.toLowerCase()) ||
-      r.program.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const handleSave = () => {
-    if (!formData.name || !formData.email || !formData.program) {
-      alert("Mohon lengkapi semua data!")
-      return
+  const fetchRegistrations = async () => {
+    setLoading(true)
+    const res = await adminRegistrationsApi.list(search ? { search } : undefined)
+    if (res.status === 401) { navigate("/login"); return }
+    
+    let fetchedRegs: Registration[] = []
+    if (res.ok && res.data) {
+      const body = res.data as { data?: Registration[]; registrations?: Registration[] }
+      fetchedRegs = body.data || (body.registrations as Registration[]) || (res.data as unknown as Registration[]) || []
     }
 
-    const updated: Registration = {
-      id: formData.id ?? Date.now(),
-      name: formData.name!,
-      email: formData.email!,
-      program: formData.program!,
-      status: formData.status || "Menunggu",
-      registeredAt:
-        formData.registeredAt ?? new Date().toISOString().split("T")[0],
+    try {
+      // Ambil daftar pengguna untuk mencocokkan email dan nama
+      const usersRes = await adminUsersApi.list({ take: 1000 })
+      if (usersRes.ok && usersRes.data) {
+        const usersBody = usersRes.data as any
+        const usersList = usersBody.data || usersBody.users || usersBody || []
+        
+        const userMap = new Map<string, any>()
+        usersList.forEach((u: any) => userMap.set(u.id, u))
+
+        fetchedRegs = fetchedRegs.map(reg => {
+          if (!reg.user || (!reg.user.email && !reg.user.name)) {
+            const foundUser = userMap.get(reg.userId)
+            if (foundUser) {
+              return {
+                ...reg,
+                user: {
+                  email: foundUser.email,
+                  name: foundUser.name,
+                }
+              }
+            }
+          }
+          return reg
+        })
+      }
+    } catch (err) {
+      console.error("Gagal melakukan mapping data user", err)
     }
 
-    if (formData.id) {
-      setRegistrations((prev) =>
-        prev.map((r) => (r.id === formData.id ? updated : r))
-      )
-    } else {
-      setRegistrations((prev) => [...prev, updated])
-    }
-
-    setShowForm(false)
-    setFormData({
-      id: null,
-      name: "",
-      email: "",
-      program: "",
-      status: "Menunggu",
-    })
+    setRegistrations(fetchedRegs)
+    setLoading(false)
   }
 
-  const handleEdit = (entry: Registration) => {
-    setFormData(entry)
-    setShowForm(true)
+  useEffect(() => { fetchRegistrations() }, [])
+
+  const notify = (msg: string) => {
+    setActionMsg(msg)
+    setTimeout(() => setActionMsg(""), 3000)
   }
 
-  const handleDelete = (id: number | null) => {
-    if (id === null) return
-    if (confirm("Yakin ingin menghapus pendaftaran ini?")) {
-      setRegistrations((prev) => prev.filter((r) => r.id !== id))
-    }
+  const handleValidate = async (userId: string) => {
+    if (!confirm("Validasi pendaftaran ini?")) return
+    const res = await adminRegistrationsApi.validate([userId])
+    notify(res.ok ? "✅ Pendaftaran berhasil divalidasi." : "❌ Gagal memvalidasi.")
+    fetchRegistrations()
+  }
+
+  const handleUnlockRegistration = async (userId: string) => {
+    const res = await adminRegistrationsApi.unlockRegistration(userId)
+    notify(res.ok ? "✅ Kunci pendaftaran dibuka." : "❌ Gagal membuka kunci.")
+    fetchRegistrations()
+  }
+
+  const handleUnlockPersonalData = async (userId: string) => {
+    const res = await adminRegistrationsApi.unlockPersonalData(userId)
+    notify(res.ok ? "✅ Kunci data pribadi dibuka." : "❌ Gagal membuka kunci data pribadi.")
+    fetchRegistrations()
   }
 
   return (
-    <AppLayout
-      menuTemplate="admin"
-      title="Data Pendaftaran"
-      subtitle="Kelola daftar calon mahasiswa"
-    >
-      <Card className="p-6 shadow-sm border rounded-lg">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div className="relative w-full md:w-1/3">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+    <div className="space-y-6">
+      {/* Toolbar */}
+      <Card className="shadow-sm border rounded-lg">
+        <CardContent className="p-4 flex flex-wrap gap-3 items-center">
+          <div className="relative flex-1 min-w-48">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Cari nama, email, atau program..."
+              placeholder="Cari email atau nama pendaftar..."
+              className="pl-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              onKeyDown={(e) => e.key === "Enter" && fetchRegistrations()}
             />
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={() => setShowForm(true)}
-              className="flex items-center gap-1"
-            >
-              <Plus className="h-4 w-4" /> Tambah
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => alert("Data di-refresh (dummy only).")}
-              className="flex items-center gap-1"
-            >
-              <RefreshCcw className="h-4 w-4" /> Refresh
-            </Button>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50 text-left">
-                <th className="p-3 font-semibold">Nama</th>
-                <th className="p-3 font-semibold">Email</th>
-                <th className="p-3 font-semibold">Program</th>
-                <th className="p-3 font-semibold">Status</th>
-                <th className="p-3 font-semibold">Tanggal Daftar</th>
-                <th className="p-3 text-right font-semibold">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((r) => (
-                <tr
-                  key={r.id ?? Math.random()}
-                  className="border-b hover:bg-gray-50 transition text-sm"
-                >
-                  <td className="p-3 font-medium">{r.name}</td>
-                  <td className="p-3">{r.email}</td>
-                  <td className="p-3">{r.program}</td>
-                  <td className="p-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        r.status === "Diterima"
-                          ? "bg-green-100 text-green-700"
-                          : r.status === "Ditolak"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="p-3">{r.registeredAt}</td>
-                  <td className="p-3 text-right flex justify-end gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => alert(`Detail: ${r.name}`)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(r)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-red-600 border-red-300 hover:bg-red-50"
-                      onClick={() => handleDelete(r.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-
-              {filtered.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="p-6 text-center text-muted-foreground"
-                  >
-                    Tidak ada data ditemukan.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+          <Button onClick={fetchRegistrations} variant="outline" className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" /> Refresh
+          </Button>
+        </CardContent>
       </Card>
 
-      {showForm && (
+      {actionMsg && (
+        <div className="text-sm font-medium px-4 py-3 rounded-lg bg-primary/10 text-primary border border-primary/20">
+          {actionMsg}
+        </div>
+      )}
+
+      <Card className="shadow-sm border rounded-lg overflow-hidden">
+        <CardHeader className="border-b bg-muted/10 pb-4">
+          <CardTitle className="text-lg flex items-center gap-2 font-serif text-primary">
+            Data Pendaftaran ({registrations.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="flex items-center justify-center py-16 text-muted-foreground">
+              <RefreshCw className="animate-spin h-5 w-5 mr-2" /> Memuat data...
+            </div>
+          ) : registrations.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground text-sm">
+              Tidak ada data pendaftaran.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/20 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Pendaftar</th>
+                    <th className="px-4 py-3 text-left">Program</th>
+                    <th className="px-4 py-3 text-left">Status</th>
+                    <th className="px-4 py-3 text-left">Dikunci</th>
+                    <th className="px-4 py-3 text-left">Tervalidasi</th>
+                    <th className="px-4 py-3 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {registrations.map((r) => (
+                    <tr key={r.id} className="hover:bg-muted/10 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900">
+                          {r.registrationData?.fullName || r.user?.name || "—"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{r.user?.email}</div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {r.registrationData?.faculty && r.registrationData?.program
+                          ? `${r.registrationData.faculty} / ${r.registrationData.program}`
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLE[r.status] || "bg-gray-100 text-gray-600"}`}>
+                          {r.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={r.isLocked ? "default" : "outline"} className="text-xs">
+                          {r.isLocked ? "Terkunci" : "Terbuka"}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant={r.isValidated ? "default" : "outline"} className="text-xs">
+                          {r.isValidated ? "✓ Valid" : "Belum"}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            title="Lihat Detail"
+                            onClick={() => setSelected(r)}
+                            className="p-1.5 rounded hover:bg-primary/10 text-primary transition-colors"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          {!r.isValidated && (
+                            <button
+                              title="Validasi"
+                              onClick={() => handleValidate(r.userId)}
+                              className="p-1.5 rounded hover:bg-green-50 text-green-600 transition-colors"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                          )}
+                          {r.isLocked && (
+                            <button
+                              title="Buka Kunci Pendaftaran"
+                              onClick={() => handleUnlockRegistration(r.userId)}
+                              className="p-1.5 rounded hover:bg-amber-50 text-amber-600 transition-colors"
+                            >
+                              <Unlock className="h-4 w-4" />
+                            </button>
+                          )}
+                          {r.isPersonalDataLocked && (
+                            <button
+                              title="Buka Kunci Data Pribadi"
+                              onClick={() => handleUnlockPersonalData(r.userId)}
+                              className="p-1.5 rounded hover:bg-blue-50 text-blue-600 transition-colors"
+                            >
+                              <Lock className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Detail Modal */}
+      {selected && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl border space-y-4">
             <div className="flex justify-between items-center border-b pb-3">
-              <h2 className="font-bold text-lg">
-                {formData.id ? "Edit Data Pendaftar" : "Tambah Pendaftar Baru"}
-              </h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowForm(false)}
-              >
+              <h2 className="font-bold text-lg">Detail Pendaftaran</h2>
+              <Button variant="ghost" size="icon" onClick={() => setSelected(null)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm font-medium">Nama Lengkap</label>
-                <Input
-                  value={formData.name || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Email</label>
-                <Input
-                  value={formData.email || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Program Studi</label>
-                <Input
-                  value={formData.program || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, program: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Status</label>
-                <select
-                  className="border rounded-md w-full h-9 px-2"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value })
-                  }
-                >
-                  <option>Menunggu</option>
-                  <option>Diterima</option>
-                  <option>Ditolak</option>
-                </select>
-              </div>
+            <div className="space-y-2 text-sm">
+              <div><span className="text-muted-foreground">Email:</span> {selected.user?.email || "—"}</div>
+              <div><span className="text-muted-foreground">Nama:</span> {selected.registrationData?.fullName || selected.user?.name || "—"}</div>
+              <div><span className="text-muted-foreground">Fakultas:</span> {selected.registrationData?.faculty || "—"}</div>
+              <div><span className="text-muted-foreground">Program:</span> {selected.registrationData?.program || "—"}</div>
+              <div><span className="text-muted-foreground">Status:</span> {selected.status}</div>
+              <div><span className="text-muted-foreground">Dikunci:</span> {selected.isLocked ? "Ya" : "Tidak"}</div>
+              <div><span className="text-muted-foreground">Data Pribadi Dikunci:</span> {selected.isPersonalDataLocked ? "Ya" : "Tidak"}</div>
+              <div><span className="text-muted-foreground">Tervalidasi:</span> {selected.isValidated ? "Ya" : "Tidak"}</div>
             </div>
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setShowForm(false)}>
-                Batal
-              </Button>
-              <Button onClick={handleSave} className="flex items-center gap-2">
-                <Save className="h-4 w-4" /> Simpan
-              </Button>
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={() => setSelected(null)}>Tutup</Button>
             </div>
           </div>
         </div>
       )}
-    </AppLayout>
+    </div>
   )
 }

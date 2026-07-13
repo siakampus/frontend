@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { GraduationCap, LogIn, CheckCircle, XCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import Turnstile from "react-turnstile"
+import { getRedirectPathByRole } from "@/lib/redirectByRole"
 
 // ✅ Alert reusable component
 function AlertBox({
@@ -52,7 +53,10 @@ export default function LoginAkunBaru({
   // 👉 Redirect user kalau sudah login (token sudah ada)
   useEffect(() => {
     const token = localStorage.getItem("token")
-    if (token) navigate("/data-diri")
+    if (token) {
+      const role = localStorage.getItem("userRole")
+      navigate(getRedirectPathByRole(role))
+    }
   }, [navigate])
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -62,37 +66,80 @@ export default function LoginAkunBaru({
     setSuccessMessage("")
 
     try {
-      const res = await fetch(
-        `/api/auth/sign-in/email`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      )
+      // BetterAuth sign-in — uses session cookies, not bearer tokens
+      const res = await fetch("/api/auth/sign-in/email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-better-auth-version": "1",
+        },
+        credentials: "include", // IMPORTANT: store the session cookie
+        body: JSON.stringify({ email, password }),
+      })
 
       const data = await res.json().catch(() => ({}))
       console.log("🔍 Login response:", JSON.stringify(data, null, 2))
 
       if (res.ok) {
-        const token = data.token || data.accessToken || data.access_token
-
-        if (!token) {
-          console.error("⚠️ No token found in response:", data)
-          setErrorMessage("Login berhasil tetapi token tidak ditemukan. Hubungi admin.")
-          return
+        // Save token for custom API usage
+        if (data.token) {
+          localStorage.setItem("token", data.token)
         }
 
-        setSuccessMessage("✅ Login berhasil! Mengarahkan ke halaman berikutnya...")
-        localStorage.setItem("token", token)
-        localStorage.setItem("userEmail", data.user?.email || data.email || "")
-        localStorage.setItem("userRole", data.user?.role || data.role || "")
+        // Fetch session to get the fully populated user object including role
+        let role = data.user?.role || ""
+        
+        try {
+          // Attempt 1: BetterAuth get-session using cookie and token
+          const sessionRes = await fetch("/api/auth/get-session", {
+            credentials: "include",
+            headers: data.token ? { "Authorization": `Bearer ${data.token}` } : {}
+          })
+          if (sessionRes.ok) {
+            const sessionData = await sessionRes.json()
+            if (sessionData?.user?.role) {
+              role = sessionData.user.role
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch role from get-session", err)
+        }
 
+        if (!role || role === "guest") {
+          try {
+            // Attempt 2: Custom backend profile endpoint
+            const profileRes = await fetch("/auth/profile", {
+              credentials: "include",
+              headers: data.token ? { "Authorization": `Bearer ${data.token}` } : {}
+            })
+            if (profileRes.ok) {
+              const profileData = await profileRes.json()
+              if (profileData?.data?.role) {
+                role = profileData.data.role
+              }
+            }
+          } catch (err) {
+            console.error("Failed to fetch role from profile", err)
+          }
+        }
+
+        console.log("🚀 Resolved Role:", role)
+
+        localStorage.setItem("userEmail", data.user?.email || email)
+        localStorage.setItem("userRole", role)
+
+        const redirectPath = getRedirectPathByRole(role)
+        setSuccessMessage("✅ Login berhasil! Mengarahkan ke " + redirectPath)
         setTimeout(() => {
-          navigate("/data-diri")
+          navigate(redirectPath)
         }, 1000)
       } else {
-        setErrorMessage(data.message || "❌ Email atau password salah.")
+        // BetterAuth errors: { error: { message } } or { message }
+        const errMsg =
+          data?.error?.message ||
+          data?.message ||
+          "❌ Email atau password salah."
+        setErrorMessage(errMsg)
       }
     } catch (err) {
       console.error(err)

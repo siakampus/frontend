@@ -1,14 +1,20 @@
 import type { ReactNode } from "react"
 import { AppSidebar, type SidebarItem } from "./app-sidebar" 
 import { AppHeader } from "./app-header"
-import { Home, GraduationCap } from "lucide-react"; 
+import { Home, GraduationCap, BookOpen, User, FileText, Users, CreditCard, Settings } from "lucide-react";
+import FloatingChat from "./floating-chat";
 
 
 export const ADMISI_MENU: SidebarItem[] = [
   { 
+    label: "Dashboard", 
+    to: "/guest/dashboard", 
+    icon: <Home className="h-4 w-4" /> 
+  },
+  { 
     label: "Data Diri", 
     to: "/data-diri", 
-    icon: <Home className="h-4 w-4" /> 
+    icon: <User className="h-4 w-4" /> 
   },
   { 
     label: "Pendaftaran", 
@@ -17,22 +23,90 @@ export const ADMISI_MENU: SidebarItem[] = [
   },
 ];
 
+export const STUDENT_MENU: SidebarItem[] = [
+  { label: "Dashboard", to: "/dashboard", icon: <Home className="h-4 w-4" /> },
+  { label: "Profile",   to: "/profile",   icon: <User className="h-4 w-4" /> },
+  { label: "Mata Kuliah", to: "/courses", icon: <BookOpen className="h-4 w-4" /> },
+];
+
 export const ADMIN_MENU: SidebarItem[] = [
   { 
-    label: "Pengaturan Pendaftaran", 
-    to: "/admin/settings", 
+    label: "Dashboard Admin", 
+    to: "/admin", 
+    icon: <Home className="h-4 w-4" /> 
+  },
+  { 
+    label: "Manajemen Pendaftaran", 
+    to: "/admin/pendaftaran", 
     icon: <GraduationCap className="h-4 w-4" /> 
+  },
+  { 
+    label: "Pengaturan Program", 
+    to: "/admin/programs", 
+    icon: <GraduationCap className="h-4 w-4" /> 
+  },
+  { 
+    label: "Manajemen Pengguna", 
+    to: "/admin/users", 
+    icon: <Users className="h-4 w-4" /> 
+  },
+  { 
+    label: "Manajemen Dosen", 
+    to: "/admin/lecturers", 
+    icon: <GraduationCap className="h-4 w-4" /> 
+  },
+  { 
+    label: "Manajemen Kelas", 
+    to: "/admin/lectures", 
+    icon: <BookOpen className="h-4 w-4" /> 
+  },
+  { 
+    label: "Pembayaran", 
+    to: "/admin/payments", 
+    icon: <CreditCard className="h-4 w-4" /> 
+  },
+  { 
+    label: "Konfigurasi Pendaftaran", 
+    to: "/admin/registration/config", 
+    icon: <FileText className="h-4 w-4" /> 
+  },
+  { 
+    label: "Pengaturan Sistem", 
+    to: "/admin/settings", 
+    icon: <Settings className="h-4 w-4" /> 
   },
 ];
 
-export type MenuTemplateType = "admisi" | "admin"; 
+export const LECTURER_MENU: SidebarItem[] = [
+  { 
+    label: "Dashboard Dosen", 
+    to: "/lecturer", 
+    icon: <Home className="h-4 w-4" /> 
+  },
+  { 
+    label: "Manajemen Mata Kuliah", 
+    to: "/lecturer/courses", 
+    icon: <BookOpen className="h-4 w-4" /> 
+  },
+  { 
+    label: "Manajemen Tugas", 
+    to: "/lecturer/assignments", 
+    icon: <FileText className="h-4 w-4" /> 
+  },
+];
+
+export type MenuTemplateType = "admisi" | "admin" | "student" | "lecturer"; 
 
 export const getSidebarItems = (template: MenuTemplateType): SidebarItem[] => {
   switch (template) {
     case "admisi":
-      return ADMISI_MENU; // Menggunakan ADMISI_MENU yang sudah lengkap
+      return ADMISI_MENU;
+    case "student":
+      return STUDENT_MENU;
     case "admin":
       return ADMIN_MENU;
+    case "lecturer":
+      return LECTURER_MENU;
     default:
       return [];
   }
@@ -75,6 +149,9 @@ export function AppLayout({
           {children}
         </main>
       </div>
+
+      {/* Floating chatbot — only on student pages */}
+      {menuTemplate === "student" && <FloatingChat />}
     </div>
   )
 }

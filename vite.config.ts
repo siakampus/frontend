@@ -14,31 +14,59 @@ export default defineConfig({
   server: {
     proxy: {
       "/auth": {
-        target: "http://192.168.100.22:8000",
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
       "/admissiondata": {
-        target: "http://192.168.100.22:8000",
-        changeOrigin: true,
-      },
-      "/admin": {
-        target: "http://192.168.100.22:8000",
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
       "/user": {
-        target: "http://192.168.100.22:8000",
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
       "/admission-paths": {
-        target: "http://192.168.100.22:8000",
+        target: "http://localhost:8000",
+        changeOrigin: true,
+      },
+      "/courses": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+      },
+      "/assignments": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+      },
+      "/chat": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+      },
+      "/lecturer": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        bypass(req) {
+          // Browser page navigation → let React Router handle it
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        },
+      },
+      "/admin": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        bypass(req) {
+          // Browser page navigation → let React Router handle it
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        },
+      },
+      "/api/auth": {
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
       "/api": {
-        target: "http://192.168.100.22:8000",
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
       "/health": {
-        target: "http://192.168.100.22:8000",
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
     },

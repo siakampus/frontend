@@ -176,7 +176,7 @@ export function SignUpForm() {
     }
   }
 
-  // 👉 Register API (kirim semua field sesuai schema)
+  // 👉 Register API — two-step: BetterAuth sign-up, then save extra fields
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setRegisterMessage("")
@@ -195,50 +195,79 @@ export function SignUpForm() {
       setLoading(true)
       setRegisterMessage("⏳ Mengirim data pendaftaran...")
 
-      const payload = {
-        email,
-        token,
-        password,
-        confirmPassword,
-        nationality,
-        nik,
-        fullName,
-        academicTitle,
-        lastDiplomaName,
-        placeOfBirth,
-        dateOfBirth,
-        gender,
-        motherName,
-        phoneNumber,
-        whatsappNumber,
-        telegramNumber,
-        telegramUsername,
-        lineNumber,
-        lineId,
-        checkDisclaimer,
-      }
+      // ── Step 1: Register with BetterAuth ────────────────────────────────────
+      // BetterAuth /sign-up/email only accepts name, email, password, confirmPassword.
+      // All extra fields are saved in step 2 below.
+      const signUpRes = await fetch("/api/auth/sign-up/email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-better-auth-version": "1",
+        },
+        credentials: "include",   // IMPORTANT: lets the session cookie be stored
+        body: JSON.stringify({
+          email,
+          name: fullName || email, // BetterAuth requires `name`
+          password,
+          confirmPassword,
+        }),
+      })
 
-      const res = await fetch(
-        `/auth/register`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      )
+      const signUpData = await signUpRes.json().catch(() => ({}))
 
-      const data = await res.json().catch(() => ({}))
-
-      if (res.status === 201) {
-        localStorage.removeItem("token")
-        setRegisterMessage("✅ User registered successfully")
-        alert("✅ Akun berhasil dibuat! Silakan login dengan akun baru Anda.")
-        window.location.href = "/pendaftaran/berhasil/login"
+      if (!signUpRes.ok) {
+        // BetterAuth errors may come as { error: { message: "..." } } or { message: "..." }
+        const errMsg =
+          signUpData?.error?.message ||
+          signUpData?.message ||
+          "Gagal mendaftar."
+        setRegisterMessage(`❌ ${errMsg}`)
         return
-      }else {
-        // jika backend kirim { message: "..." } tampilkan, kalau gak ada tampil generik
-        setRegisterMessage(`❌ ${data.message || "Gagal mendaftar."}`)
       }
+
+      // ── Step 2: Save extra registration fields ───────────────────────────────
+      // The session cookie from step 1 (autoSignIn: true) authenticates this call.
+      setRegisterMessage("⏳ Menyimpan data registrasi...")
+
+      const saveRes = await fetch("/auth/save-registration-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",   // send the session cookie
+        body: JSON.stringify({
+          nationality,
+          nik,
+          fullName,
+          academicTitle,
+          lastDiplomaName,
+          placeOfBirth,
+          dateOfBirth,
+          gender,
+          motherName,
+          phoneNumber,
+          whatsappNumber,
+          telegramNumber,
+          telegramUsername,
+          lineNumber,
+          lineId,
+          checkDisclaimer,
+        }),
+      })
+
+      const saveData = await saveRes.json().catch(() => ({}))
+
+      if (!saveRes.ok) {
+        // Account was created but extra data failed — still let the user in,
+        // but warn them so they can update their profile later.
+        console.warn("Registration data save failed:", saveData)
+        setRegisterMessage(
+          "⚠️ Akun berhasil dibuat, tetapi data tambahan gagal disimpan. Harap perbarui profil Anda setelah login."
+        )
+      } else {
+        setRegisterMessage("✅ User registered successfully")
+      }
+
+      alert("✅ Akun berhasil dibuat! Silakan login dengan akun baru Anda.")
+      window.location.href = "/pendaftaran/berhasil/login"
     } catch (error) {
       console.error(error)
       setRegisterMessage("❌ Terjadi kesalahan saat mendaftar.")
@@ -274,13 +303,12 @@ export function SignUpForm() {
 
             {message && (
               <p
-                className={`text-xs mt-1 ${
-                  message.startsWith("✅")
-                    ? "text-green-600"
-                    : message.startsWith("⏳")
+                className={`text-xs mt-1 ${message.startsWith("✅")
+                  ? "text-green-600"
+                  : message.startsWith("⏳")
                     ? "text-gray-500"
                     : "text-red-500"
-                }`}
+                  }`}
               >
                 {message}
               </p>
@@ -312,13 +340,12 @@ export function SignUpForm() {
           {/* Pesan verifikasi terpisah */}
           {tokenMessage && (
             <p
-              className={`text-xs mt-1 ${
-                tokenMessage.startsWith("✅")
-                  ? "text-green-600"
-                  : tokenMessage.startsWith("⏳")
+              className={`text-xs mt-1 ${tokenMessage.startsWith("✅")
+                ? "text-green-600"
+                : tokenMessage.startsWith("⏳")
                   ? "text-gray-500"
                   : "text-red-500"
-              }`}
+                }`}
             >
               {tokenMessage}
             </p>
@@ -354,13 +381,12 @@ export function SignUpForm() {
                   placeholder="Ulangi password"
                 />
                 <p
-                  className={`text-xs mt-1 h-4 ${
-                    passwordMatch
-                      ? "text-green-600"
-                      : passwordError
+                  className={`text-xs mt-1 h-4 ${passwordMatch
+                    ? "text-green-600"
+                    : passwordError
                       ? "text-red-500"
                       : "text-transparent"
-                  }`}
+                    }`}
                 >
                   {passwordMatch ? "✅ Password cocok" : passwordError ? "❌ Password tidak sama" : "placeholder"}
                 </p>
@@ -453,13 +479,12 @@ export function SignUpForm() {
           </Card>
 
           {registerMessage && (
-                <p className={`text-xs mt-1 ${
-                  registerMessage.startsWith("✅") ? "text-green-600" :
-                  registerMessage.startsWith("⏳") ? "text-gray-500" : "text-red-500"
-                }`}>
-                  {registerMessage}
-                </p>
-              )}
+            <p className={`text-xs mt-1 ${registerMessage.startsWith("✅") ? "text-green-600" :
+              registerMessage.startsWith("⏳") ? "text-gray-500" : "text-red-500"
+              }`}>
+              {registerMessage}
+            </p>
+          )}
 
           {/* Actions */}
           <div className="flex gap-4 w-full justify-end">
@@ -470,7 +495,7 @@ export function SignUpForm() {
               <Button type="submit" >
                 <a> Lakukan Pendaftaran</a>
               </Button>
-              
+
             </div>
           </div>
         </>

@@ -11,6 +11,7 @@ import React, { useState } from "react"
 // --- PATH IMPORT APP LAYOUT YANG BENAR ---
 import { AppLayout } from "@/components/ui/app-layout"
 
+import { logger } from "@/lib/logger"
 // Data Mock untuk pengecekan status langkah sebelumnya
 const mockStepsStatus = [
     { id: 'data-entry', title: 'Pengisian Data Diri', status: 'Selesai' },
@@ -45,14 +46,14 @@ export default function LockDataPendaftaranPage() {
     const handleLockData = (e: React.FormEvent) => {
         e.preventDefault()
         if (canLock) {
-            // Mengganti window.confirm/alert dengan console.log/custom modal
-            console.log("PERINGATAN: Setelah dikunci, data tidak dapat diubah lagi. Apakah Anda yakin ingin mengunci data pendaftaran Anda?")
+            // Mengganti window.confirm/alert dengan logger.log/custom modal
+            logger.log("PERINGATAN: Setelah dikunci, data tidak dapat diubah lagi. Apakah Anda yakin ingin mengunci data pendaftaran Anda?")
             // Simulasi konfirmasi berhasil
             setIsLocked(true)
-            console.log("Data Pendaftaran berhasil dikunci! Anda sekarang dapat membuat tagihan pembayaran.")
+            logger.log("Data Pendaftaran berhasil dikunci! Anda sekarang dapat membuat tagihan pembayaran.")
             // Di sini Anda mungkin akan redirect ke langkah 'billing'
         } else {
-            console.log("Anda belum bisa mengunci data. Harap selesaikan semua langkah dan revisi yang tertunda.")
+            logger.log("Anda belum bisa mengunci data. Harap selesaikan semua langkah dan revisi yang tertunda.")
         }
     }
 

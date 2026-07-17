@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { logger } from "@/lib/logger"
 import { AppLayout } from "@/components/ui/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
-  User, 
   Phone, 
   Mail, 
   Shield, 
@@ -42,7 +41,7 @@ export default function ProfilePage() {
 
   const token = localStorage.getItem("token");
 
-  const getAuthHeaders = () => {
+  const getAuthHeaders = (): Record<string, string> => {
     return token ? { "Authorization": `Bearer ${token}` } : {};
   };
 
@@ -68,7 +67,7 @@ export default function ProfilePage() {
         setNewPhone(json.data.phoneNumber || "");
       }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      logger.error("Error fetching profile:", error);
     } finally {
       setLoading(false);
     }
@@ -104,7 +103,7 @@ export default function ProfilePage() {
         alert(`Gagal memperbarui nomor telepon: ${errorData.message || 'Error backend'}`);
       }
     } catch (error) {
-      console.error("Error updating phone:", error);
+      logger.error("Error updating phone:", error);
       alert("Terjadi kesalahan koneksi");
     } finally {
       setSaving(false);
@@ -133,7 +132,7 @@ export default function ProfilePage() {
           alert("Gagal mengunggah foto profil.");
         }
       } catch (error) {
-        console.error("Error uploading picture:", error);
+        logger.error("Error uploading picture:", error);
         alert("Kesalahan server.");
       } finally {
         setSaving(false);
@@ -159,7 +158,7 @@ export default function ProfilePage() {
         alert("Gagal menghapus foto profil.");
       }
     } catch (error) {
-      console.error("Error deleting picture:", error);
+      logger.error("Error deleting picture:", error);
       alert("Kesalahan server.");
     } finally {
       setSaving(false);

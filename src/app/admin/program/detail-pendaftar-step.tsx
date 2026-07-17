@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { logger } from "@/lib/logger"
 import { useNavigate, useParams } from "react-router-dom"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -22,11 +23,11 @@ export default function StepDetailPage() {
   }
 
   const handleSave = () => {
-    console.log("Program ID:", programId)
-    console.log("Applicant ID:", applicantId)
-    console.log("Step ID:", stepId)
-    console.log("Status:", status)
-    console.log("Catatan:", note)
+    logger.log("Program ID:", programId)
+    logger.log("Applicant ID:", applicantId)
+    logger.log("Step ID:", stepId)
+    logger.log("Status:", status)
+    logger.log("Catatan:", note)
 
     alert("Status berhasil diperbarui!")
     navigate(-1)

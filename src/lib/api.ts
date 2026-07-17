@@ -100,9 +100,9 @@ export const authApi = {
       headers: authHeaders(),
     }),
 
-  /** POST /auth/save-registration-data — Save extra fields after sign-up (BetterAuth session) */
+  /** POST /auth/registration/section/1/save — Save extra fields after sign-up (BetterAuth session) */
   saveRegistrationData: (payload: Record<string, unknown>) =>
-    apiFetch("/auth/save-registration-data", {
+    apiFetch("/auth/registration/section/1/save", {
       method: "POST",
       headers: authHeaders(),
       body: JSON.stringify(payload),
@@ -290,11 +290,11 @@ export const admissionPathsApi = {
   getActive: () => apiFetch("/admission-paths/active"),
 
   /** POST /admission-paths/select — Select an admission path */
-  select: (pathId: string) =>
+  select: (admissionPathId: number | string) =>
     apiFetch("/admission-paths/select", {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ pathId }),
+      body: JSON.stringify({ admissionPathId }),
     }),
 
   /** GET /admission-paths/selected — Get currently selected path */
@@ -303,15 +303,61 @@ export const admissionPathsApi = {
       headers: authHeaders(),
     }),
 
-  /** GET /admission-paths — List all admission paths (Admin, paginated) */
+  /** GET /admission-paths/ — List all admission paths (Admin, paginated) */
   listAll: (params?: { skip?: number; take?: number }) => {
     const q = new URLSearchParams();
     if (params?.skip !== undefined) q.set("skip", String(params.skip));
     if (params?.take !== undefined) q.set("take", String(params.take));
-    return apiFetch(`/admission-paths?${q}`, {
+    return apiFetch(`/admission-paths/?${q}`, {
       headers: authHeaders(),
     });
   },
+
+  /** PUT /admission-paths/{id} — Admin: update admission path */
+  update: (
+    id: number | string,
+    payload: {
+      name?: string;
+      description?: string;
+      startDate?: string;
+      endDate?: string;
+      status?: "ACTIVE" | "INACTIVE";
+    }
+  ) =>
+    apiFetch(`/admission-paths/${id}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
+
+  /** DELETE /admission-paths/{id} — Admin: delete admission path */
+  delete: (id: number | string) =>
+    apiFetch(`/admission-paths/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }),
+
+  /** PATCH /admission-paths/{id}/status — Admin: toggle ACTIVE / INACTIVE */
+  toggleStatus: (id: number | string, status: "ACTIVE" | "INACTIVE") =>
+    apiFetch(`/admission-paths/${id}/status`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ status }),
+    }),
+
+  /** POST /admission-paths/ — Admin: create a new admission path */
+  createPath: (payload: {
+    name: string;
+    description?: string;
+    startDate: string;
+    endDate: string;
+    status?: "ACTIVE" | "INACTIVE";
+  }) =>
+    apiFetch("/admission-paths/", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
 };
 
 // ─────────────────────────────────────────────
@@ -608,6 +654,9 @@ export const adminUsersApi = {
     search?: string;
     skip?: number;
     take?: number;
+    facultyId?: number | string;
+    majorId?: number | string;
+    classId?: number | string;
   }) => {
     const q = new URLSearchParams();
     if (params?.role) q.set("role", params.role);
@@ -615,6 +664,9 @@ export const adminUsersApi = {
     if (params?.search) q.set("search", params.search);
     if (params?.skip !== undefined) q.set("skip", String(params.skip));
     if (params?.take !== undefined) q.set("take", String(params.take));
+    if (params?.facultyId !== undefined) q.set("facultyId", String(params.facultyId));
+    if (params?.majorId !== undefined) q.set("majorId", String(params.majorId));
+    if (params?.classId !== undefined) q.set("classId", String(params.classId));
     return apiFetch(`/admin/users?${q}`, {
       headers: authHeaders(),
     });
@@ -967,4 +1019,172 @@ export const adminPaymentsApi = {
 export const miscApi = {
   /** GET /health — Health check */
   health: () => apiFetch("/health"),
+};
+
+// ─────────────────────────────────────────────
+// Jurusan — Faculty & Major Management
+// ─────────────────────────────────────────────
+
+export const jurusanApi = {
+  // ── Public (no auth required) ──
+
+  /** GET /jurusan/public/faculties — List all faculties with nested majors (public) */
+  getPublicFaculties: () => apiFetch("/jurusan/public/faculties"),
+
+  /** GET /jurusan/public/majors — List all majors, optionally filtered by facultyId (public) */
+  getPublicMajors: (facultyId?: number) => {
+    const q = new URLSearchParams();
+    if (facultyId !== undefined) q.set("facultyId", String(facultyId));
+    return apiFetch(`/jurusan/public/majors?${q}`);
+  },
+
+  // ── Admin — Faculties ──
+
+  /** GET /jurusan/faculties — Admin: list all faculties with their majors */
+  listFaculties: () =>
+    apiFetch("/jurusan/faculties", {
+      headers: authHeaders(),
+    }),
+
+  /** POST /jurusan/faculties — Admin: create a new faculty */
+  createFaculty: (name: string) =>
+    apiFetch("/jurusan/faculties", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ name }),
+    }),
+
+  /** GET /jurusan/faculties/{id} — Admin: get faculty details with majors */
+  getFacultyById: (id: number | string) =>
+    apiFetch(`/jurusan/faculties/${id}`, {
+      headers: authHeaders(),
+    }),
+
+  /** PUT /jurusan/faculties/{id} — Admin: update faculty name */
+  updateFaculty: (id: number | string, name: string) =>
+    apiFetch(`/jurusan/faculties/${id}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ name }),
+    }),
+
+  /** DELETE /jurusan/faculties/{id} — Admin: delete faculty (only if no majors) */
+  deleteFaculty: (id: number | string) =>
+    apiFetch(`/jurusan/faculties/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }),
+
+  // ── Admin — Majors ──
+
+  /** GET /jurusan/majors — Admin: list all majors, optionally filtered by facultyId */
+  listMajors: (facultyId?: number) => {
+    const q = new URLSearchParams();
+    if (facultyId !== undefined) q.set("facultyId", String(facultyId));
+    return apiFetch(`/jurusan/majors?${q}`, {
+      headers: authHeaders(),
+    });
+  },
+
+  /** POST /jurusan/majors — Admin: create a new major */
+  createMajor: (name: string, facultyId: number) =>
+    apiFetch("/jurusan/majors", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ name, facultyId }),
+    }),
+
+  /** GET /jurusan/majors/{id} — Admin: get major details (includes lecturers & classes) */
+  getMajorById: (id: number | string) =>
+    apiFetch(`/jurusan/majors/${id}`, {
+      headers: authHeaders(),
+    }),
+
+  /** PUT /jurusan/majors/{id} — Admin: update major name or faculty */
+  updateMajor: (id: number | string, payload: { name?: string; facultyId?: number }) =>
+    apiFetch(`/jurusan/majors/${id}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
+
+  /** DELETE /jurusan/majors/{id} — Admin: delete major */
+  deleteMajor: (id: number | string) =>
+    apiFetch(`/jurusan/majors/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }),
+};
+
+// ─────────────────────────────────────────────
+// KRS & Self Enrollment
+// ─────────────────────────────────────────────
+
+export const krsApi = {
+  /** GET /api/academic-terms/active — Get active academic term */
+  getActiveTerm: () =>
+    apiFetch("/api/academic-terms/active", {
+      headers: authHeaders(),
+    }),
+
+  /** GET /api/courses — List courses for KRS */
+  getCourses: (majorId?: number) => {
+    const q = new URLSearchParams();
+    if (majorId !== undefined) q.set("majorId", String(majorId));
+    return apiFetch(`/api/courses?${q}`, {
+      headers: authHeaders(),
+    });
+  },
+
+  /** GET /api/krs/my-krs — Get current student's KRS */
+  getMyKrs: () =>
+    apiFetch("/api/krs/my-krs", {
+      headers: authHeaders(),
+    }),
+
+  /** POST /api/krs/enroll — Submit or Save Draft KRS */
+  enroll: (courseIds: number[], action: "DRAFT" | "SUBMIT") =>
+    apiFetch("/api/krs/enroll", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ courseIds, action }),
+    }),
+
+  // ── Admin: Academic Terms ──
+  
+  /** GET /api/academic-terms — Admin: list all terms */
+  getAllTerms: () =>
+    apiFetch("/api/academic-terms", {
+      headers: authHeaders(),
+    }),
+
+  /** POST /api/academic-terms — Admin: create a new term */
+  createTerm: (payload: { name: string; startDate: string; endDate: string; isActive?: boolean }) =>
+    apiFetch("/api/academic-terms", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
+
+  /** PUT /api/academic-terms/:id — Admin: update a term */
+  updateTerm: (id: number | string, payload: { name?: string; startDate?: string; endDate?: string }) =>
+    apiFetch(`/api/academic-terms/${id}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
+
+  /** PATCH /api/academic-terms/:id/activate — Admin: set a term as active */
+  activateTerm: (id: number | string) =>
+    apiFetch(`/api/academic-terms/${id}/activate`, {
+      method: "PATCH",
+      headers: authHeaders(),
+    }),
+
+  /** DELETE /api/academic-terms/:id — Admin: delete a term */
+  deleteTerm: (id: number | string) =>
+    apiFetch(`/api/academic-terms/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }),
 };

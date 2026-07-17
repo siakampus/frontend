@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { logger } from "@/lib/logger"
 import { AppLayout } from "@/components/ui/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -49,7 +50,7 @@ export default function LecturerDashboardPage() {
 
         setUserData(sessionData.user);
       } catch (error) {
-        console.error("Error fetching session:", error);
+        logger.error("Error fetching session:", error);
         navigate("/login");
       } finally {
         setLoading(false);

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AppLayout } from "@/components/ui/app-layout";
 import { chatApi, type ChatTopic } from "@/lib/api";
-import { Send, Plus, Trash2, RefreshCw, Sparkles, Menu, X } from "lucide-react";
+import { Send, Plus, Trash2, RefreshCw, Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ChatSession {

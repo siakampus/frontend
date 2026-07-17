@@ -1,6 +1,7 @@
 "use client";
 
 import { Link } from "react-router-dom";
+import { logger } from "@/lib/logger"
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,7 @@ import { getRedirectPathByRole } from "@/lib/redirectByRole";
 // Placeholder kalau logo gagal dimuat
 const logoPlaceholder = "https://placehold.co/256x256/00008b/ffffff?text=U+G+N";
 
-// 🔔 Alert Box Reusable Component
+// ≡ƒöö Alert Box Reusable Component
 function AlertBox({
   type,
   message,
@@ -46,7 +47,7 @@ function AlertBox({
   );
 }
 
-// 🧠 Main Login Component
+// ≡ƒºá Main Login Component
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,12 +56,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // 🔐 Handle Login API
+  // ≡ƒöÉ Handle Login API
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!captchaToken) {
-      setErrorMessage("⚠️ Mohon selesaikan verifikasi keamanan terlebih dahulu.");
+      setErrorMessage("ΓÜá∩╕Å Mohon selesaikan verifikasi keamanan terlebih dahulu.");
       return;
     }
 
@@ -81,7 +82,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       });
 
       const data = await res.json().catch(() => ({}));
-      console.log("🔍 Login response:", JSON.stringify(data, null, 2));
+      logger.log("≡ƒöì Login response:", JSON.stringify(data, null, 2));
 
       if (res.ok) {
         // Save token for custom API usage
@@ -91,7 +92,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
         // Fetch session to get the fully populated user object including role
         let role = data.user?.role || "";
-        
+
         try {
           // Attempt 1: BetterAuth get-session using cookie and token
           const sessionRes = await fetch("/api/auth/get-session", {
@@ -105,7 +106,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             }
           }
         } catch (err) {
-          console.error("Failed to fetch role from get-session", err);
+          logger.error("Failed to fetch role from get-session", err);
         }
 
         if (!role || role === "guest") {
@@ -122,17 +123,17 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               }
             }
           } catch (err) {
-            console.error("Failed to fetch role from profile", err);
+            logger.error("Failed to fetch role from profile", err);
           }
         }
 
-        console.log("🚀 Resolved Role:", role);
+        logger.log("≡ƒÜÇ Resolved Role:", role);
 
         localStorage.setItem("userEmail", data.user?.email || email);
         localStorage.setItem("userRole", role);
 
         const redirectPath = getRedirectPathByRole(role);
-        setSuccessMessage("✅ Login berhasil! Mengarahkan ke " + redirectPath);
+        setSuccessMessage("Γ£à Login berhasil! Mengarahkan ke " + redirectPath);
         setTimeout(() => {
           window.location.href = redirectPath;
         }, 1000);
@@ -145,8 +146,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         setErrorMessage(errMsg);
       }
     } catch (err) {
-      console.error(err);
-      setErrorMessage("❌ Terjadi kesalahan koneksi ke server.");
+      logger.error(err);
+      setErrorMessage("Γ¥î Terjadi kesalahan koneksi ke server.");
     } finally {
       setLoading(false);
     }
@@ -156,7 +157,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 rounded-lg shadow-lg">
         <CardContent className="grid p-0 md:grid-cols-2">
-          {/* 🧭 Left side: Login Form */}
+          {/* ≡ƒº¡ Left side: Login Form */}
           <div className="p-6 md:p-8">
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid grid-cols-2 mb-6">
@@ -226,18 +227,18 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                     <Label>Verifikasi Keamanan</Label>
                     <div className="mt-2">
                       <Turnstile
-                        sitekey="0x4AAAAAAB6AdQ7RikUW15dg"
+                        sitekey={import.meta.env.VITE_PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA"}
                         size="flexible"
                         onVerify={(token) => {
-                          console.log("✅ Turnstile token:", token);
+                          logger.log("Γ£à Turnstile token:", token);
                           setCaptchaToken(token);
                         }}
                         onExpire={() => {
-                          console.warn("⚠️ CAPTCHA expired, please retry.");
+                          logger.warn("ΓÜá∩╕Å CAPTCHA expired, please retry.");
                           setCaptchaToken(null);
                         }}
                         onError={() => {
-                          console.error("❌ CAPTCHA error.");
+                          logger.error("Γ¥î CAPTCHA error.");
                           setCaptchaToken(null);
                         }}
                         theme="light"
@@ -279,7 +280,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             </Tabs>
           </div>
 
-          {/* 🏛️ Right side: Logo area */}
+          {/* ≡ƒÅ¢∩╕Å Right side: Logo area */}
           <div className="bg-primary hidden md:flex items-center justify-center">
             <img
               src={logo}

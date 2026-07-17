@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { logger } from "@/lib/logger"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -9,7 +10,7 @@ import { useNavigate } from "react-router-dom"
 import Turnstile from "react-turnstile"
 import { getRedirectPathByRole } from "@/lib/redirectByRole"
 
-// ✅ Alert reusable component
+// Γ£à Alert reusable component
 function AlertBox({
   type,
   message,
@@ -50,7 +51,7 @@ export default function LoginAkunBaru({
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // 👉 Redirect user kalau sudah login (token sudah ada)
+  // ≡ƒæë Redirect user kalau sudah login (token sudah ada)
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (token) {
@@ -78,7 +79,7 @@ export default function LoginAkunBaru({
       })
 
       const data = await res.json().catch(() => ({}))
-      console.log("🔍 Login response:", JSON.stringify(data, null, 2))
+      logger.log("≡ƒöì Login response:", JSON.stringify(data, null, 2))
 
       if (res.ok) {
         // Save token for custom API usage
@@ -88,7 +89,7 @@ export default function LoginAkunBaru({
 
         // Fetch session to get the fully populated user object including role
         let role = data.user?.role || ""
-        
+
         try {
           // Attempt 1: BetterAuth get-session using cookie and token
           const sessionRes = await fetch("/api/auth/get-session", {
@@ -102,7 +103,7 @@ export default function LoginAkunBaru({
             }
           }
         } catch (err) {
-          console.error("Failed to fetch role from get-session", err)
+          logger.error("Failed to fetch role from get-session", err)
         }
 
         if (!role || role === "guest") {
@@ -119,17 +120,17 @@ export default function LoginAkunBaru({
               }
             }
           } catch (err) {
-            console.error("Failed to fetch role from profile", err)
+            logger.error("Failed to fetch role from profile", err)
           }
         }
 
-        console.log("🚀 Resolved Role:", role)
+        logger.log("≡ƒÜÇ Resolved Role:", role)
 
         localStorage.setItem("userEmail", data.user?.email || email)
         localStorage.setItem("userRole", role)
 
         const redirectPath = getRedirectPathByRole(role)
-        setSuccessMessage("✅ Login berhasil! Mengarahkan ke " + redirectPath)
+        setSuccessMessage("Γ£à Login berhasil! Mengarahkan ke " + redirectPath)
         setTimeout(() => {
           navigate(redirectPath)
         }, 1000)
@@ -138,12 +139,12 @@ export default function LoginAkunBaru({
         const errMsg =
           data?.error?.message ||
           data?.message ||
-          "❌ Email atau password salah."
+          "Γ¥î Email atau password salah."
         setErrorMessage(errMsg)
       }
     } catch (err) {
-      console.error(err)
-      setErrorMessage("❌ Gagal terhubung ke server.")
+      logger.error(err)
+      setErrorMessage("Γ¥î Gagal terhubung ke server.")
     } finally {
       setLoading(false)
     }
@@ -169,7 +170,7 @@ export default function LoginAkunBaru({
               </div>
 
               <form onSubmit={handleLogin} className="grid gap-4">
-                {/* ✅ ALERTS */}
+                {/* Γ£à ALERTS */}
                 {successMessage && (
                   <AlertBox type="success" message={successMessage} />
                 )}

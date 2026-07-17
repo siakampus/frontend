@@ -1,4 +1,5 @@
 import { ChevronLeft, LogOut } from "lucide-react"
+import { logger } from "@/lib/logger"
 import { Button } from "@/components/ui/button"
 import {
   Avatar,
@@ -58,7 +59,7 @@ export function AppHeader({
     
   const [currentUserName, setCurrentUserName] = useState("Pengguna"); 
   const [currentInitials, setCurrentInitials] = useState("GU");     
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -80,10 +81,10 @@ export function AppHeader({
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`Gagal mengambil profil (${response.status}). Respons Backend Error:`, errorText.substring(0, 100) + '...');
+          logger.error(`Gagal mengambil profil (${response.status}). Respons Backend Error:`, errorText.substring(0, 100) + '...');
           
           if (response.status === 401 || response.status === 403) {
-            console.warn("Token ditolak (Unauthorized/Forbidden). Memaksa logout.");
+            logger.warn("Token ditolak (Unauthorized/Forbidden). Memaksa logout.");
             localStorage.removeItem("token");
             window.location.href = "/login";
             return; 
@@ -95,7 +96,7 @@ export function AppHeader({
         // Catatan: Mengganti UserProfile ke UserProfileResponse
         const data: UserProfileResponse = await response.json(); 
         
-        console.log("✅ Data Profil berhasil diterima:", data);
+        logger.log("Γ£à Data Profil berhasil diterima:", data);
         
         // PERBAIKAN 2: Ambil email dengan aman menggunakan optional chaining
         const username = data?.user?.email || (data as any)?.email || (data as any)?.name || "Pengguna"; 
@@ -104,7 +105,7 @@ export function AppHeader({
         setCurrentUserName(username);
         setCurrentInitials(initials);
       } catch (error) {
-        console.error("Kesalahan saat mengambil profil:", error);
+        logger.error("Kesalahan saat mengambil profil:", error);
       } finally {
         setLoading(false);
       }

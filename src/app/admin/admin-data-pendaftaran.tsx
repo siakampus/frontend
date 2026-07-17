@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
+import { logger } from "@/lib/logger"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,14 +23,12 @@ interface Registration {
   isLocked: boolean
   isPersonalDataLocked: boolean
   isValidated: boolean
+  fullName?: string
+  programChoice1Faculty?: string
+  programChoice1Major?: string
   user?: {
     email?: string
     name?: string
-  }
-  registrationData?: {
-    fullName?: string
-    program?: string
-    faculty?: string
   }
 }
 
@@ -52,7 +51,7 @@ export default function AdminRegistrationsPage() {
     setLoading(true)
     const res = await adminRegistrationsApi.list(search ? { search } : undefined)
     if (res.status === 401) { navigate("/login"); return }
-    
+
     let fetchedRegs: Registration[] = []
     if (res.ok && res.data) {
       const body = res.data as { data?: Registration[]; registrations?: Registration[] }
@@ -65,13 +64,14 @@ export default function AdminRegistrationsPage() {
       if (usersRes.ok && usersRes.data) {
         const usersBody = usersRes.data as any
         const usersList = usersBody.data || usersBody.users || usersBody || []
-        
+
         const userMap = new Map<string, any>()
-        usersList.forEach((u: any) => userMap.set(u.id, u))
+        // Match both number/string differences in IDs
+        usersList.forEach((u: any) => userMap.set(String(u.id), u))
 
         fetchedRegs = fetchedRegs.map(reg => {
           if (!reg.user || (!reg.user.email && !reg.user.name)) {
-            const foundUser = userMap.get(reg.userId)
+            const foundUser = userMap.get(String(reg.userId))
             if (foundUser) {
               return {
                 ...reg,
@@ -86,7 +86,7 @@ export default function AdminRegistrationsPage() {
         })
       }
     } catch (err) {
-      console.error("Gagal melakukan mapping data user", err)
+      logger.error("Gagal melakukan mapping data user", err)
     }
 
     setRegistrations(fetchedRegs)
@@ -179,17 +179,17 @@ export default function AdminRegistrationsPage() {
                     <tr key={r.id} className="hover:bg-muted/10 transition-colors">
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-900">
-                          {r.registrationData?.fullName || r.user?.name || "—"}
+                          {r.fullName || r.user?.name || "—"}
                         </div>
                         <div className="text-xs text-muted-foreground">{r.user?.email}</div>
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {r.registrationData?.faculty && r.registrationData?.program
-                          ? `${r.registrationData.faculty} / ${r.registrationData.program}`
+                        {r.programChoice1Faculty && r.programChoice1Major
+                          ? `${r.programChoice1Faculty} / ${r.programChoice1Major}`
                           : "—"}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLE[r.status] || "bg-gray-100 text-gray-600"}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLE[r.status?.toLowerCase()] || "bg-gray-100 text-gray-600"}`}>
                           {r.status}
                         </span>
                       </td>
@@ -200,7 +200,7 @@ export default function AdminRegistrationsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant={r.isValidated ? "default" : "outline"} className="text-xs">
-                          {r.isValidated ? "✓ Valid" : "Belum"}
+                          {r.isValidated ? "✅ Valid" : "Belum"}
                         </Badge>
                       </td>
                       <td className="px-4 py-3">
@@ -262,9 +262,9 @@ export default function AdminRegistrationsPage() {
             </div>
             <div className="space-y-2 text-sm">
               <div><span className="text-muted-foreground">Email:</span> {selected.user?.email || "—"}</div>
-              <div><span className="text-muted-foreground">Nama:</span> {selected.registrationData?.fullName || selected.user?.name || "—"}</div>
-              <div><span className="text-muted-foreground">Fakultas:</span> {selected.registrationData?.faculty || "—"}</div>
-              <div><span className="text-muted-foreground">Program:</span> {selected.registrationData?.program || "—"}</div>
+              <div><span className="text-muted-foreground">Nama:</span> {selected.fullName || selected.user?.name || "—"}</div>
+              <div><span className="text-muted-foreground">Fakultas:</span> {selected.programChoice1Faculty || "—"}</div>
+              <div><span className="text-muted-foreground">Program:</span> {selected.programChoice1Major || "—"}</div>
               <div><span className="text-muted-foreground">Status:</span> {selected.status}</div>
               <div><span className="text-muted-foreground">Dikunci:</span> {selected.isLocked ? "Ya" : "Tidak"}</div>
               <div><span className="text-muted-foreground">Data Pribadi Dikunci:</span> {selected.isPersonalDataLocked ? "Ya" : "Tidak"}</div>

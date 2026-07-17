@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card"
+import { logger } from "@/lib/logger"
 import { useNavigate, useParams } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -25,7 +26,7 @@ export default function ApplicantDetailPage() {
   const handleSaveStatus = () => {
     
     // Ini adalah simulasi logika penyimpanan ke backend.
-    console.log(`Menyimpan status final pendaftar ${applicantId}: ${currentStatus}`)
+    logger.log(`Menyimpan status final pendaftar ${applicantId}: ${currentStatus}`)
     
     // Gunakan fungsi alert standar sebagai pengganti Toast
     alert(`Status final pendaftar ${initialApplicantData.name} telah diubah menjadi: ${currentStatus}`)

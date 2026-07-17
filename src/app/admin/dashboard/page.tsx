@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { logger } from "@/lib/logger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Users, 
+import {
+  Users,
   FileText,
   Activity,
   CreditCard,
@@ -41,18 +42,18 @@ export default function AdminDashboardPage() {
           navigate("/login");
           return;
         }
-        
+
         // Ensure admin role
         if (sessionData.user.role !== "admin") {
-           // Redirect to correct dashboard based on role
-           if (sessionData.user.role === "student" || sessionData.user.role === "guest") navigate("/dashboard");
-           if (sessionData.user.role === "lecturer") navigate("/lecturer");
-           return;
+          // Redirect to correct dashboard based on role
+          if (sessionData.user.role === "student" || sessionData.user.role === "guest") navigate("/dashboard");
+          if (sessionData.user.role === "lecturer") navigate("/lecturer");
+          return;
         }
 
         setUserData(sessionData.user);
       } catch (error) {
-        console.error("Error fetching session:", error);
+        logger.error("Error fetching session:", error);
         navigate("/login");
       } finally {
         setLoading(false);
@@ -69,32 +70,32 @@ export default function AdminDashboardPage() {
         const body = res.data as { total?: number; data?: unknown[] };
         setTotalRegistrants(body.total ?? (body.data?.length ?? "—"));
       }
-    }).catch(() => {});
+    }).catch(() => { });
 
     adminUsersApi.list({ take: 1 }).then((res) => {
       if (res.ok && res.data) {
         const body = res.data as { total?: number; data?: unknown[] };
         setTotalUsers(body.total ?? (body.data?.length ?? "—"));
       }
-    }).catch(() => {});
+    }).catch(() => { });
 
     adminPaymentsApi.list().then((res) => {
       if (res.ok && res.data) {
         const body = res.data as { total?: number; data?: unknown[] };
         setTotalPayments(body.total ?? (body.data?.length ?? "—"));
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center text-gray-500">
         <div className="flex items-center space-x-2">
-            <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Memuat dashboard admin...</span>
+          <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Memuat dashboard admin...</span>
         </div>
       </div>
     );
@@ -113,7 +114,7 @@ export default function AdminDashboardPage() {
         <StatCard title="Pembayaran" value={totalPayments} icon={<CreditCard className="h-6 w-6 text-green-500" />} />
         <StatCard title="Status Sistem" value="Sehat" icon={<Activity className="h-6 w-6 text-indigo-500" />} />
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="shadow-sm border rounded-lg">
           <CardHeader className="border-b bg-muted/10 pb-4">
@@ -122,18 +123,18 @@ export default function AdminDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 flex flex-col gap-3">
-             <Link to="/admin/pendaftaran" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
-               <FileText className="h-4 w-4"/> Kelola Data Pendaftaran
-             </Link>
-             <Link to="/admin/programs" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
-               <Users className="h-4 w-4"/> Kelola Program Studi
-             </Link>
-             <Link to="/admin/settings" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
-               <Settings className="h-4 w-4"/> Pengaturan Platform
-             </Link>
+            <Link to="/admin/pendaftaran" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Kelola Data Pendaftaran
+            </Link>
+            <Link to="/admin/programs" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
+              <Users className="h-4 w-4" /> Kelola Program Studi
+            </Link>
+            <Link to="/admin/settings" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
+              <Settings className="h-4 w-4" /> Pengaturan Platform
+            </Link>
           </CardContent>
         </Card>
-        
+
         <Card className="shadow-sm border rounded-lg">
           <CardHeader className="border-b bg-muted/10 pb-4">
             <CardTitle className="text-lg flex items-center gap-2 font-serif text-primary">

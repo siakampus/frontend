@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import PengaturanFakultas from "./admin-pengaturan-fakultas"
 import PengaturanProgram from "./program/pengaturan-program"
+import AdminAcademicTerms from "./admin-academic-terms"
 
 export default function PengaturanPlatform() {
     return (
@@ -9,6 +10,7 @@ export default function PengaturanPlatform() {
                 <TabsList className="mb-6">
                     <TabsTrigger value="program">Program Pendaftaran</TabsTrigger>
                     <TabsTrigger value="faculty">Fakultas & Program Studi</TabsTrigger>
+                    <TabsTrigger value="academic-terms">Periode Akademik / KRS</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="program">
@@ -19,6 +21,9 @@ export default function PengaturanPlatform() {
                     <PengaturanFakultas />
                 </TabsContent>
     
+                <TabsContent value="academic-terms">
+                    <AdminAcademicTerms />
+                </TabsContent>
             </Tabs>
         </>
     )

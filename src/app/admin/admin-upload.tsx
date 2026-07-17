@@ -6,13 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
 // 🧩 Sidebar Items (reuse dari semua halaman admin)
-const adminSidebarItems = [
-  { to: "/admin/settings", label: "Pengaturan Platform" },
-  { to: "/admin/pendaftaran", label: "Data Pendaftaran" },
-  { to: "/admin/upload", label: "Upload Data" },
-  { to: "/admin/feedback", label: "Feedback Pendaftar" },
-  { to: "/admin/hasil", label: "Hasil Pendaftaran" },
-]
+// removed unused adminSidebarItems
 
 export default function AdminUploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)

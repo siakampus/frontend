@@ -11,6 +11,19 @@ node_modules
 dist
 dist-ssr
 *.local
+.tests
+tests
+test-result
+# ─── Environment files (NEVER commit real credentials) ───
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+.env.staging
+# Keep .env.example (template with no real values)
+!.env.example
 
 # Editor directories and files
 .vscode/*

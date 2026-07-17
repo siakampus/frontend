@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { logger } from "@/lib/logger"
 import { AppLayout } from "@/components/ui/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,11 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { 
   User, 
   GraduationCap, 
-  FileText, 
   Lock, 
   Unlock, 
   CheckCircle, 
-  Clock, 
   ArrowRight,
   ShieldAlert,
   ClipboardList
@@ -33,7 +32,7 @@ export default function GuestDashboardPage() {
 
   const token = localStorage.getItem("token");
 
-  const getAuthHeaders = () => {
+  const getAuthHeaders = (): HeadersInit => {
     return token ? { "Authorization": `Bearer ${token}` } : {};
   };
 
@@ -91,7 +90,7 @@ export default function GuestDashboardPage() {
           setIsLocked(locked);
         }
       } catch (error) {
-        console.error("Error fetching guest dashboard status:", error);
+        logger.error("Error fetching guest dashboard status:", error);
       } finally {
         setLoading(false);
       }

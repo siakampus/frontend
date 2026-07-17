@@ -12,6 +12,7 @@ import React from "react"
 // --- PATH IMPORT APP LAYOUT YANG BENAR ---
 import { AppLayout } from "@/components/ui/app-layout"
 
+import { logger } from "@/lib/logger"
 // Data dokumen yang wajib diunggah
 const documents = [
     { 
@@ -105,10 +106,10 @@ export default function UploadDokumenPendaftaranPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (canContinue) {
-            // Mengganti alert dengan console.log/custom modal
-            console.log("Semua dokumen telah diunggah! Melanjutkan ke Penguncian Data.");
+            // Mengganti alert dengan logger.log/custom modal
+            logger.log("Semua dokumen telah diunggah! Melanjutkan ke Penguncian Data.");
         } else {
-            console.log("Harap unggah semua dokumen yang diperlukan sebelum melanjutkan.");
+            logger.log("Harap unggah semua dokumen yang diperlukan sebelum melanjutkan.");
         }
     }
 

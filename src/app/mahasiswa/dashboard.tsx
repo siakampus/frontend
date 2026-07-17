@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { logger } from "@/lib/logger"
 import { AppLayout } from "@/components/ui/app-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  BookOpen, 
-  GraduationCap, 
+import {
+  BookOpen,
+  GraduationCap,
   Clock,
   FileText,
   CalendarDays,
@@ -22,7 +23,7 @@ export default function DashboardPage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [courseCount, setCourseCount] = useState<number | string>("—");
-  const [assignmentCount, setAssignmentCount] = useState<number | string>("—");
+  const [assignmentCount] = useState<number | string>("—");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,17 +43,17 @@ export default function DashboardPage() {
           navigate("/login");
           return;
         }
-        
+
         // Ensure student role
         if (sessionData.user.role && sessionData.user.role !== "student" && sessionData.user.role !== "guest") {
-           // Redirect to correct dashboard based on role
-           if (sessionData.user.role === "admin") navigate("/admin");
-           if (sessionData.user.role === "lecturer") navigate("/lecturer");
+          // Redirect to correct dashboard based on role
+          if (sessionData.user.role === "admin") navigate("/admin");
+          if (sessionData.user.role === "lecturer") navigate("/lecturer");
         }
 
         setUserData(sessionData.user);
       } catch (error) {
-        console.error("Error fetching session:", error);
+        logger.error("Error fetching session:", error);
         navigate("/login");
       } finally {
         setLoading(false);
@@ -69,18 +70,18 @@ export default function DashboardPage() {
         const body = res.data as { data?: unknown[]; total?: number };
         setCourseCount(body.total ?? (body.data?.length ?? "—"));
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500 bg-gray-50">
         <div className="flex items-center space-x-2">
-            <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Memuat dashboard...</span>
+          <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Memuat dashboard...</span>
         </div>
       </div>
     );
@@ -105,7 +106,7 @@ export default function DashboardPage() {
           <StatCard title="Mata Kuliah Diambil" value={courseCount} icon={<BookOpen className="h-6 w-6 text-primary" />} />
           <StatCard title="Tugas Mendatang" value={assignmentCount} icon={<Clock className="h-6 w-6 text-primary" />} />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="shadow-sm border rounded-lg">
             <CardHeader className="border-b bg-muted/10 pb-4">
@@ -114,28 +115,28 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 flex flex-col gap-3">
-               {isStudent ? (
-                 <>
-                   <Link to="/courses" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
-                     <BookOpen className="h-4 w-4"/> Lihat Daftar Mata Kuliah (Course)
-                   </Link>
-                   <Link to="/profile" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
-                     <User className="h-4 w-4"/> Lihat & Edit Profil (Profile)
-                   </Link>
-                 </>
-               ) : (
-                 <>
-                   <Link to="/pendaftaran" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
-                     <GraduationCap className="h-4 w-4"/> Lanjutkan Pendaftaran Mahasiswa Baru
-                   </Link>
-                   <Link to="/data-diri" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
-                     <FileText className="h-4 w-4"/> Perbarui Data Diri / Dokumen
-                   </Link>
-                 </>
-               )}
+              {isStudent ? (
+                <>
+                  <Link to="/courses" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" /> Lihat Daftar Mata Kuliah (Course)
+                  </Link>
+                  <Link to="/profile" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
+                    <User className="h-4 w-4" /> Lihat & Edit Profil (Profile)
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/pendaftaran" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
+                    <GraduationCap className="h-4 w-4" /> Lanjutkan Pendaftaran Mahasiswa Baru
+                  </Link>
+                  <Link to="/data-diri" className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Perbarui Data Diri / Dokumen
+                  </Link>
+                </>
+              )}
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-sm border rounded-lg">
             <CardHeader className="border-b bg-muted/10 pb-4">
               <CardTitle className="text-lg flex items-center gap-2 font-serif text-primary">

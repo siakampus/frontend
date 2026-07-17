@@ -4,14 +4,53 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
+  // ──────────────────────────────────────────────────────────
+  // Build hardening — production only
+  // ──────────────────────────────────────────────────────────
+  build: {
+    // Strip all console.* and debugger statements from the production bundle
+    minify: 'esbuild',
+    // No source maps in production (prevents source code exposure)
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        // Obfuscate chunk names — no route/file names leaked
+        chunkFileNames: 'assets/[hash].js',
+        entryFileNames: 'assets/[hash].js',
+        assetFileNames: 'assets/[hash].[ext]',
+      },
+    },
+  },
+
+  // Strip console.* only in production builds
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
+
+  // Expose ZERO env variables to the browser bundle by default.
+  // Any variable that must be public MUST be explicitly listed here.
+  // Never add secrets here — use server-side env vars for those.
+  envPrefix: 'VITE_PUBLIC_',
+
   server: {
+    // ── Tunnel / public sharing support ───────────────────────────────────
+    // Bind to all interfaces so cloudflared can forward traffic.
+    host: true,
+    port: 5173,
+    // Allow any hostname — required for *.trycloudflare.com URLs.
+    // Vite ≥5 blocks unrecognised Host headers by default (HTTP host-header
+    // injection protection). Setting this to true disables that check so
+    // that the tunnel URL works without a static allow-list.
+    allowedHosts: true,
     proxy: {
       "/auth": {
         target: "http://localhost:8000",
@@ -40,12 +79,14 @@ export default defineConfig({
       "/chat": {
         target: "http://localhost:8000",
         changeOrigin: true,
+        bypass(req) {
+          if (req.headers.accept?.includes("text/html")) return "/index.html";
+        },
       },
       "/lecturer": {
         target: "http://localhost:8000",
         changeOrigin: true,
         bypass(req) {
-          // Browser page navigation → let React Router handle it
           if (req.headers.accept?.includes("text/html")) return "/index.html";
         },
       },
@@ -53,15 +94,24 @@ export default defineConfig({
         target: "http://localhost:8000",
         changeOrigin: true,
         bypass(req) {
-          // Browser page navigation → let React Router handle it
           if (req.headers.accept?.includes("text/html")) return "/index.html";
         },
       },
       "/api/auth": {
         target: "http://localhost:8000",
         changeOrigin: true,
+        headers: {
+          Origin: "http://localhost:5173"
+        }
       },
       "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        headers: {
+          Origin: "http://localhost:5173"
+        }
+      },
+      "/jurusan": {
         target: "http://localhost:8000",
         changeOrigin: true,
       },
@@ -71,4 +121,32 @@ export default defineConfig({
       },
     },
   },
-})
+
+  // Security headers for the preview server (vite preview)
+  preview: {
+    headers: {
+      // Prevent clickjacking
+      'X-Frame-Options': 'DENY',
+      // Prevent MIME sniffing
+      'X-Content-Type-Options': 'nosniff',
+      // Force HTTPS
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+      // Restrict referrer info
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      // Disable browser features not needed
+      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
+      // Content Security Policy
+      'Content-Security-Policy': [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data: blob:",
+        "connect-src 'self' http://localhost:8000 https://*.trycloudflare.com",
+        "frame-src https://challenges.cloudflare.com",
+        "object-src 'none'",
+        "base-uri 'self'",
+      ].join('; '),
+    },
+  },
+}))

@@ -47,7 +47,30 @@ export default function ProtectedRoute({
 
         // Role-based access check
         if (allowedRoles && allowedRoles.length > 0) {
-          const role: string = (user.role ?? "").toLowerCase();
+          let role: string = (user.role ?? "").toLowerCase();
+
+          if (!role || role === "guest") {
+            try {
+              const profileRes = await fetch("/auth/profile", {
+                credentials: "include",
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
+              if (profileRes.ok) {
+                const profileData = await profileRes.json();
+                if (profileData?.data?.role) {
+                  role = profileData.data.role.toLowerCase();
+                }
+              }
+            } catch (err) {
+              console.error("Failed to fetch role from profile in ProtectedRoute", err);
+            }
+          }
+
+          // Fallback to localStorage if still not found
+          if (!role) {
+            role = (localStorage.getItem("userRole") ?? "").toLowerCase();
+          }
+
           if (!allowedRoles.includes(role)) {
             // Redirect to the correct dashboard for their actual role
             const fallback =

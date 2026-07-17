@@ -135,7 +135,7 @@ export default function LecturerAssignmentsPage() {
     e.preventDefault();
     if (!selectedCourse) return;
     setIsCreatingAssignment(true);
-    const res = await assignmentsApi.createAssignment({
+    const res = await assignmentsApi.create({
       courseId: selectedCourse,
       title: newTitle,
       description: newDesc,

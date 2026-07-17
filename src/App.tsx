@@ -16,6 +16,7 @@ import LecturerDashboardPage from "./app/lecturer/dashboard/page";
 import AdminDashboardPage from "./app/admin/dashboard/page";
 import ProfilePage from "./app/mahasiswa/profile";
 import CoursesPage from "./app/mahasiswa/courses";
+import KrsPage from "./app/mahasiswa/krs";
 import GuestDashboardPage from "./app/guest/dashboard";
 
 import AdminRegistrationsPage from "./app/admin/admin-data-pendaftaran";
@@ -81,6 +82,11 @@ export default function App() {
             <Route path="/courses" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <CoursesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/krs" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <KrsPage />
               </ProtectedRoute>
             } />
             <Route path="/chat" element={

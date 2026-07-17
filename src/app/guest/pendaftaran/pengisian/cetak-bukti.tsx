@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom"
 import React, { useState } from "react" 
 import { AppLayout } from "@/components/ui/app-layout"
 
+import { logger } from "@/lib/logger"
 export default function CetakBuktiPesertaPage() {
     const [isGenerating, setIsGenerating] = useState(false); 
 
@@ -46,7 +47,7 @@ export default function CetakBuktiPesertaPage() {
 
             if (!res.ok) {
                 const errorText = await res.text();
-                console.error("Gagal generate PDF:", errorText);
+                logger.error("Gagal generate PDF:", errorText);
                 alert(`Gagal membuat dokumen: ${res.status} ${res.statusText}`);
                 return;
             }
@@ -55,14 +56,14 @@ export default function CetakBuktiPesertaPage() {
             const downloadUrl = data?.downloadUrl;
 
             if (downloadUrl) {
-                // 🔥 PDF dibuka di tab baru
+                // ≡ƒöÑ PDF dibuka di tab baru
                 window.open(downloadUrl, "_blank");
             } else {
                 alert("URL unduhan tidak ditemukan dalam respons API.");
             }
 
         } catch (error) {
-            console.error("Kesalahan koneksi saat generate PDF:", error);
+            logger.error("Kesalahan koneksi saat generate PDF:", error);
             alert("Terjadi kesalahan saat menghubungi server untuk membuat PDF.");
         } finally {
             setIsGenerating(false);

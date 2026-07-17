@@ -1,9 +1,10 @@
 import React, { useState } from "react" 
-import { User, DollarSign } from "lucide-react"
+import { logger } from "@/lib/logger"
+import { User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useNavigate, useParams, useLocation } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { AppLayout } from "@/components/ui/app-layout"
 
 interface PathDetail {
@@ -19,13 +20,12 @@ interface PathDetail {
 
 export default function DetailPendaftaranPage() {
     const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>(); 
     const location = useLocation(); 
     const receivedPathDetail = location.state?.pathDetail as PathDetail | undefined; 
     
     const pathDetail: PathDetail | null = receivedPathDetail || null;
     
-    // 💡 State untuk menangani proses loading/submission
+    // ≡ƒÆí State untuk menangani proses loading/submission
     const [isSubmitting, setIsSubmitting] = useState(false);
     const API_URL = "";
     const token = localStorage.getItem("token");
@@ -39,23 +39,14 @@ export default function DetailPendaftaranPage() {
         return new Date(dateString).toLocaleDateString("id-ID", options);
     };
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(amount);
-    };
-
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files[0]) {
         const fileName = e.target.files[0].name
-        console.log(`File berhasil dipilih: ${fileName}`)
+        logger.log(`File berhasil dipilih: ${fileName}`)
       }
     }
 
-    // 🎯 FUNGSI UTAMA YANG DIMODIFIKASI
+    // ≡ƒÄ» FUNGSI UTAMA YANG DIMODIFIKASI
     const handleApply = async () => {
         if (!pathDetail || !token) {
             alert("Data jalur pendaftaran atau sesi pengguna tidak ditemukan.");
@@ -96,17 +87,17 @@ export default function DetailPendaftaranPage() {
                 // Handle error lain (misal: sudah terdaftar, server error)
                 const errorData = await response.json();
                 alert(`Gagal mendaftar: ${errorData.message || response.statusText}`);
-                console.error("Enrollment failed:", errorData);
+                logger.error("Enrollment failed:", errorData);
             }
         } catch (error) {
-            console.error("Error during enrollment:", error);
+            logger.error("Error during enrollment:", error);
             alert("Terjadi kesalahan jaringan saat mencoba mendaftar.");
         } finally {
             setIsSubmitting(false);
         }
     }
 
-    // 💡 Handling jika user akses langsung tanpa state (Data tidak ada)
+    // ≡ƒÆí Handling jika user akses langsung tanpa state (Data tidak ada)
     if (!pathDetail) {
         return (
             <AppLayout

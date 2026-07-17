@@ -8,7 +8,8 @@ import { Switch } from "@/components/ui/switch"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Plus, Trash2, Save, ArrowLeft } from "lucide-react"
+import { Plus, Trash2, Save, ArrowLeft, Loader2 } from "lucide-react"
+import { admissionPathsApi } from "@/lib/api"
 
 type Step = {
   id: number
@@ -46,6 +47,7 @@ export default function AdminProgramAddPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const programId = id || "new"
+  const [saving, setSaving] = useState(false)
 
   const [program, setProgram] = useState<Program>({
     id: Number(programId),
@@ -98,9 +100,35 @@ export default function AdminProgramAddPage() {
     }))
   }
 
-  const handleSave = () => {
-    alert("Program berhasil disimpan!")
-    navigate("/admin/programs")
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const payload = {
+        name: program.name,
+        startDate: program.startDate ? new Date(program.startDate).toISOString() : undefined,
+        endDate: program.endDate ? new Date(program.endDate).toISOString() : undefined,
+        status: program.active ? "ACTIVE" as const : "INACTIVE" as const,
+        description: undefined as string | undefined,
+      }
+      let res
+      if (programId !== "new" && !isNaN(Number(programId))) {
+        res = await admissionPathsApi.update(Number(programId), payload)
+      } else {
+        res = await admissionPathsApi.createPath({
+          name: program.name,
+          startDate: program.startDate ? new Date(program.startDate).toISOString() : new Date().toISOString(),
+          endDate: program.endDate ? new Date(program.endDate).toISOString() : new Date().toISOString(),
+          status: program.active ? "ACTIVE" : "INACTIVE",
+        })
+      }
+      if (res.ok) {
+        navigate("/admin/programs")
+      } else {
+        alert("Gagal menyimpan program.")
+      }
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -321,8 +349,9 @@ export default function AdminProgramAddPage() {
         <Button variant="outline" onClick={() => navigate("/admin/programs")}>
           Batal
         </Button>
-        <Button onClick={handleSave} className="flex items-center gap-2">
-          <Save className="h-4 w-4" /> Simpan Program
+        <Button onClick={handleSave} className="flex items-center gap-2" disabled={saving} id="btn-simpan-program">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {saving ? "Menyimpan..." : "Simpan Program"}
         </Button>
       </div>
 

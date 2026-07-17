@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { logger } from "@/lib/logger"
 import { AppLayout } from "@/components/ui/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, 
   Search, 
@@ -44,6 +47,11 @@ export default function CoursesPage() {
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedCourseDetail, setSelectedCourseDetail] = useState<any>(null);
+  const [courseAssignments, setCourseAssignments] = useState<any[]>([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -89,7 +97,7 @@ export default function CoursesPage() {
         }
       }
     } catch (error) {
-      console.error("Error fetching courses data:", error);
+      logger.error("Error fetching courses data:", error);
     } finally {
       setLoading(false);
     }
@@ -118,6 +126,182 @@ export default function CoursesPage() {
           <span>Memuat mata kuliah...</span>
         </div>
       </div>
+    );
+  }
+
+  const handleSelectCourse = async (course: Course) => {
+    setSelectedCourse(course);
+    setLoadingDetails(true);
+    try {
+      // Use dynamic import or direct fetch since api.ts might have them
+      const token = localStorage.getItem("token");
+      const headers = { "Authorization": `Bearer ${token}` };
+      
+      const [courseRes, assigRes] = await Promise.all([
+        fetch(`/courses/${course.id}`, { headers }).then(r => r.json()),
+        fetch(`/assignments/course/${course.id}`, { headers }).then(r => r.json())
+      ]);
+
+      if (courseRes?.success) setSelectedCourseDetail(courseRes.data);
+      if (assigRes?.success) setCourseAssignments(assigRes.data);
+      else setCourseAssignments([]);
+
+    } catch (err) {
+      console.error("Failed to fetch course details", err);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  if (selectedCourse) {
+    const participants = selectedCourseDetail?.class?.students || [];
+
+    return (
+      <AppLayout
+        menuTemplate="student"
+        sidebarTitle="SIA Dashboard"
+        title="Pembelajaran"
+        subtitle="Detail materi dan informasi akademik mata kuliah"
+      >
+        <div className="max-w-7xl mx-auto space-y-6">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setSelectedCourse(null);
+              setSelectedCourseDetail(null);
+              setCourseAssignments([]);
+            }} 
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white border-amber-600 hover:text-white"
+          >
+            <ArrowLeft className="h-4 w-4" /> Kembali
+          </Button>
+
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Left Column - Info & Participants */}
+            <div className="w-full lg:w-1/3 space-y-6">
+              <div>
+                <h4 className="text-sm text-muted-foreground mb-4">Mata Kuliah</h4>
+                <h2 className="text-base font-bold text-gray-900 leading-tight">
+                  {selectedCourse.class?.name ? `[${selectedCourse.class.name}]` : ""} {selectedCourse.title}
+                </h2>
+                <div className="mt-2 text-sm">
+                  <span className="font-medium">Dosen:</span>{" "}
+                  <span className="text-muted-foreground">{selectedCourse.creator?.email || "-"}</span>
+                </div>
+              </div>
+
+              <div className="border rounded-md shadow-sm overflow-hidden bg-white">
+                <div className="bg-gray-50 px-4 py-3 border-b text-sm font-medium">
+                  Peserta Kuliah ({participants.length || 0})
+                </div>
+                <div className="divide-y max-h-[300px] overflow-y-auto">
+                  {participants.length > 0 ? (
+                    participants.map((p: any, idx: number) => (
+                      <div key={idx} className={`p-3 ${idx % 2 === 1 ? 'bg-gray-50/50' : ''}`}>
+                        <p className="text-sm font-medium">{p.student?.user?.fullName || p.student?.nim || "Tanpa Nama"}</p>
+                        <p className="text-xs text-muted-foreground">{p.student?.nim || "-"}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      {loadingDetails ? "Memuat peserta..." : "Belum ada peserta."}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Tabs */}
+            <div className="w-full lg:w-2/3">
+              <Tabs defaultValue="materi" className="w-full">
+                <TabsList className="flex flex-wrap h-auto bg-transparent p-0 justify-start gap-1">
+                  <TabsTrigger value="pengumuman" className="rounded-none bg-gray-100 data-[state=active]:bg-[#3498db] data-[state=active]:text-white px-4 py-2 shadow-sm border-b-0">Pengumuman</TabsTrigger>
+                  <TabsTrigger value="silabus" className="rounded-none bg-gray-100 data-[state=active]:bg-[#3498db] data-[state=active]:text-white px-4 py-2 shadow-sm border-b-0">Silabus</TabsTrigger>
+                  <TabsTrigger value="materi" className="rounded-none bg-gray-100 data-[state=active]:bg-[#3498db] data-[state=active]:text-white px-4 py-2 shadow-sm border-b-0">Materi</TabsTrigger>
+                  <TabsTrigger value="tugas" className="rounded-none bg-gray-100 data-[state=active]:bg-[#3498db] data-[state=active]:text-white px-4 py-2 shadow-sm border-b-0">Tugas</TabsTrigger>
+                  <TabsTrigger value="ujian" className="rounded-none bg-gray-100 data-[state=active]:bg-[#3498db] data-[state=active]:text-white px-4 py-2 shadow-sm border-b-0">Ujian</TabsTrigger>
+                  <TabsTrigger value="cbt" className="rounded-none bg-gray-100 data-[state=active]:bg-[#3498db] data-[state=active]:text-white px-4 py-2 shadow-sm border-b-0">CBT</TabsTrigger>
+                  <TabsTrigger value="diskusi" className="rounded-none bg-gray-100 data-[state=active]:bg-[#3498db] data-[state=active]:text-white px-4 py-2 shadow-sm border-b-0">Diskusi</TabsTrigger>
+                </TabsList>
+
+                <div className="border bg-white p-6 min-h-[300px] mt-2 shadow-sm">
+                  <TabsContent value="pengumuman" className="mt-0">
+                    <div className="p-4 border border-red-200 bg-red-50 text-red-500 rounded-sm text-sm">
+                      Perhatian! Mohon maaf, data pengumuman tidak ditemukan.
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="silabus" className="mt-0">
+                    <div className="p-4 border border-red-200 bg-red-50 text-red-500 rounded-sm text-sm">
+                      Perhatian! Mohon maaf, silabus belum diunggah.
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="materi" className="mt-0">
+                    {selectedCourse.description ? (
+                      <div className="p-4 border rounded-md shadow-sm bg-gray-50/50">
+                        <h4 className="font-semibold text-[#0081a7] mb-2">Deskripsi & Materi Mata Kuliah</h4>
+                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          {selectedCourse.description}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-4 border border-red-200 bg-red-50 text-red-500 rounded-sm text-sm">
+                        Perhatian! Mohon maaf, data materi belum ditambahkan oleh dosen.
+                      </div>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="tugas" className="mt-0 space-y-4">
+                    {loadingDetails ? (
+                      <div className="text-center py-8 text-muted-foreground">Memuat tugas...</div>
+                    ) : courseAssignments.length > 0 ? (
+                      courseAssignments.map((task, idx) => (
+                        <div key={idx} className="p-4 border rounded-md shadow-sm bg-gray-50/50">
+                          <h4 className="font-semibold text-[#0081a7]">{task.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">{task.description}</p>
+                          <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3.5 w-3.5" />
+                              Tenggat: {task.dueDate ? new Date(task.dueDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-4 border border-red-200 bg-red-50 text-red-500 rounded-sm text-sm">
+                        Perhatian! Mohon maaf, tidak ada tugas saat ini.
+                      </div>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="ujian" className="mt-0">
+                    <div className="p-4 border border-red-200 bg-red-50 text-red-500 rounded-sm text-sm">
+                      Perhatian! Jadwal ujian belum tersedia.
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="cbt" className="mt-0">
+                    <div className="p-4 border border-red-200 bg-red-50 text-red-500 rounded-sm text-sm">
+                      Perhatian! Belum ada ujian CBT yang dijadwalkan.
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="diskusi" className="mt-0">
+                    <div className="p-4 border border-red-200 bg-red-50 text-red-500 rounded-sm text-sm">
+                      Perhatian! Belum ada diskusi yang dibuat.
+                    </div>
+                  </TabsContent>
+                </div>
+              </Tabs>
+
+              <div className="mt-6 border rounded-md shadow-sm bg-white overflow-hidden">
+                <div className="bg-[#eef5f9] px-4 py-3 border-b text-sm font-medium text-[#0081a7] flex items-center justify-between">
+                  Layanan Akademik
+                  <AlertCircle className="h-4 w-4" />
+                </div>
+                <div className="p-4 text-sm text-muted-foreground">
+                  Silakan hubungi Operator SIA Akademik Fakultas/Sekolah/Departemen untuk informasi lebih rinci.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
     );
   }
 
@@ -170,7 +354,8 @@ export default function CoursesPage() {
             {filteredCourses.map((course) => (
               <Card 
                 key={course.id} 
-                className="shadow-sm border rounded-lg overflow-hidden flex flex-col justify-between hover:shadow-md hover:border-primary/30 transition-all bg-white group"
+                onClick={() => handleSelectCourse(course)}
+                className="shadow-sm border rounded-lg overflow-hidden flex flex-col justify-between hover:shadow-md hover:border-primary/30 transition-all bg-white group cursor-pointer"
               >
                 <div className="p-5 space-y-4">
                   <div className="flex items-start justify-between gap-2">

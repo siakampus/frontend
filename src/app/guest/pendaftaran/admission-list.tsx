@@ -1,16 +1,16 @@
 import {
-  ArrowRight,
   CalendarDays,
   Lock,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/ui/app-layout";
 import React from "react";
 
+import { logger } from "@/lib/logger"
 // Definisikan tipe data untuk jalur pendaftaran (sesuai respons API)
 // Menambahkan properti yang dibutuhkan di halaman detail, meskipun tidak lengkap dari API list
 interface AdmissionPath {
@@ -100,7 +100,7 @@ const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[] }> = ({
                     </td>
                     <td className="p-3 text-right">
                       <Button size="sm" asChild>
-                        {/* 💡 Perbaikan: Menggunakan /detail-pendaftaran/:id DAN Meneruskan state */}
+                        {/* ≡ƒÆí Perbaikan: Menggunakan /detail-pendaftaran/:id DAN Meneruskan state */}
                         <Link 
                             to={`/pendaftaran/detail-pendaftaran/${path.id}`}
                             state={{ pathDetail: path }}
@@ -158,7 +158,7 @@ export function AdmissionsPage() {
       }
 
       if (!res.ok) {
-        console.warn("⚠️ Gagal mengambil data lock dari API.", res.status);
+        logger.warn("ΓÜá∩╕Å Gagal mengambil data lock dari API.", res.status);
         return false;
       }
 
@@ -183,8 +183,8 @@ export function AdmissionsPage() {
       });
 
       if (!res.ok) {
-        console.warn(
-          "⚠️ Gagal mengambil jalur pendaftaran aktif.",
+        logger.warn(
+          "ΓÜá∩╕Å Gagal mengambil jalur pendaftaran aktif.",
           res.status
         );
         return [];
@@ -213,12 +213,12 @@ export function AdmissionsPage() {
         setActivePaths(paths);
       } catch (err) {
         if ((err as Error).message === "unauthorized") {
-          console.warn("🚫 Token tidak valid atau expired, redirect ke login...");
+          logger.warn("≡ƒÜ½ Token tidak valid atau expired, redirect ke login...");
           localStorage.removeItem("token");
           window.location.href = "/login";
           return;
         }
-        console.error("❌ Gagal memuat data pendaftaran:", err);
+        logger.error("Γ¥î Gagal memuat data pendaftaran:", err);
         setLocked(false);
       } finally {
         setLoading(false);

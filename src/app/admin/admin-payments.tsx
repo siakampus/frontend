@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { adminPaymentsApi } from "@/lib/api";
 import { CreditCard, Search, RefreshCw, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";

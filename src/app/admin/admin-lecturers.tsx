@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,6 @@ export default function AdminLecturersPage() {
   const [lecturers, setLecturers] = useState<Lecturer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [facultyFilter, setFacultyFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [actionMsg, setActionMsg] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -35,15 +34,14 @@ export default function AdminLecturersPage() {
 
   const fetchLecturers = async () => {
     setLoading(true);
-    const res = await adminUsersApi.list({
-      role: "lecturer",
+    const res = await adminLecturersApi.list({
       search: search || undefined,
       take: 50,
     });
     if (res.status === 401) { navigate("/login"); return; }
     if (res.ok && res.data) {
-      const body = res.data as { data?: Lecturer[]; users?: Lecturer[] };
-      setLecturers(body.data || body.users || (res.data as unknown as Lecturer[]) || []);
+      const body = res.data as { data?: Lecturer[]; users?: Lecturer[]; lecturers?: Lecturer[] };
+      setLecturers(body.data || body.lecturers || body.users || (res.data as unknown as Lecturer[]) || []);
     }
     setLoading(false);
   };

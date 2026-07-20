@@ -13,8 +13,8 @@ dist-ssr
 *.local
 .tests
 tests
-test-result
-playwright-reports
+test-results
+playwright-report
 # ─── Environment files (NEVER commit real credentials) ───
 .env
 .env.local

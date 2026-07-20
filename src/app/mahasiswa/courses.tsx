@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { logger } from "@/lib/logger"
 import { AppLayout } from "@/components/ui/app-layout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   BookOpen, 
@@ -15,9 +14,7 @@ import {
   ArrowLeft,
   Calendar,
   AlertCircle,
-  FileText,
-  User,
-  GraduationCap
+  FileText
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -51,12 +48,11 @@ export default function CoursesPage() {
   const [selectedCourseDetail, setSelectedCourseDetail] = useState<any>(null);
   const [courseAssignments, setCourseAssignments] = useState<any[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
-  const getAuthHeaders = () => {
+  const getAuthHeaders = (): Record<string, string> => {
     return token ? { "Authorization": `Bearer ${token}` } : {};
   };
 
@@ -132,20 +128,29 @@ export default function CoursesPage() {
   const handleSelectCourse = async (course: Course) => {
     setSelectedCourse(course);
     setLoadingDetails(true);
+    setSelectedCourseDetail(null);
+    setCourseAssignments([]);
     try {
-      // Use dynamic import or direct fetch since api.ts might have them
-      const token = localStorage.getItem("token");
-      const headers = { "Authorization": `Bearer ${token}` };
-      
       const [courseRes, assigRes] = await Promise.all([
-        fetch(`/courses/${course.id}`, { headers }).then(r => r.json()),
-        fetch(`/assignments/course/${course.id}`, { headers }).then(r => r.json())
+        fetch(`/courses/${course.id}`, {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        }),
+        fetch(`/assignments?courseId=${course.id}`, {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        }),
       ]);
-
-      if (courseRes?.success) setSelectedCourseDetail(courseRes.data);
-      if (assigRes?.success) setCourseAssignments(assigRes.data);
-      else setCourseAssignments([]);
-
+      if (courseRes.ok) {
+        const json = await courseRes.json();
+        if (json.success && json.data) {
+          setSelectedCourseDetail(json.data);
+        }
+      }
+      if (assigRes.ok) {
+        const json = await assigRes.json();
+        setCourseAssignments(Array.isArray(json.data) ? json.data : []);
+      }
     } catch (err) {
       console.error("Failed to fetch course details", err);
     } finally {
@@ -154,7 +159,17 @@ export default function CoursesPage() {
   };
 
   if (selectedCourse) {
-    const participants = selectedCourseDetail?.class?.students || [];
+    const participants = selectedCourseDetail?.class?.students || selectedCourseDetail?.students || [];
+    
+    const lecturers = selectedCourseDetail?.class?.lecturers || [];
+    let dosenLabel = "-";
+    if (lecturers.length > 0) {
+      dosenLabel = lecturers[0].lecturer?.fullName || lecturers[0].lecturer?.user?.email || "-";
+    } else if (selectedCourseDetail?.creator?.email) {
+      dosenLabel = selectedCourseDetail.creator.email;
+    } else if (selectedCourse.creator?.email) {
+      dosenLabel = selectedCourse.creator.email;
+    }
 
     return (
       <AppLayout
@@ -186,7 +201,7 @@ export default function CoursesPage() {
                 </h2>
                 <div className="mt-2 text-sm">
                   <span className="font-medium">Dosen:</span>{" "}
-                  <span className="text-muted-foreground">{selectedCourse.creator?.email || "-"}</span>
+                  <span className="text-muted-foreground">{dosenLabel}</span>
                 </div>
               </div>
 
@@ -257,11 +272,20 @@ export default function CoursesPage() {
                         <div key={idx} className="p-4 border rounded-md shadow-sm bg-gray-50/50">
                           <h4 className="font-semibold text-[#0081a7]">{task.title}</h4>
                           <p className="text-sm text-gray-600 mt-1 line-clamp-2">{task.description}</p>
-                          <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3.5 w-3.5" />
-                              Tenggat: {task.dueDate ? new Date(task.dueDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
-                            </span>
+                          <div className="mt-3 flex items-center justify-between">
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3.5 w-3.5" />
+                                Tenggat: {task.dueDate ? new Date(task.dueDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-"}
+                              </span>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              onClick={() => navigate(`/assignments/${task.id}`)}
+                              className="bg-[#0081a7] hover:bg-[#005f7a] text-white"
+                            >
+                              Lihat & Kumpulkan Tugas
+                            </Button>
                           </div>
                         </div>
                       ))

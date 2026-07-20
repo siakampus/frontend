@@ -25,7 +25,7 @@ export default function DetailPendaftaranPage() {
     
     const pathDetail: PathDetail | null = receivedPathDetail || null;
     
-    // ≡ƒÆí State untuk menangani proses loading/submission
+    // State untuk menangani proses loading/submission
     const [isSubmitting, setIsSubmitting] = useState(false);
     const API_URL = "";
     const token = localStorage.getItem("token");
@@ -46,7 +46,7 @@ export default function DetailPendaftaranPage() {
       }
     }
 
-    // ≡ƒÄ» FUNGSI UTAMA YANG DIMODIFIKASI
+    // FUNGSI UTAMA YANG DIMODIFIKASI
     const handleApply = async () => {
         if (!pathDetail || !token) {
             alert("Data jalur pendaftaran atau sesi pengguna tidak ditemukan.");
@@ -97,7 +97,7 @@ export default function DetailPendaftaranPage() {
         }
     }
 
-    // ≡ƒÆí Handling jika user akses langsung tanpa state (Data tidak ada)
+    // Handling jika user akses langsung tanpa state (Data tidak ada)
     if (!pathDetail) {
         return (
             <AppLayout

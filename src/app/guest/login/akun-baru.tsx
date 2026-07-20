@@ -51,7 +51,7 @@ export default function LoginAkunBaru({
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // ≡ƒæë Redirect user kalau sudah login (token sudah ada)
+  // Redirect user kalau sudah login (token sudah ada)
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (token) {
@@ -79,7 +79,7 @@ export default function LoginAkunBaru({
       })
 
       const data = await res.json().catch(() => ({}))
-      logger.log("≡ƒöì Login response:", JSON.stringify(data, null, 2))
+      logger.log("Login response:", JSON.stringify(data, null, 2))
 
       if (res.ok) {
         // Save token for custom API usage
@@ -124,7 +124,7 @@ export default function LoginAkunBaru({
           }
         }
 
-        logger.log("≡ƒÜÇ Resolved Role:", role)
+        logger.log("Resolved Role:", role)
 
         localStorage.setItem("userEmail", data.user?.email || email)
         localStorage.setItem("userRole", role)

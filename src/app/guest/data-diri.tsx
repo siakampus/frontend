@@ -178,9 +178,11 @@ export default function DataDiriPage() {
           });
           if (res1.ok) {
             const json = await res1.json();
+            logger.log("✅ Data Pribadi (API /admissiondata/1) diterima:", json);
             const d = json.data || {};
             setPribadi(mapApiToPribadi(d, user));
           } else {
+            logger.warn("⚠️ Gagal mengambil Data Pribadi dari API (mungkin belum diisi)");
             setPribadi(mapApiToPribadi({}, user));
           }
 
@@ -366,9 +368,18 @@ export default function DataDiriPage() {
     const isDokumenLengkap = kkOk && ktpOk;
 
     const missingParts: string[] = [];
-    if (!isPribadiLengkap) missingParts.push("Data Pribadi");
-    if (!isKontakLengkap) missingParts.push("Data Kontak");
-    if (!isDokumenLengkap) missingParts.push("Dokumen (KK & KTP)");
+    if (!isPribadiLengkap) {
+      missingParts.push("Data Pribadi");
+      logger.log("Debug - Data Pribadi belum lengkap:", pribadi);
+    }
+    if (!isKontakLengkap) {
+      missingParts.push("Data Kontak");
+      logger.log("Debug - Data Kontak belum lengkap:", kontak);
+    }
+    if (!isDokumenLengkap) {
+      missingParts.push("Dokumen (KK & KTP)");
+      logger.log("Debug - Data Dokumen belum lengkap:", dokumen);
+    }
 
     if (missingParts.length > 0) {
       alert(`Data belum lengkap! Harap lengkapi: ${missingParts.join(", ")} sebelum mengunci data.`);
@@ -386,7 +397,7 @@ export default function DataDiriPage() {
       });
 
       if (res.ok) {
-        alert("≡ƒöÆ Data berhasil dikunci permanen!");
+        alert("Data berhasil dikunci permanen!");
         setLocked(true);
         localStorage.setItem("data_locked", "true");
         setIsEditPribadi(false);

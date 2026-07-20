@@ -17,7 +17,7 @@ import {
 
 import { Mail, Lock, User, Contact, FileCheck } from "lucide-react"
 
-// ≡ƒæë Form Field Component
+// Form Field Component
 function FormField({
   label,
   id,
@@ -49,7 +49,7 @@ function FormField({
   )
 }
 
-// ≡ƒæë Section Header Component
+// Section Header Component
 function SectionHeader({
   icon: Icon,
   title,
@@ -65,7 +65,7 @@ function SectionHeader({
   )
 }
 
-// ≡ƒæë Main Sign Up Form Component
+// Main Sign Up Form Component
 export function SignUpForm() {
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("") // untuk pesan kirim email
@@ -102,7 +102,7 @@ export function SignUpForm() {
   const passwordMatch = confirmPassword.length > 0 && password === confirmPassword
   const passwordError = confirmPassword.length > 0 && password !== confirmPassword
 
-  // ≡ƒæë Kirim kode verifikasi
+  // Kirim kode verifikasi
   const handleSendVerification = async () => {
     if (!email) {
       setMessage("Γ¥î Harap isi email terlebih dahulu.")
@@ -141,7 +141,7 @@ export function SignUpForm() {
     }
   }
 
-  // ≡ƒæë Verifikasi kode token
+  // Verifikasi kode token
   const handleVerifyToken = async () => {
     if (!token) {
       setTokenMessage("Γ¥î Harap isi token terlebih dahulu.")
@@ -177,7 +177,7 @@ export function SignUpForm() {
     }
   }
 
-  // ≡ƒæë Register API — two-step: BetterAuth sign-up, then save extra fields
+  // Register API — two-step: BetterAuth sign-up, then save extra fields
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setRegisterMessage("")

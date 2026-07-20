@@ -56,7 +56,7 @@ export default function CetakBuktiPesertaPage() {
             const downloadUrl = data?.downloadUrl;
 
             if (downloadUrl) {
-                // ≡ƒöÑ PDF dibuka di tab baru
+                // PDF dibuka di tab baru
                 window.open(downloadUrl, "_blank");
             } else {
                 alert("URL unduhan tidak ditemukan dalam respons API.");

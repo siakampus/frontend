@@ -4,28 +4,24 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/ui/app-layout";
 import React from "react";
 
 import { logger } from "@/lib/logger"
-// Definisikan tipe data untuk jalur pendaftaran (sesuai respons API)
-// Menambahkan properti yang dibutuhkan di halaman detail, meskipun tidak lengkap dari API list
+
 interface AdmissionPath {
   id: number;
   name: string;
   description: string;
   startDate: string;
   endDate: string;
-  // Properti tambahan yang akan dimock atau diisi di DetailPendaftaranPage
   programType?: string; 
   faculty?: string;
   enrollmentFee?: number;
 }
-
-// --- Sub-Komponen ---
 
 const NotLockedAlert: React.FC = () => (
   <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-4 rounded-md flex items-start gap-3">
@@ -49,8 +45,9 @@ const NotLockedAlert: React.FC = () => (
 );
 
 // --- Menggunakan data API untuk Program yang Sedang Dibuka ---
-const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[] }> = ({
+const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[], selectedPath: any }> = ({
   activePaths,
+  selectedPath,
 }) => {
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -61,8 +58,32 @@ const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[] }> = ({
     return new Date(dateString).toLocaleDateString("id-ID", options);
   };
 
+  // Normalisasi data selectedPath karena format response API bisa berbeda-beda
+  const selectedId = selectedPath?.data?.id || selectedPath?.data?.admissionPathId || selectedPath?.id || selectedPath?.admissionPathId;
+
   return (
-    <>
+    <div className="space-y-6">
+      {selectedPath && (
+        <Card className="shadow-sm border-blue-200 bg-blue-50">
+          <CardContent className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-blue-800 flex items-center gap-2">
+                <CalendarDays className="h-5 w-5" />
+                Pendaftaran Aktif Ditemukan
+              </h3>
+              <p className="text-sm text-blue-700 mt-1">
+                Anda telah terdaftar di program pendaftaran. Silakan klik tombol di samping untuk mengakses Alur Pendaftaran.
+              </p>
+            </div>
+            <Button asChild className="bg-blue-700 hover:bg-blue-800 text-white whitespace-nowrap">
+              <Link to="/pendaftaran/sarjana-2025">
+                Buka Alur Pendaftaran
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="shadow-sm border rounded-lg p-6">
         <h1 className="text-xl font-bold flex items-center gap-2 mb-4">
           <CalendarDays className="h-6 w-6 text-primary" /> Program yang Sedang Dibuka
@@ -81,36 +102,47 @@ const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[] }> = ({
             </thead>
             <tbody>
               {activePaths.length > 0 ? (
-                activePaths.map((path) => (
-                  <tr
-                    key={path.id}
-                    className="border-b hover:bg-gray-50 transition"
-                  >
-                    <td className="p-3 font-medium">{path.name}</td>
-                    <td className="p-3 text-muted-foreground">
-                      {path.description}
-                    </td>
-                    <td className="p-3">
-                      <Badge className="bg-green-600 text-white">
-                        Sedang Dibuka
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-muted-foreground">
-                      Hingga {formatDate(path.endDate)}
-                    </td>
-                    <td className="p-3 text-right">
-                      <Button size="sm" asChild>
-                        {/* ≡ƒÆí Perbaikan: Menggunakan /detail-pendaftaran/:id DAN Meneruskan state */}
-                        <Link 
-                            to={`/pendaftaran/detail-pendaftaran/${path.id}`}
-                            state={{ pathDetail: path }}
-                        >
-                          Daftar
-                        </Link>
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+                activePaths.map((path) => {
+                  const isSelected = selectedId === path.id;
+                  
+                  return (
+                    <tr
+                      key={path.id}
+                      className="border-b hover:bg-gray-50 transition"
+                    >
+                      <td className="p-3 font-medium">{path.name}</td>
+                      <td className="p-3 text-muted-foreground">
+                        {path.description}
+                      </td>
+                      <td className="p-3">
+                        <Badge className="bg-green-600 text-white">
+                          Sedang Dibuka
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-muted-foreground">
+                        Hingga {formatDate(path.endDate)}
+                      </td>
+                      <td className="p-3 text-right">
+                        {isSelected ? (
+                          <Button size="sm" asChild className="bg-blue-600 hover:bg-blue-700">
+                            <Link to="/pendaftaran/sarjana-2025">
+                              Lanjutkan
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button size="sm" asChild disabled={!!selectedPath}>
+                            <Link 
+                                to={selectedPath ? "#" : `/pendaftaran/detail-pendaftaran/${path.id}`}
+                                state={{ pathDetail: path }}
+                            >
+                              Daftar
+                            </Link>
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={5} className="p-6 text-center text-gray-500">
@@ -122,7 +154,7 @@ const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[] }> = ({
           </table>
         </div>
       </Card>
-    </>
+    </div>
   );
 };
 
@@ -131,6 +163,7 @@ const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[] }> = ({
 export function AdmissionsPage() {
   const [locked, setLocked] = useState<boolean | null>(null);
   const [activePaths, setActivePaths] = useState<AdmissionPath[]>([]);
+  const [selectedPath, setSelectedPath] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const API_URL = "";
@@ -158,7 +191,7 @@ export function AdmissionsPage() {
       }
 
       if (!res.ok) {
-        logger.warn("ΓÜá∩╕Å Gagal mengambil data lock dari API.", res.status);
+        logger.warn("Gagal mengambil data lock dari API.", res.status);
         return false;
       }
 
@@ -184,7 +217,7 @@ export function AdmissionsPage() {
 
       if (!res.ok) {
         logger.warn(
-          "ΓÜá∩╕Å Gagal mengambil jalur pendaftaran aktif.",
+          "Gagal mengambil jalur pendaftaran aktif.",
           res.status
         );
         return [];
@@ -200,25 +233,39 @@ export function AdmissionsPage() {
       }));
     };
 
+    const fetchSelectedPath = async () => {
+      const res = await fetch(`${API_URL}/admission-paths/selected`, {
+        method: "GET",
+        headers: authHeaders,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+      return null;
+    };
+
     const loadData = async () => {
       try {
         setLoading(true);
 
-        const [isLocked, paths] = await Promise.all([
+        const [isLocked, paths, selected] = await Promise.all([
           fetchLockStatus(),
           fetchActivePaths(),
+          fetchSelectedPath(),
         ]);
 
         setLocked(isLocked);
         setActivePaths(paths);
+        setSelectedPath(selected);
       } catch (err) {
         if ((err as Error).message === "unauthorized") {
-          logger.warn("≡ƒÜ½ Token tidak valid atau expired, redirect ke login...");
+          logger.warn("Token tidak valid atau expired, redirect ke login...");
           localStorage.removeItem("token");
           window.location.href = "/login";
           return;
         }
-        logger.error("Γ¥î Gagal memuat data pendaftaran:", err);
+        logger.error("Gagal memuat data pendaftaran:", err);
         setLocked(false);
       } finally {
         setLoading(false);
@@ -250,7 +297,7 @@ export function AdmissionsPage() {
     >
       {/* Conditional Rendering Logic */}
       {locked ? (
-        <EnrollmentContent activePaths={activePaths} />
+        <EnrollmentContent activePaths={activePaths} selectedPath={selectedPath} />
       ) : (
         <NotLockedAlert />
       )}

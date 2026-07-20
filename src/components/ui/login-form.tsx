@@ -18,7 +18,7 @@ import { getRedirectPathByRole } from "@/lib/redirectByRole";
 // Placeholder kalau logo gagal dimuat
 const logoPlaceholder = "https://placehold.co/256x256/00008b/ffffff?text=U+G+N";
 
-// ≡ƒöö Alert Box Reusable Component
+// Alert Box Reusable Component
 function AlertBox({
   type,
   message,
@@ -47,7 +47,7 @@ function AlertBox({
   );
 }
 
-// ≡ƒºá Main Login Component
+// Main Login Component
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,7 +56,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // ≡ƒöÉ Handle Login API
+  // Handle Login API
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -82,7 +82,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       });
 
       const data = await res.json().catch(() => ({}));
-      logger.log("≡ƒöì Login response:", JSON.stringify(data, null, 2));
+      logger.log("Login response:", JSON.stringify(data, null, 2));
 
       if (res.ok) {
         // Save token for custom API usage
@@ -127,7 +127,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           }
         }
 
-        logger.log("≡ƒÜÇ Resolved Role:", role);
+        logger.log("Resolved Role:", role);
 
         localStorage.setItem("userEmail", data.user?.email || email);
         localStorage.setItem("userRole", role);
@@ -157,7 +157,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 rounded-lg shadow-lg">
         <CardContent className="grid p-0 md:grid-cols-2">
-          {/* ≡ƒº¡ Left side: Login Form */}
+          {/* Left side: Login Form */}
           <div className="p-6 md:p-8">
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid grid-cols-2 mb-6">
@@ -280,7 +280,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             </Tabs>
           </div>
 
-          {/* ≡ƒÅ¢∩╕Å Right side: Logo area */}
+          {/* Right side: Logo area */}
           <div className="bg-primary hidden md:flex items-center justify-center">
             <img
               src={logo}

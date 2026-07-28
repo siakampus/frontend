@@ -943,6 +943,15 @@ export const adminRegistrationsApi = {
     }),
 };
 
+const BASE_API = (import.meta.env.VITE_PUBLIC_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+
+export const chatApiAdditions = {
+  summarizeMaterial: (materialId: number | string, refresh = false) =>
+    apiFetch(
+      `${BASE_API}/chat/summarize-material/${materialId}${refresh ? "?refresh=true" : ""}`,
+      { method: "POST", headers: authHeaders() }
+    ),
+};
 // ─────────────────────────────────────────────
 // Admin — Registration Config
 // ─────────────────────────────────────────────
@@ -1151,7 +1160,7 @@ export const krsApi = {
     }),
 
   // ── Admin: Academic Terms ──
-  
+
   /** GET /api/academic-terms — Admin: list all terms */
   getAllTerms: () =>
     apiFetch("/api/academic-terms", {

@@ -128,7 +128,7 @@ export function SignUpForm() {
       const data = await res.json()
 
       if (res.ok) {
-        setMessage(`Γ£à ${data.message}`)
+        setMessage(` ${data.message}`)
         if (data.verificationCode) setVerificationCode(data.verificationCode)
       } else {
         setMessage(`Γ¥î ${data.message || "Gagal mengirim kode verifikasi."}`)
@@ -164,7 +164,7 @@ export function SignUpForm() {
       if (res.ok) {
         setVerified(true)
         setToken(token)
-        setTokenMessage("Γ£à Email berhasil diverifikasi!")
+        setTokenMessage(" Email berhasil diverifikasi!")
       } else {
         setVerified(false)
         setTokenMessage("Γ¥î Token salah atau sudah kadaluarsa.")
@@ -264,10 +264,10 @@ export function SignUpForm() {
           "ΓÜá∩╕Å Akun berhasil dibuat, tetapi data tambahan gagal disimpan. Harap perbarui profil Anda setelah login."
         )
       } else {
-        setRegisterMessage("Γ£à User registered successfully")
+        setRegisterMessage(" User registered successfully")
       }
 
-      alert("Γ£à Akun berhasil dibuat! Silakan login dengan akun baru Anda.")
+      alert(" Akun berhasil dibuat! Silakan login dengan akun baru Anda.")
       window.location.href = "/pendaftaran/berhasil/login"
     } catch (error) {
       logger.error(error)
@@ -304,7 +304,7 @@ export function SignUpForm() {
 
             {message && (
               <p
-                className={`text-xs mt-1 ${message.startsWith("Γ£à")
+                className={`text-xs mt-1 ${message.startsWith("")
                   ? "text-green-600"
                   : message.startsWith("ΓÅ│")
                     ? "text-gray-500"
@@ -341,7 +341,7 @@ export function SignUpForm() {
           {/* Pesan verifikasi terpisah */}
           {tokenMessage && (
             <p
-              className={`text-xs mt-1 ${tokenMessage.startsWith("Γ£à")
+              className={`text-xs mt-1 ${tokenMessage.startsWith("")
                 ? "text-green-600"
                 : tokenMessage.startsWith("ΓÅ│")
                   ? "text-gray-500"
@@ -389,7 +389,7 @@ export function SignUpForm() {
                       : "text-transparent"
                     }`}
                 >
-                  {passwordMatch ? "Γ£à Password cocok" : passwordError ? "Γ¥î Password tidak sama" : "placeholder"}
+                  {passwordMatch ? " Password cocok" : passwordError ? "Γ¥î Password tidak sama" : "placeholder"}
                 </p>
               </div>
             </CardContent>
@@ -480,7 +480,7 @@ export function SignUpForm() {
           </Card>
 
           {registerMessage && (
-            <p className={`text-xs mt-1 ${registerMessage.startsWith("Γ£à") ? "text-green-600" :
+            <p className={`text-xs mt-1 ${registerMessage.startsWith("") ? "text-green-600" :
               registerMessage.startsWith("ΓÅ│") ? "text-gray-500" : "text-red-500"
               }`}>
               {registerMessage}

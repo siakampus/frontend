@@ -133,7 +133,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         localStorage.setItem("userRole", role);
 
         const redirectPath = getRedirectPathByRole(role);
-        setSuccessMessage("Γ£à Login berhasil! Mengarahkan ke " + redirectPath);
+        setSuccessMessage(" Login berhasil! Mengarahkan ke " + redirectPath);
         setTimeout(() => {
           window.location.href = redirectPath;
         }, 1000);
@@ -230,7 +230,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                         sitekey={import.meta.env.VITE_PUBLIC_TURNSTILE_SITE_KEY ?? "1x00000000000000000000AA"}
                         size="flexible"
                         onVerify={(token) => {
-                          logger.log("Γ£à Turnstile token:", token);
+                          logger.log(" Turnstile token:", token);
                           setCaptchaToken(token);
                         }}
                         onExpire={() => {

@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom"
 import Turnstile from "react-turnstile"
 import { getRedirectPathByRole } from "@/lib/redirectByRole"
 
-// Γ£à Alert reusable component
+//  Alert reusable component
 function AlertBox({
   type,
   message,
@@ -130,7 +130,7 @@ export default function LoginAkunBaru({
         localStorage.setItem("userRole", role)
 
         const redirectPath = getRedirectPathByRole(role)
-        setSuccessMessage("Γ£à Login berhasil! Mengarahkan ke " + redirectPath)
+        setSuccessMessage(" Login berhasil! Mengarahkan ke " + redirectPath)
         setTimeout(() => {
           navigate(redirectPath)
         }, 1000)
@@ -170,7 +170,7 @@ export default function LoginAkunBaru({
               </div>
 
               <form onSubmit={handleLogin} className="grid gap-4">
-                {/* Γ£à ALERTS */}
+                {/*  ALERTS */}
                 {successMessage && (
                   <AlertBox type="success" message={successMessage} />
                 )}

@@ -27,25 +27,25 @@ interface AppHeaderProps {
 
 // PERBAIKAN 1: Sesuaikan interface dengan respons API yang sebenarnya
 interface UserData {
-    email: string;
-    // Anda bisa menambahkan field lain yang Anda butuhkan di sini (misalnya id, role)
+  email: string;
+  // Anda bisa menambahkan field lain yang Anda butuhkan di sini (misalnya id, role)
 }
 interface UserProfileResponse {
-    user: UserData;
-    message: string;
+  user: UserData;
+  message: string;
 }
 
 const getInitials = (name: string): string => {
   const parts = name.trim().split(/\s+/);
-  
+
   if (parts.length === 0) {
-      return "GU"; 
+    return "GU";
   }
-  
+
   if (parts.length >= 2) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
-  
+
   return name.substring(0, 2).toUpperCase();
 };
 
@@ -56,15 +56,15 @@ export function AppHeader({
   subtitle,
   backTo,
 }: AppHeaderProps) {
-    
-  const [currentUserName, setCurrentUserName] = useState("Pengguna"); 
-  const [currentInitials, setCurrentInitials] = useState("GU");     
+
+  const [currentUserName, setCurrentUserName] = useState("Pengguna");
+  const [currentInitials, setCurrentInitials] = useState("GU");
   const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem("token");
-      
+
       if (!token) {
         setLoading(false);
         return;
@@ -72,35 +72,35 @@ export function AppHeader({
 
       try {
         const response = await fetch(`/auth/profile`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`, 
-            },
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
           const errorText = await response.text();
           logger.error(`Gagal mengambil profil (${response.status}). Respons Backend Error:`, errorText.substring(0, 100) + '...');
-          
+
           if (response.status === 401 || response.status === 403) {
             logger.warn("Token ditolak (Unauthorized/Forbidden). Memaksa logout.");
             localStorage.removeItem("token");
             window.location.href = "/login";
-            return; 
+            return;
           }
-          
+
           throw new Error(`Gagal mengambil profil pengguna: Status ${response.status}`);
         }
 
         // Catatan: Mengganti UserProfile ke UserProfileResponse
-        const data: UserProfileResponse = await response.json(); 
-        
-        logger.log("Γ£à Data Profil berhasil diterima:", data);
-        
+        const data: UserProfileResponse = await response.json();
+
+        logger.log(" Data Profil berhasil diterima:", data);
+
         // PERBAIKAN 2: Ambil email dengan aman menggunakan optional chaining
-        const username = data?.user?.email || (data as any)?.email || (data as any)?.name || "Pengguna"; 
-        const initials = getInitials(username);      
+        const username = data?.user?.email || (data as any)?.email || (data as any)?.name || "Pengguna";
+        const initials = getInitials(username);
 
         setCurrentUserName(username);
         setCurrentInitials(initials);
@@ -112,7 +112,7 @@ export function AppHeader({
     };
 
     fetchUserProfile();
-  }, []); 
+  }, []);
 
   return (
     <header className="h-16 border-b flex items-center justify-between px-6 bg-white">

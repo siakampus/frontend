@@ -294,7 +294,7 @@ export default function DataDiriPage() {
       }
 
       if (res.ok) {
-        alert("Γ£à Data berhasil disimpan!");
+        alert(" Data berhasil disimpan!");
         onSuccess();
         if (type === 3) {
           const resData = await fetch(`${API_URL}/admissiondata/${type}`, {

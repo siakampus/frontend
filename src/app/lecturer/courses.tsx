@@ -58,12 +58,20 @@ export default function LecturerCoursesPage() {
   // Detail View State
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [courseAssignments, setCourseAssignments] = useState<Assignment[]>([]);
+  const [courseMaterials, setCourseMaterials] = useState<any[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
 
   // Edit Materi State
   const [editMateriDesc, setEditMateriDesc] = useState("");
   const [materiFile, setMateriFile] = useState<File | null>(null);
   const [isUpdatingMateri, setIsUpdatingMateri] = useState(false);
+
+  // Create Materi State
+  const [isCreateMateriDialogOpen, setIsCreateMateriDialogOpen] = useState(false);
+  const [newMateriTitle, setNewMateriTitle] = useState("");
+  const [newMateriDesc, setNewMateriDesc] = useState("");
+  const [newMateriFile, setNewMateriFile] = useState<File | null>(null);
+  const [isCreatingMateri, setIsCreatingMateri] = useState(false);
 
   // Create Assignment State
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
@@ -116,16 +124,42 @@ export default function LecturerCoursesPage() {
     setIsCreating(false);
   };
 
+  const fetchCourseMaterials = async (courseId: number) => {
+    const token = localStorage.getItem("token");
+    const materiRes = await fetch(`/materials/course/${courseId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (materiRes.ok) {
+      const json = await materiRes.json();
+      setCourseMaterials(Array.isArray(json.data) ? json.data : []);
+    }
+  };
+
   const handleSelectCourse = async (course: Course) => {
     setSelectedCourse(course);
     setEditMateriDesc(course.description || "");
     setMateriFile(null);
+    setNewMateriTitle("");
+    setNewMateriDesc("");
+    setNewMateriFile(null);
     setLoadingDetails(true);
+    setCourseAssignments([]);
+    setCourseMaterials([]);
     try {
-      const res = await assignmentsApi.listByCourse(course.id);
-      if (res.ok && res.data) {
-        const body = res.data as { data?: Assignment[] };
+      const token = localStorage.getItem("token");
+      const [assigRes, materiRes] = await Promise.all([
+        assignmentsApi.listByCourse(course.id),
+        fetch(`/materials/course/${course.id}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
+      ]);
+      if (assigRes.ok && assigRes.data) {
+        const body = assigRes.data as { data?: Assignment[] };
         setCourseAssignments(body.data || []);
+      }
+      if (materiRes.ok) {
+        const json = await materiRes.json();
+        setCourseMaterials(Array.isArray(json.data) ? json.data : []);
       }
     } catch (err) {
       console.error("Failed to fetch course details", err);
@@ -174,6 +208,42 @@ export default function LecturerCoursesPage() {
       notify("❌ Terjadi kesalahan saat memperbarui materi.");
     } finally {
       setIsUpdatingMateri(false);
+    }
+  };
+
+  const handleCreateMateri = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCourse) return;
+    setIsCreatingMateri(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("courseId", String(selectedCourse.id));
+      formData.append("title", newMateriTitle);
+      if (newMateriDesc) formData.append("description", newMateriDesc);
+      if (newMateriFile) formData.append("file", newMateriFile);
+
+      const res = await fetch(`/materials`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      if (res.ok) {
+        notify("✅ Materi berhasil ditambahkan.");
+        setIsCreateMateriDialogOpen(false);
+        setNewMateriTitle("");
+        setNewMateriDesc("");
+        setNewMateriFile(null);
+        await fetchCourseMaterials(selectedCourse.id);
+      } else {
+        notify("❌ Gagal menambahkan materi.");
+      }
+    } catch (err) {
+      notify("❌ Terjadi kesalahan saat menambahkan materi.");
+    } finally {
+      setIsCreatingMateri(false);
     }
   };
 
@@ -246,6 +316,7 @@ export default function LecturerCoursesPage() {
             onClick={() => {
               setSelectedCourse(null);
               setCourseAssignments([]);
+              setCourseMaterials([]);
             }} 
             className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white border-amber-600 hover:text-white"
           >
@@ -305,7 +376,82 @@ export default function LecturerCoursesPage() {
                   {/* Materi Tab */}
                   <TabsContent value="materi" className="mt-0 space-y-4">
                     <div className="p-4 border rounded-md shadow-sm bg-gray-50/50">
-                      <h4 className="font-semibold text-[#0081a7] mb-2">Isi / Deskripsi Mata Kuliah Saat Ini</h4>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-semibold text-[#0081a7]">Daftar Materi</h4>
+                        <Dialog open={isCreateMateriDialogOpen} onOpenChange={setIsCreateMateriDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" className="flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              Buat Materi
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Tambah Materi Baru</DialogTitle>
+                              <DialogDescription className="sr-only">
+                                Form untuk menambahkan materi baru pada mata kuliah ini
+                              </DialogDescription>
+                            </DialogHeader>
+                            <form onSubmit={handleCreateMateri} className="space-y-4 py-4">
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">Judul Materi</label>
+                                <Input 
+                                  value={newMateriTitle} 
+                                  onChange={(e) => setNewMateriTitle(e.target.value)} 
+                                  placeholder="Contoh: Materi 5: Polymorphism" 
+                                  required 
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">Deskripsi / Isi Materi</label>
+                                <Textarea 
+                                  value={newMateriDesc} 
+                                  onChange={(e) => setNewMateriDesc(e.target.value)} 
+                                  placeholder="Jelaskan isi materi..." 
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium">Upload File Materi (PDF, dll) - <span className="text-muted-foreground font-normal">Opsional</span></label>
+                                <input
+                                  type="file"
+                                  onChange={(e) => setNewMateriFile(e.target.files?.[0] || null)}
+                                  className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                                />
+                                {newMateriFile && <p className="text-xs text-muted-foreground mt-1">Terpilih: {newMateriFile.name}</p>}
+                              </div>
+                              <div className="flex justify-end pt-4">
+                                <Button type="submit" disabled={isCreatingMateri}>
+                                  {isCreatingMateri ? "Menyimpan..." : "Simpan Materi"}
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+
+                      {loadingDetails ? (
+                        <div className="text-center py-4 text-muted-foreground">Memuat materi...</div>
+                      ) : courseMaterials.length > 0 ? (
+                        <div className="space-y-3 mb-4">
+                          {courseMaterials.map((m: any) => (
+                            <div key={m.id} className="p-3 bg-white border rounded">
+                              <h5 className="font-semibold">{m.title}</h5>
+                              <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{m.description}</p>
+                              {m.fileUrl && (
+                                <a href={`http://localhost:8000${m.fileUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 inline-flex items-center gap-1 text-sm">
+                                  <FileText className="h-4 w-4" /> Download Lampiran
+                                </a>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-3 border border-dashed rounded text-sm text-muted-foreground italic mb-4">
+                          Belum ada materi yang ditambahkan. Klik "Buat Materi" untuk menambahkan.
+                        </div>
+                      )}
+
+                      <h4 className="font-semibold text-[#0081a7] mb-2 mt-4 pt-4 border-t">Isi / Deskripsi Mata Kuliah Saat Ini</h4>
                       {selectedCourse.description ? (
                         <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
                           {selectedCourse.description}
@@ -316,7 +462,7 @@ export default function LecturerCoursesPage() {
                     </div>
 
                     <form onSubmit={handleUpdateMateri} className="border p-4 rounded-md shadow-sm space-y-4">
-                      <h4 className="font-semibold text-gray-900">Perbarui Materi</h4>
+                      <h4 className="font-semibold text-gray-900">Perbarui Deskripsi Mata Kuliah</h4>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Isi Materi / Deskripsi</label>
                         <Textarea 

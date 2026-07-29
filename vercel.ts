@@ -5,5 +5,6 @@ const BASE_API = process.env.BASE_API || 'https://your-backend-api.com';
 export const config: VercelConfig = {
   rewrites: [
     routes.rewrite('/api/(.*)', `${BASE_API}/api/$1`),
+    routes.rewrite('/(.*)', '/index.html'),
   ],
 };

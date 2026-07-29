@@ -76,7 +76,7 @@ export default function ProtectedRoute({
             const fallback =
               role === "admin" ? "/admin"
               : role === "lecturer" ? "/lecturer"
-              : role === "student" ? "/dashboard"
+              : role === "student" ? "/mahasiswa"
               : role === "guest" ? "/guest/dashboard"
               : "/login";
             if (!cancelled) { setRedirectPath(fallback); setStatus("redirect"); }

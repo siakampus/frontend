@@ -524,7 +524,7 @@ export default function CoursesPage() {
                             </div>
                             <Button
                               size="sm"
-                              onClick={() => navigate(`/assignments/${task.id}`)}
+                              onClick={() => navigate(`/mahasiswa/assignments/${task.id}`)}
                               className="bg-[#0081a7] hover:bg-[#005f7a] text-white"
                             >
                               Lihat & Kumpulkan Tugas
@@ -583,7 +583,7 @@ export default function CoursesPage() {
         {/* Tombol kembali */}
         <Button
           variant="outline"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/mahasiswa")}
           className="flex items-center gap-2 hover:bg-muted"
         >
           <ArrowLeft className="h-4 w-4" /> Kembali ke Dashboard

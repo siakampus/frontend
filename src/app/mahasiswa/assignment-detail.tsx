@@ -100,7 +100,7 @@ export default function AssignmentDetailPage() {
       subtitle="Lihat dan kumpulkan tugas Anda"
     >
       <div className="max-w-3xl mx-auto space-y-6">
-        <Button variant="outline" onClick={() => navigate("/courses")} className="flex items-center gap-2">
+        <Button variant="outline" onClick={() => navigate("/mahasiswa/courses")} className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" /> Kembali ke Mata Kuliah
         </Button>
 

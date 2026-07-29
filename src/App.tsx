@@ -69,32 +69,32 @@ export default function App() {
             <Route path="/pendaftaran/berhasil/login" element={<LoginAkunBaru />} />
 
             {/* ===================== STUDENT ROUTES ===================== */}
-            <Route path="/dashboard" element={
+            <Route path="/mahasiswa" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <DashboardPage />
               </ProtectedRoute>
             } />
-            <Route path="/profile" element={
+            <Route path="/mahasiswa/profile" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <ProfilePage />
               </ProtectedRoute>
             } />
-            <Route path="/courses" element={
+            <Route path="/mahasiswa/courses" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <CoursesPage />
               </ProtectedRoute>
             } />
-            <Route path="/krs" element={
+            <Route path="/mahasiswa/krs" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <KrsPage />
               </ProtectedRoute>
             } />
-            <Route path="/chat" element={
+            <Route path="/mahasiswa/chat" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <ChatPage />
               </ProtectedRoute>
             } />
-            <Route path="/assignments/:id" element={
+            <Route path="/mahasiswa/assignments/:id" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <AssignmentDetailPage />
               </ProtectedRoute>

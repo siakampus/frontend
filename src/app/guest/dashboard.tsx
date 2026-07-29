@@ -62,7 +62,7 @@ export default function GuestDashboardPage() {
         if (role && role !== "guest") {
           if (role === "admin") navigate("/admin");
           else if (role === "lecturer") navigate("/lecturer");
-          else if (role === "student") navigate("/dashboard");
+          else if (role === "student") navigate("/mahasiswa");
           return;
         }
 

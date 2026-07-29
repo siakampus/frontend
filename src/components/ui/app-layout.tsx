@@ -24,10 +24,10 @@ export const ADMISI_MENU: SidebarItem[] = [
 ];
 
 export const STUDENT_MENU: SidebarItem[] = [
-  { label: "Dashboard", to: "/dashboard", icon: <Home className="h-4 w-4" /> },
-  { label: "Profile",   to: "/profile",   icon: <User className="h-4 w-4" /> },
-  { label: "Mata Kuliah", to: "/courses", icon: <BookOpen className="h-4 w-4" /> },
-  { label: "KRS", to: "/krs", icon: <FileText className="h-4 w-4" /> },
+  { label: "Dashboard", to: "/mahasiswa", icon: <Home className="h-4 w-4" /> },
+  { label: "Profile",   to: "/mahasiswa/profile",   icon: <User className="h-4 w-4" /> },
+  { label: "Mata Kuliah", to: "/mahasiswa/courses", icon: <BookOpen className="h-4 w-4" /> },
+  { label: "KRS", to: "/mahasiswa/krs", icon: <FileText className="h-4 w-4" /> },
 ];
 
 export const ADMIN_MENU: SidebarItem[] = [

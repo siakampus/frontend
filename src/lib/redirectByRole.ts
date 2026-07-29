@@ -14,7 +14,7 @@ export function getRedirectPathByRole(role: string | undefined | null): string {
     case "admin":
       return "/admin"
     case "student":
-      return "/dashboard"
+      return "/mahasiswa"
     case "lecturer":
       return "/lecturer"
     case "guest":

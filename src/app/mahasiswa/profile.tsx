@@ -195,7 +195,7 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto space-y-6">
         <Button 
           variant="outline" 
-          onClick={() => navigate("/dashboard")} 
+          onClick={() => navigate("/mahasiswa")} 
           className="flex items-center gap-2 hover:bg-muted"
         >
           <ArrowLeft className="h-4 w-4" /> Kembali ke Dashboard

@@ -46,7 +46,8 @@ export default function AdminDashboardPage() {
         // Ensure admin role
         if (sessionData.user.role !== "admin") {
           // Redirect to correct dashboard based on role
-          if (sessionData.user.role === "student" || sessionData.user.role === "guest") navigate("/dashboard");
+          if (sessionData.user.role === "student") navigate("/mahasiswa");
+          if (sessionData.user.role === "guest") navigate("/guest/dashboard");
           if (sessionData.user.role === "lecturer") navigate("/lecturer");
           return;
         }

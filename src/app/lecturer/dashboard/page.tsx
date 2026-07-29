@@ -10,6 +10,7 @@ import {
   FileText
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 interface UserData {
   email: string;
@@ -26,7 +27,7 @@ export default function LecturerDashboardPage() {
     const fetchSession = async () => {
       try {
         const token = localStorage.getItem("token");
-        const sessionRes = await fetch("/api/auth/get-session", {
+        const sessionRes = await fetch(`${API_BASE}/api/auth/get-session`, {
           credentials: "include",
           headers: token ? { "Authorization": `Bearer ${token}` } : {}
         });

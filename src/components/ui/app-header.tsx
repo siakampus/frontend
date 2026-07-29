@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Link } from "react-router-dom"
 import { useState, useEffect } from "react"
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 // --- Interface dan Helpers ---
 
@@ -71,7 +72,7 @@ export function AppHeader({
       }
 
       try {
-        const response = await fetch(`/auth/profile`, {
+        const response = await fetch(`${API_BASE}/auth/profile`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

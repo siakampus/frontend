@@ -3,6 +3,7 @@
 import { LogOut } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 export interface SidebarItem {
   label: string
@@ -66,7 +67,7 @@ export function AppSidebar({
               try {
                 const token = localStorage.getItem("token");
                 // Invalidate the server-side session + cookie
-                await fetch("/api/auth/sign-out", {
+                await fetch(`${API_BASE}/api/auth/sign-out`, {
                   method: "POST",
                   credentials: "include",
                   headers: {

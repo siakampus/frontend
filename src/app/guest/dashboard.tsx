@@ -17,6 +17,7 @@ import {
   ClipboardList
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 interface UserSession {
   email: string;
@@ -41,7 +42,7 @@ export default function GuestDashboardPage() {
       try {
         setLoading(true);
         // 1. Get user session
-        const sessionRes = await fetch("/api/auth/get-session", {
+        const sessionRes = await fetch(`${API_BASE}/api/auth/get-session`, {
           credentials: "include",
           headers: getAuthHeaders()
         });

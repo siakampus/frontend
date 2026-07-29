@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { AppLayout } from "@/components/ui/app-layout";
 
 import { logger } from "@/lib/logger"
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 export default function DataDiriPage() {
   const [isEditPribadi, setIsEditPribadi] = useState(false);
   const [isEditKontak, setIsEditKontak] = useState(false);
@@ -111,7 +112,7 @@ export default function DataDiriPage() {
     const checkSessionAndFetch = async () => {
       let userSession = null;
       try {
-        const sessionRes = await fetch("/api/auth/get-session", {
+        const sessionRes = await fetch(`${API_BASE}/api/auth/get-session`, {
           credentials: "include",
           headers: getAuthHeaders(),
         });

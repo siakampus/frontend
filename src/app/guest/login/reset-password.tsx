@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, XCircle, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 function AlertBox({ type, message }: { type: "success" | "error"; message: string; }) {
   if (!message) return null;
@@ -52,7 +53,7 @@ export default function ResetPasswordPage() {
     setSuccessMsg("");
 
     try {
-      const res = await fetch("/auth/reset-password", {
+      const res = await fetch(`${API_BASE}/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),

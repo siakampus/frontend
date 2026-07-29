@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select"
 
 import { Mail, Lock, User, Contact, FileCheck } from "lucide-react"
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 // Form Field Component
 function FormField({
@@ -199,7 +200,7 @@ export function SignUpForm() {
       // ΓöÇΓöÇ Step 1: Register with BetterAuth ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
       // BetterAuth /sign-up/email only accepts name, email, password, confirmPassword.
       // All extra fields are saved in step 2 below.
-      const signUpRes = await fetch("/api/auth/sign-up/email", {
+      const signUpRes = await fetch(`${API_BASE}/api/auth/sign-up/email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -230,7 +231,7 @@ export function SignUpForm() {
       // The session cookie from step 1 (autoSignIn: true) authenticates this call.
       setRegisterMessage("ΓÅ│ Menyimpan data registrasi...")
 
-      const saveRes = await fetch("/auth/registration/section/1/save", {
+      const saveRes = await fetch(`${API_BASE}/auth/registration/section/1/save`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",   // send the session cookie

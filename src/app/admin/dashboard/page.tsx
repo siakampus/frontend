@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { adminUsersApi, adminRegistrationsApi, adminPaymentsApi } from "@/lib/api";
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 interface UserData {
   email: string;
@@ -29,7 +30,7 @@ export default function AdminDashboardPage() {
     const fetchSession = async () => {
       try {
         const token = localStorage.getItem("token");
-        const sessionRes = await fetch("/api/auth/get-session", {
+        const sessionRes = await fetch(`${API_BASE}/api/auth/get-session`, {
           credentials: "include",
           headers: token ? { "Authorization": `Bearer ${token}` } : {}
         });

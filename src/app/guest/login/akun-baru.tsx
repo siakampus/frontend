@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom"
 import Turnstile from "react-turnstile"
 import { getRedirectPathByRole } from "@/lib/redirectByRole"
 
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? ""
+
 //  Alert reusable component
 function AlertBox({
   type,
@@ -68,7 +70,7 @@ export default function LoginAkunBaru({
 
     try {
       // BetterAuth sign-in — uses session cookies, not bearer tokens
-      const res = await fetch("/api/auth/sign-in/email", {
+      const res = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -92,7 +94,7 @@ export default function LoginAkunBaru({
 
         try {
           // Attempt 1: BetterAuth get-session using cookie and token
-          const sessionRes = await fetch("/api/auth/get-session", {
+          const sessionRes = await fetch(`${API_BASE}/api/auth/get-session`, {
             credentials: "include",
             headers: data.token ? { "Authorization": `Bearer ${data.token}` } : {}
           })
@@ -109,7 +111,7 @@ export default function LoginAkunBaru({
         if (!role || role === "guest") {
           try {
             // Attempt 2: Custom backend profile endpoint
-            const profileRes = await fetch("/auth/profile", {
+            const profileRes = await fetch(`${API_BASE}/auth/profile`, {
               credentials: "include",
               headers: data.token ? { "Authorization": `Bearer ${data.token}` } : {}
             })

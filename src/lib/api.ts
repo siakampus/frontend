@@ -29,11 +29,15 @@ function authHeadersMultipart(): Record<string, string> {
   return base;
 }
 
+// In dev: empty string — Vite proxy handles /api/*, /auth/*, etc.
+// In production: set VITE_PUBLIC_API_URL in Vercel env vars to your backend URL.
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
+
 async function apiFetch<T = unknown>(
   url: string,
   options: RequestInit = {}
 ): Promise<{ ok: boolean; status: number; data: T }> {
-  const res = await fetch(url, {
+  const res = await fetch(`${API_BASE}${url}`, {
     credentials: "include",
     ...options,
   });

@@ -373,7 +373,7 @@ export const filesApi = {
   upload: (file: File) => {
     const form = new FormData();
     form.append("file", file);
-    return apiFetch("/api/files/upload", {
+    return apiFetch("/files/upload", {
       method: "POST",
       headers: authHeadersMultipart(),
       body: form,
@@ -385,14 +385,14 @@ export const filesApi = {
 
   /** DELETE /api/files/:fileId — Delete a file by ID */
   deleteFile: (fileId: string) =>
-    apiFetch(`/api/files/${fileId}`, {
+    apiFetch(`/files/${fileId}`, {
       method: "DELETE",
       headers: authHeaders(),
     }),
 
   /** GET /api/files/user/files — List all files for the current user */
   listUserFiles: () =>
-    apiFetch("/api/files/user/files", {
+    apiFetch("/files/user/files", {
       headers: authHeaders(),
     }),
 };
@@ -1136,7 +1136,7 @@ export const jurusanApi = {
 export const krsApi = {
   /** GET /api/academic-terms/active — Get active academic term */
   getActiveTerm: () =>
-    apiFetch("/api/academic-terms/active", {
+    apiFetch("/academic-terms/active", {
       headers: authHeaders(),
     }),
 
@@ -1144,20 +1144,20 @@ export const krsApi = {
   getCourses: (majorId?: number) => {
     const q = new URLSearchParams();
     if (majorId !== undefined) q.set("majorId", String(majorId));
-    return apiFetch(`/api/courses?${q}`, {
+    return apiFetch(`/courses?${q}`, {
       headers: authHeaders(),
     });
   },
 
   /** GET /api/krs/my-krs — Get current student's KRS */
   getMyKrs: () =>
-    apiFetch("/api/krs/my-krs", {
+    apiFetch("/krs/my-krs", {
       headers: authHeaders(),
     }),
 
   /** POST /api/krs/enroll — Submit or Save Draft KRS */
   enroll: (courseIds: number[], action: "DRAFT" | "SUBMIT") =>
-    apiFetch("/api/krs/enroll", {
+    apiFetch("/krs/enroll", {
       method: "POST",
       headers: authHeaders(),
       body: JSON.stringify({ courseIds, action }),
@@ -1167,13 +1167,13 @@ export const krsApi = {
 
   /** GET /api/academic-terms — Admin: list all terms */
   getAllTerms: () =>
-    apiFetch("/api/academic-terms", {
+    apiFetch("/academic-terms", {
       headers: authHeaders(),
     }),
 
   /** POST /api/academic-terms — Admin: create a new term */
   createTerm: (payload: { name: string; startDate: string; endDate: string; isActive?: boolean }) =>
-    apiFetch("/api/academic-terms", {
+    apiFetch("/academic-terms", {
       method: "POST",
       headers: authHeaders(),
       body: JSON.stringify(payload),
@@ -1181,7 +1181,7 @@ export const krsApi = {
 
   /** PUT /api/academic-terms/:id — Admin: update a term */
   updateTerm: (id: number | string, payload: { name?: string; startDate?: string; endDate?: string }) =>
-    apiFetch(`/api/academic-terms/${id}`, {
+    apiFetch(`/academic-terms/${id}`, {
       method: "PUT",
       headers: authHeaders(),
       body: JSON.stringify(payload),
@@ -1189,14 +1189,14 @@ export const krsApi = {
 
   /** PATCH /api/academic-terms/:id/activate — Admin: set a term as active */
   activateTerm: (id: number | string) =>
-    apiFetch(`/api/academic-terms/${id}/activate`, {
+    apiFetch(`/academic-terms/${id}/activate`, {
       method: "PATCH",
       headers: authHeaders(),
     }),
 
   /** DELETE /api/academic-terms/:id — Admin: delete a term */
   deleteTerm: (id: number | string) =>
-    apiFetch(`/api/academic-terms/${id}`, {
+    apiFetch(`/academic-terms/${id}`, {
       method: "DELETE",
       headers: authHeaders(),
     }),

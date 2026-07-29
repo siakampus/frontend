@@ -15,6 +15,8 @@ import { GraduationCap, CheckCircle, XCircle } from "lucide-react";
 import Turnstile from "react-turnstile";
 import { getRedirectPathByRole } from "@/lib/redirectByRole";
 
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
+
 // Placeholder kalau logo gagal dimuat
 const logoPlaceholder = "https://placehold.co/256x256/00008b/ffffff?text=U+G+N";
 
@@ -71,7 +73,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
     try {
       // BetterAuth sign-in — uses session cookies, not bearer tokens
-      const res = await fetch("/api/auth/sign-in/email", {
+      const res = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +97,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
         try {
           // Attempt 1: BetterAuth get-session using cookie and token
-          const sessionRes = await fetch("/api/auth/get-session", {
+          const sessionRes = await fetch(`${API_BASE}/api/auth/get-session`, {
             credentials: "include",
             headers: data.token ? { "Authorization": `Bearer ${data.token}` } : {}
           });
@@ -112,7 +114,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         if (!role || role === "guest") {
           try {
             // Attempt 2: Custom backend profile endpoint
-            const profileRes = await fetch("/auth/profile", {
+            const profileRes = await fetch(`${API_BASE}/auth/profile`, {
               credentials: "include",
               headers: data.token ? { "Authorization": `Bearer ${data.token}` } : {}
             });

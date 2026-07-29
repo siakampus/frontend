@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
+
 interface Props {
   children: React.ReactNode;
   allowedRoles?: string[]; // e.g. ["student", "guest"], ["admin"], ["lecturer"]
@@ -27,7 +29,7 @@ export default function ProtectedRoute({
     const check = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("/api/auth/get-session", {
+        const res = await fetch(`${API_BASE}/api/auth/get-session`, {
           credentials: "include",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
@@ -51,7 +53,7 @@ export default function ProtectedRoute({
 
           if (!role || role === "guest") {
             try {
-              const profileRes = await fetch("/auth/profile", {
+              const profileRes = await fetch(`${API_BASE}/auth/profile`, {
                 credentials: "include",
                 headers: token ? { Authorization: `Bearer ${token}` } : {},
               });

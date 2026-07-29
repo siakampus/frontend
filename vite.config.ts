@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.env.PWD || process.cwd(), '')
 
   // Mengambil variabel dari env atau menggunakan fallback default ke localhost
-  const API_TARGET = env.VITE_PUBLIC_API_URL || "http://localhost:8000"
+  const API_TARGET = env.VITE_PUBLIC_API_URL
   const PORT = env.VITE_PUBLIC_PORT ? parseInt(env.VITE_PUBLIC_PORT, 10) : 5173
 
   return {

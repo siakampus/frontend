@@ -87,29 +87,18 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       logger.log("Login response:", JSON.stringify(data, null, 2));
 
       if (res.ok) {
-        // BetterAuth sign-in only sets a session cookie — no token in body.
-        // Exchange the session cookie for a JWT via /api/auth/token so we can
-        // use Bearer auth cross-origin (Vercel → ugnapi.online).
-        let jwtToken: string | null = data.token ?? null;
-        if (!jwtToken) {
-          try {
-            const tokenRes = await fetch(`${API_BASE}/api/auth/token`, {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-            });
-            if (tokenRes.ok) {
-              const tokenData = await tokenRes.json();
-              jwtToken = tokenData.token ?? tokenData.accessToken ?? null;
-            }
-          } catch (err) {
-            logger.error("Failed to fetch JWT token", err);
-          }
-        }
-        if (jwtToken) {
-          localStorage.setItem("token", jwtToken);
+        // BetterAuth sign-in sets a session cookie AND exposes the full
+        // signed token in the `set-auth-token` response header.
+        // The bearer() plugin on the backend verifies this signed token
+        // (token.HMAC-signature format) — the raw body token is unsigned
+        // and will fail HMAC verification on protected routes.
+        const signedToken = res.headers.get("set-auth-token");
+        if (signedToken) {
+          localStorage.setItem("token", signedToken);
+        } else if (data.token) {
+          // Fallback: store body token (works on localhost via cookie session)
+          localStorage.setItem("token", data.token);
         } else {
-          // No JWT available — remove any stale "undefined" string
           localStorage.removeItem("token");
         }
 

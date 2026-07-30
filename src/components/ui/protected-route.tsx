@@ -1,150 +1,47 @@
-import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { authClient } from "@/lib/auth-client";
-
-const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 interface Props {
   children: React.ReactNode;
-  allowedRoles?: string[]; // e.g. ["student", "guest"], ["admin"], ["lecturer"]
+  allowedRoles?: string[];
   redirectTo?: string;
 }
 
 /**
- * ProtectedRoute — checks auth on every render.
+ * ProtectedRoute — gate based on localStorage token + role.
  *
- * Auth strategy (in order):
- *  1. If a Bearer token exists in localStorage → GET /auth/profile (token auth)
- *     This works cross-origin (Vercel → ugnapi.online) because it's a header,
- *     not a cookie. Cookies are SameSite=Lax and won't cross origins.
- *  2. No token → GET /api/auth/get-session (cookie-based, works on localhost)
- *     Falls back to session cookie for local dev where origin matches.
+ * Strategy:
+ *   - If no token → redirect to /login
+ *   - If token exists but role doesn't match allowedRoles → redirect to correct dashboard
+ *   - If token exists and role matches → render children
  *
- * - If not authenticated → redirects to /login
- * - If authenticated but wrong role → redirects to the correct dashboard
- * - While checking → shows a minimal loading screen (prevents flash)
+ * Session validity is NOT re-checked here on every render — that would require
+ * a cross-origin API call which is unreliable (bearer plugin 500s on GET /api/auth/get-session).
+ * Instead, individual pages redirect to /login on 401 responses from the API.
+ * Token + role are written to localStorage by login-form.tsx after sign-in.
  */
 export default function ProtectedRoute({
   children,
   allowedRoles,
   redirectTo = "/login",
 }: Props) {
-  const [status, setStatus] = useState<"checking" | "ok" | "redirect">("checking");
-  const [redirectPath, setRedirectPath] = useState(redirectTo);
+  const token = localStorage.getItem("token");
+  const role = (localStorage.getItem("userRole") ?? "").toLowerCase();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const check = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        let role = "";
-        let authed = false;
-
-        if (token) {
-          // ── Path 1: BetterAuth session via bearer token ──────────────────
-          // authClient.getSession() internally uses the bearer plugin when
-          // a token is in localStorage, and works cross-origin via HMAC-signed
-          // Authorization header (the set-auth-token from sign-in response).
-          try {
-            const session = await authClient.getSession();
-            if (session?.user) {
-              // BetterAuth session found — role might not be in the user object
-              // (it's an additionalField), so read from localStorage where
-              // login-form.tsx stored it after sign-in
-              role = (localStorage.getItem("userRole") ?? "").toLowerCase();
-              authed = true;
-            } else {
-              // No session — clear stale token
-              localStorage.removeItem("token");
-              localStorage.removeItem("userRole");
-              localStorage.removeItem("userEmail");
-              if (!cancelled) { setRedirectPath("/login"); setStatus("redirect"); }
-              return;
-            }
-          } catch {
-            // BetterAuth session check failed — fall through to cookie check
-          }
-        }
-
-        if (!authed) {
-          // ── Path 2: Session cookie (local dev, same-origin) ───────────────
-          const sessionRes = await fetch(`${API_BASE}/api/auth/get-session`, {
-            credentials: "include",
-          });
-
-          if (!sessionRes.ok || sessionRes.status === 401) {
-            if (!cancelled) { setRedirectPath("/login"); setStatus("redirect"); }
-            return;
-          }
-
-          const sessionData = await sessionRes.json();
-          const user = sessionData?.user;
-
-          if (!user) {
-            if (!cancelled) { setRedirectPath("/login"); setStatus("redirect"); }
-            return;
-          }
-
-          role = (user.role ?? "").toLowerCase();
-          authed = true;
-        }
-
-        if (!authed) {
-          if (!cancelled) { setRedirectPath("/login"); setStatus("redirect"); }
-          return;
-        }
-
-        // ── Role-based access check ─────────────────────────────────────────
-        if (allowedRoles && allowedRoles.length > 0) {
-          // Fallback: check localStorage if role still empty
-          if (!role) {
-            role = (localStorage.getItem("userRole") ?? "").toLowerCase();
-          }
-
-          if (!allowedRoles.map((r) => r.toLowerCase()).includes(role)) {
-            // Wrong role — send to correct dashboard
-            let dest = "/";
-            if (role === "admin") dest = "/admin";
-            else if (role === "lecturer") dest = "/lecturer";
-            else if (role === "student") dest = "/mahasiswa";
-            else if (role === "guest") dest = "/dashboard";
-            if (!cancelled) { setRedirectPath(dest); setStatus("redirect"); }
-            return;
-          }
-        }
-
-        if (!cancelled) setStatus("ok");
-      } catch {
-        // Network error — send to login to be safe
-        if (!cancelled) { setRedirectPath("/login"); setStatus("redirect"); }
-      }
-    };
-
-    check();
-    return () => { cancelled = true; };
-  }, [allowedRoles]);
-
-  if (status === "checking") {
-    return (
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "center",
-        height: "100vh", background: "#f9fafb",
-      }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: "50%",
-          border: "3px solid #e5e7eb",
-          borderTopColor: "var(--primary, #4f46e5)",
-          animation: "spin 0.8s linear infinite",
-        }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+  // No token at all → login
+  if (!token) {
+    return <Navigate to={redirectTo} replace />;
   }
 
-  if (status === "redirect") {
-    return <Navigate to={redirectPath} replace />;
+  // Role check
+  if (allowedRoles && allowedRoles.length > 0) {
+    if (!allowedRoles.map((r) => r.toLowerCase()).includes(role)) {
+      // Wrong role — send to correct dashboard
+      let dest = "/guest/dashboard";
+      if (role === "admin") dest = "/admin";
+      else if (role === "lecturer") dest = "/lecturer";
+      else if (role === "student") dest = "/mahasiswa";
+      return <Navigate to={dest} replace />;
+    }
   }
 
   return <>{children}</>;

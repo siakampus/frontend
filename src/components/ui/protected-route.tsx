@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { authClient } from "@/lib/auth-client";
 
 const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
@@ -42,18 +43,17 @@ export default function ProtectedRoute({
         let authed = false;
 
         if (token) {
-          // ── Path 1: Bearer token (works cross-origin on Vercel) ──────────
+          // ── Path 1: BetterAuth session via bearer token ──────────────────
+          // authClient.getSession() internally uses the bearer plugin when
+          // a token is in localStorage, and works cross-origin via HMAC-signed
+          // Authorization header (the set-auth-token from sign-in response).
           try {
-            const profileRes = await fetch(`${API_BASE}/auth/profile`, {
-              credentials: "include",
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            if (profileRes.ok) {
-              const profileData = await profileRes.json();
-              role = (profileData?.data?.role ?? profileData?.role ?? "").toLowerCase();
+            const session = await authClient.getSession();
+            if (session?.user) {
+              role = ((session.user as any).role ?? "").toLowerCase();
               authed = true;
-            } else if (profileRes.status === 401) {
-              // Token expired or invalid — clear it and fall through to redirect
+            } else {
+              // No session — clear stale token
               localStorage.removeItem("token");
               localStorage.removeItem("userRole");
               localStorage.removeItem("userEmail");
@@ -61,7 +61,7 @@ export default function ProtectedRoute({
               return;
             }
           } catch {
-            // Network error on profile — fall through to session check
+            // BetterAuth session check failed — fall through to cookie check
           }
         }
 

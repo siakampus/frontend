@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { logger } from "@/lib/logger"
 import { AppLayout } from "@/components/ui/app-layout";
+
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -87,9 +87,30 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       logger.log("Login response:", JSON.stringify(data, null, 2));
 
       if (res.ok) {
-        // Save token for custom API usage
-        if (data.token) {
-          localStorage.setItem("token", data.token);
+        // BetterAuth sign-in only sets a session cookie — no token in body.
+        // Exchange the session cookie for a JWT via /api/auth/token so we can
+        // use Bearer auth cross-origin (Vercel → ugnapi.online).
+        let jwtToken: string | null = data.token ?? null;
+        if (!jwtToken) {
+          try {
+            const tokenRes = await fetch(`${API_BASE}/api/auth/token`, {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+            });
+            if (tokenRes.ok) {
+              const tokenData = await tokenRes.json();
+              jwtToken = tokenData.token ?? tokenData.accessToken ?? null;
+            }
+          } catch (err) {
+            logger.error("Failed to fetch JWT token", err);
+          }
+        }
+        if (jwtToken) {
+          localStorage.setItem("token", jwtToken);
+        } else {
+          // No JWT available — remove any stale "undefined" string
+          localStorage.removeItem("token");
         }
 
         // Fetch session to get the fully populated user object including role

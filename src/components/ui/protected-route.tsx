@@ -50,7 +50,10 @@ export default function ProtectedRoute({
           try {
             const session = await authClient.getSession();
             if (session?.user) {
-              role = ((session.user as any).role ?? "").toLowerCase();
+              // BetterAuth session found — role might not be in the user object
+              // (it's an additionalField), so read from localStorage where
+              // login-form.tsx stored it after sign-in
+              role = (localStorage.getItem("userRole") ?? "").toLowerCase();
               authed = true;
             } else {
               // No session — clear stale token

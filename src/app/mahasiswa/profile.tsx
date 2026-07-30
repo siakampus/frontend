@@ -48,7 +48,7 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/user/profile", {
+      const res = await fetch(`${API_BASE}/user/profile`, {
         credentials: "include",
         headers: getAuthHeaders(),
       });
@@ -84,7 +84,7 @@ export default function ProfilePage() {
     }
     try {
       setSaving(true);
-      const res = await fetch("/user/phone", {
+      const res = await fetch(`${API_BASE}/user/phone`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -118,7 +118,7 @@ export default function ProfilePage() {
 
       try {
         setSaving(true);
-        const res = await fetch("/user/profile-picture", {
+        const res = await fetch(`${API_BASE}/user/profile-picture`, {
           method: "POST",
           credentials: "include",
           headers: getAuthHeaders(),
@@ -145,7 +145,7 @@ export default function ProfilePage() {
 
     try {
       setSaving(true);
-      const res = await fetch("/user/profile-picture", {
+      const res = await fetch(`${API_BASE}/user/profile-picture`, {
         method: "DELETE",
         credentials: "include",
         headers: getAuthHeaders(),

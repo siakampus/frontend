@@ -70,7 +70,7 @@ export default function GuestDashboardPage() {
         setUserData(sessionData.user);
 
         // 2. Get lock status
-        const lockRes = await fetch("/admissiondata/locked", {
+        const lockRes = await fetch(`${API_BASE}/admissiondata/locked`, {
           credentials: "include",
           headers: getAuthHeaders()
         });

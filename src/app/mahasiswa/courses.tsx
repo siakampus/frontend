@@ -133,7 +133,7 @@ export default function CoursesPage() {
     try {
       setLoading(true);
       // 1. Coba ambil mata kuliah mahasiswa
-      const myRes = await fetch("/courses/student/my-courses", {
+      const myRes = await fetch(`${API_BASE}/courses/student/my-courses`, {
         credentials: "include",
         headers: getAuthHeaders(),
       });
@@ -155,7 +155,7 @@ export default function CoursesPage() {
       // Demo fallback only when the student record is missing (e.g. calon_mahasiswa)
       if (myRes.status === 404) {
         setIsDemoMode(true);
-        const allRes = await fetch("/courses", {
+        const allRes = await fetch(`${API_BASE}/courses`, {
           credentials: "include",
           headers: getAuthHeaders(),
         });

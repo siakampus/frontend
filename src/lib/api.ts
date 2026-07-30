@@ -485,6 +485,71 @@ export const coursesApi = {
 };
 
 // ─────────────────────────────────────────────
+// Materials
+// ─────────────────────────────────────────────
+
+export const materialsApi = {
+  /** GET /materials/course/:id — List materials for a course */
+  listByCourse: (courseId: number | string, params?: { skip?: number; take?: number }) => {
+    const q = new URLSearchParams();
+    if (params?.skip !== undefined) q.set("skip", String(params.skip));
+    if (params?.take !== undefined) q.set("take", String(params.take));
+    return apiFetch(`/materials/course/${courseId}?${q}`, {
+      headers: authHeaders(),
+    });
+  },
+
+  /** GET /materials/:id — Get material by ID */
+  getById: (id: number | string) =>
+    apiFetch(`/materials/${id}`, {
+      headers: authHeaders(),
+    }),
+
+  /** POST /materials — Create a new material (Admin/Lecturer) */
+  create: (payload: {
+    title: string;
+    description?: string;
+    courseId: number;
+    contentType?: string;
+    url?: string;
+  }) =>
+    apiFetch("/materials", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
+
+  /** PUT /materials/:id — Update material (Admin/Lecturer) */
+  update: (
+    id: number | string,
+    payload: { title?: string; description?: string; contentType?: string; url?: string }
+  ) =>
+    apiFetch(`/materials/${id}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
+
+  /** DELETE /materials/:id — Soft-delete material (Admin/Lecturer) */
+  delete: (id: number | string) =>
+    apiFetch(`/materials/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }),
+
+  /** POST /materials/:id/upload — Upload material file (multipart) */
+  uploadFile: (id: number | string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return apiFetch(`/materials/${id}/upload`, {
+      method: "POST",
+      headers: authHeadersMultipart(),
+      body: form,
+    });
+  },
+};
+
+// ─────────────────────────────────────────────
 // Assignments
 // ─────────────────────────────────────────────
 
@@ -947,12 +1012,10 @@ export const adminRegistrationsApi = {
     }),
 };
 
-const BASE_API = (import.meta.env.VITE_PUBLIC_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
-
 export const chatApiAdditions = {
   summarizeMaterial: (materialId: number | string, refresh = false) =>
     apiFetch(
-      `${BASE_API}/chat/summarize-material/${materialId}${refresh ? "?refresh=true" : ""}`,
+      `/chat/summarize-material/${materialId}${refresh ? "?refresh=true" : ""}`,
       { method: "POST", headers: authHeaders() }
     ),
 };

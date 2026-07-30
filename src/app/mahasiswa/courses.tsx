@@ -219,15 +219,15 @@ export default function CoursesPage() {
     setMaterialSummaries({});
     try {
       const [courseRes, assigRes, materiRes] = await Promise.all([
-        fetch(`/courses/${course.id}`, {
+        fetch(`${API_BASE}/courses/${course.id}`, {
           credentials: "include",
           headers: getAuthHeaders(),
         }),
-        fetch(`/assignments/course/${course.id}`, {
+        fetch(`${API_BASE}/assignments/course/${course.id}`, {
           credentials: "include",
           headers: getAuthHeaders(),
         }),
-        fetch(`/materials/course/${course.id}`, {
+        fetch(`${API_BASE}/materials/course/${course.id}`, {
           credentials: "include",
           headers: getAuthHeaders(),
         }),

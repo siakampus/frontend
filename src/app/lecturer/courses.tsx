@@ -3,6 +3,8 @@ import { AppLayout } from "@/components/ui/app-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -126,7 +128,7 @@ export default function LecturerCoursesPage() {
 
   const fetchCourseMaterials = async (courseId: number) => {
     const token = localStorage.getItem("token");
-    const materiRes = await fetch(`/materials/course/${courseId}`, {
+    const materiRes = await fetch(`${API_BASE}/materials/course/${courseId}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
     if (materiRes.ok) {
@@ -224,7 +226,7 @@ export default function LecturerCoursesPage() {
       if (newMateriDesc) formData.append("description", newMateriDesc);
       if (newMateriFile) formData.append("file", newMateriFile);
 
-      const res = await fetch(`/materials`, {
+      const res = await fetch(`${API_BASE}/materials`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,

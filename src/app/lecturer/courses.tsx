@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { coursesApi, assignmentsApi, filesApi } from "@/lib/api";
+import { coursesApi, assignmentsApi, filesApi, materialsApi } from "@/lib/api";
 import { 
   BookOpen, 
   Plus, 
@@ -17,7 +17,8 @@ import {
   ArrowLeft,
   Calendar,
   FileText,
-  Users
+  Users,
+  Trash2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -249,6 +250,30 @@ export default function LecturerCoursesPage() {
     }
   };
 
+  const handleDeleteMateri = async (materialId: number, materialTitle: string) => {
+    if (!selectedCourse) return;
+    if (!window.confirm(`Hapus materi "${materialTitle}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+    const res = await materialsApi.delete(materialId);
+    if (res.ok) {
+      notify("✅ Materi berhasil dihapus.");
+      setCourseMaterials((prev) => prev.filter((m) => m.id !== materialId));
+    } else {
+      notify("❌ Gagal menghapus materi.");
+    }
+  };
+
+  const handleDeleteCourse = async (course: Course, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`Hapus mata kuliah "${course.title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+    const res = await coursesApi.delete(course.id);
+    if (res.ok) {
+      notify("✅ Mata Kuliah berhasil dihapus.");
+      setCourses((prev) => prev.filter((c) => c.id !== course.id));
+    } else {
+      notify("❌ Gagal menghapus mata kuliah.");
+    }
+  };
+
   const handleCreateAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourse) return;
@@ -437,7 +462,18 @@ export default function LecturerCoursesPage() {
                         <div className="space-y-3 mb-4">
                           {courseMaterials.map((m: any) => (
                             <div key={m.id} className="p-3 bg-white border rounded">
-                              <h5 className="font-semibold">{m.title}</h5>
+                              <div className="flex items-start justify-between gap-2">
+                                <h5 className="font-semibold">{m.title}</h5>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0"
+                                  onClick={() => handleDeleteMateri(m.id, m.title)}
+                                  title="Hapus materi"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                               <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{m.description}</p>
                               {m.fileUrl && (
                                 <a href={`http://localhost:8000${m.fileUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 inline-flex items-center gap-1 text-sm">
@@ -693,9 +729,20 @@ export default function LecturerCoursesPage() {
                     <Badge className="bg-primary/10 text-primary border-none text-[10px] px-2 py-0.5 tracking-wide uppercase font-semibold">
                       Kelas: {course.class?.name || "Umum"}
                     </Badge>
-                    <Badge variant="outline" className="text-[10px]">
-                      ID: {course.id}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="text-[10px]">
+                        ID: {course.id}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0"
+                        onClick={(e) => handleDeleteCourse(course, e)}
+                        title="Hapus mata kuliah"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-1">

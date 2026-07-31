@@ -2,6 +2,7 @@ import { Outlet, useOutletContext } from "react-router-dom"
 import type { SidebarItem } from "@/components/ui/app-sidebar"
 import { AppSidebar } from "@/components/ui/app-sidebar"
 import { AppHeader } from "@/components/ui/app-header"
+import FloatingChat from "@/components/ui/floating-chat"
 import {
   Home, GraduationCap, BookOpen, Users, CreditCard, FileText, Settings,
 } from "lucide-react"
@@ -40,6 +41,9 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Floating chatbot — admin dashboard */}
+      <FloatingChat />
     </div>
   )
 }

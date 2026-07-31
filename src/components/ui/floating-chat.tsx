@@ -204,7 +204,7 @@ export default function FloatingChat() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          title="Buka SIA Assist"
+          title="Buka UGN Customer Service"
           style={{
             position: "fixed", bottom: "28px", right: "28px",
             width: "52px", height: "52px", borderRadius: "50%",
@@ -257,7 +257,7 @@ export default function FloatingChat() {
 
             <SparkleIcon size={18} />
             <span style={{ color: T.text, fontWeight: 600, fontSize: "14px", flex: 1 }}>
-              SIA Assist
+              UGN Customer Service
               {activeSession && view === "chat" && (
                 <span style={{ color: T.textMuted, fontWeight: 400, fontSize: "11px", marginLeft: "6px" }}>
                   · {TOPIC_LABELS[activeSession.topic]}
@@ -299,7 +299,7 @@ export default function FloatingChat() {
                     <SparkleIcon size={28} />
                     <h2 style={{ color: T.text, fontSize: "17px", fontWeight: 600, margin: "10px 0 3px", lineHeight: 1.3 }}>
                       Selamat datang di<br />
-                      <span style={{ color: "var(--primary, #4f46e5)" }}>SIA Academic Assist</span>
+                      <span style={{ color: "var(--primary, #4f46e5)" }}>UGN Customer Service</span>
                     </h2>
                     <p style={{ color: T.textMuted, fontSize: "12px", margin: 0 }}>
                       Tanya apa saja seputar akademik, jadwal, atau pembayaran.
@@ -559,7 +559,7 @@ export default function FloatingChat() {
                       </button>
                     </div>
                     <p style={{ textAlign: "center", color: T.textMuted, fontSize: "10px", marginTop: "6px" }}>
-                      SIA Assist dapat membuat kesalahan. Verifikasi kepada staf akademik.
+                      UGN Customer Service dapat membuat kesalahan. Verifikasi kepada staf akademik.
                     </p>
                   </div>
                 </div>

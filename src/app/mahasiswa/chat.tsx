@@ -345,7 +345,7 @@ export default function ChatPage() {
               {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
             <SparkleIcon className="h-5 w-5" />
-            <span style={{ color: "#e8eaed", fontWeight: 600, fontSize: "15px" }}>SIA Assist</span>
+            <span style={{ color: "#e8eaed", fontWeight: 600, fontSize: "15px" }}>UGN Customer Service</span>
             <span style={{
               fontSize: "10px",
               padding: "2px 8px",
@@ -375,7 +375,7 @@ export default function ChatPage() {
                 <h1 style={{ fontSize: "28px", fontWeight: 400, lineHeight: 1.3, marginBottom: "24px" }}>
                   <span style={{ color: "#8ab4f8" }}>Selamat datang di</span>
                   <br />
-                  <span style={{ color: "#e8eaed", fontWeight: 500 }}>SIA Academic Assist</span>
+                  <span style={{ color: "#e8eaed", fontWeight: 500 }}>UGN Customer Service</span>
                 </h1>
 
                 <div style={{ marginBottom: "32px" }}>
@@ -616,7 +616,7 @@ export default function ChatPage() {
 
               {/* Disclaimer */}
               <p style={{ textAlign: "center", color: "#5f6368", fontSize: "11px", marginTop: "10px" }}>
-                SIA Assist dapat membuat kesalahan. Verifikasi informasi penting kepada staf akademik.
+                UGN Customer Service dapat membuat kesalahan. Verifikasi informasi penting kepada staf akademik.
               </p>
             </div>
           )}

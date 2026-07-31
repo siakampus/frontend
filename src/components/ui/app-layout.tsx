@@ -151,8 +151,8 @@ export function AppLayout({
         </main>
       </div>
 
-      {/* Floating chatbot — only on student pages */}
-      {menuTemplate === "student" && <FloatingChat />}
+      {/* Floating chatbot — student & lecturer dashboards */}
+      {(menuTemplate === "student" || menuTemplate === "lecturer") && <FloatingChat />}
     </div>
   )
 }

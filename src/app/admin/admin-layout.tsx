@@ -3,6 +3,7 @@ import type { SidebarItem } from "@/components/ui/app-sidebar"
 import { AppSidebar } from "@/components/ui/app-sidebar"
 import { AppHeader } from "@/components/ui/app-header"
 import FloatingChat from "@/components/ui/floating-chat"
+import TawkChat from "@/components/ui/tawk-chat"
 import {
   Home, GraduationCap, BookOpen, Users, CreditCard, FileText, Settings,
 } from "lucide-react"
@@ -44,6 +45,8 @@ export default function AdminLayout() {
 
       {/* Floating chatbot — admin dashboard */}
       <FloatingChat />
+      {/* Tawk.to live chat (UGN Chat) — side-by-side for comparison */}
+      <TawkChat />
     </div>
   )
 }

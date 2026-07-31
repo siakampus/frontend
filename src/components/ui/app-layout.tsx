@@ -3,6 +3,7 @@ import { AppSidebar, type SidebarItem } from "./app-sidebar"
 import { AppHeader } from "./app-header"
 import { Home, GraduationCap, BookOpen, User, FileText, Users, CreditCard, Settings } from "lucide-react";
 import FloatingChat from "./floating-chat";
+import TawkChat from "./tawk-chat";
 
 
 export const ADMISI_MENU: SidebarItem[] = [
@@ -153,6 +154,8 @@ export function AppLayout({
 
       {/* Floating chatbot — student & lecturer dashboards */}
       {(menuTemplate === "student" || menuTemplate === "lecturer") && <FloatingChat />}
+      {/* Tawk.to live chat (UGN Chat) — side-by-side for comparison */}
+      {(menuTemplate === "student" || menuTemplate === "lecturer") && <TawkChat />}
     </div>
   )
 }

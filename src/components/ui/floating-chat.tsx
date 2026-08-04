@@ -206,7 +206,7 @@ export default function FloatingChat() {
           onClick={() => setOpen(true)}
           title="Buka UGN Customer Service"
           style={{
-            position: "fixed", bottom: "28px", right: "28px",
+            position: "fixed", bottom: "96px", right: "28px",
             width: "52px", height: "52px", borderRadius: "50%",
             background: "var(--primary, #4f46e5)",
             border: "none",
@@ -225,7 +225,7 @@ export default function FloatingChat() {
       {/* ── Chat panel ── */}
       {open && (
         <div style={{
-          position: "fixed", bottom: "28px", right: "28px",
+          position: "fixed", bottom: "96px", right: "28px",
           width: "380px",
           height: minimized ? "52px" : "600px",
           borderRadius: "16px",

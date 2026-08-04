@@ -36,4 +36,5 @@ playwright-report
 *.njsproj
 *.sln
 *.sw?
+screenshots
 

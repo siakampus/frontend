@@ -488,6 +488,14 @@ export const coursesApi = {
 // Materials
 // ─────────────────────────────────────────────
 
+export const heregistrasiApi = {
+  /** GET /heregistrasi/my-history — Student re-registration + UKT payment history */
+  getMyHistory: () =>
+    apiFetch("/heregistrasi/my-history", {
+      headers: authHeaders(),
+    }),
+};
+
 export const materialsApi = {
   /** GET /materials/course/:id — List materials for a course */
   listByCourse: (courseId: number | string, params?: { skip?: number; take?: number }) => {

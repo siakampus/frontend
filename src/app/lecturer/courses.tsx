@@ -152,7 +152,7 @@ export default function LecturerCoursesPage() {
       const token = localStorage.getItem("token");
       const [assigRes, materiRes] = await Promise.all([
         assignmentsApi.listByCourse(course.id),
-        fetch(`/materials/course/${course.id}`, {
+        fetch(`${API_BASE}/materials/course/${course.id}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
       ]);
@@ -476,7 +476,7 @@ export default function LecturerCoursesPage() {
                               </div>
                               <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{m.description}</p>
                               {m.fileUrl && (
-                                <a href={`http://localhost:8000${m.fileUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 inline-flex items-center gap-1 text-sm">
+                                <a href={`${API_BASE}${m.fileUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 inline-flex items-center gap-1 text-sm">
                                   <FileText className="h-4 w-4" /> Download Lampiran
                                 </a>
                               )}

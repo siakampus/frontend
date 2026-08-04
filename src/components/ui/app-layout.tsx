@@ -29,6 +29,7 @@ export const STUDENT_MENU: SidebarItem[] = [
   { label: "Profile",   to: "/mahasiswa/profile",   icon: <User className="h-4 w-4" /> },
   { label: "Mata Kuliah", to: "/mahasiswa/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "KRS", to: "/mahasiswa/krs", icon: <FileText className="h-4 w-4" /> },
+  { label: "Riwayat Heregistrasi", to: "/mahasiswa/heregistrasi", icon: <CreditCard className="h-4 w-4" /> },
 ];
 
 export const ADMIN_MENU: SidebarItem[] = [

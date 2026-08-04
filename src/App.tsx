@@ -52,6 +52,7 @@ import LecturerAssignmentsPage from "./app/lecturer/assignments";
 import LecturerCoursesPage from "./app/lecturer/courses";
 import AssignmentDetailPage from "./app/mahasiswa/assignment-detail";
 import ChatPage from "./app/mahasiswa/chat";
+import HeregistrasiPage from "./app/mahasiswa/heregistrasi";
 
 export default function App() {
   return (
@@ -87,6 +88,11 @@ export default function App() {
             <Route path="/mahasiswa/krs" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <KrsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/heregistrasi" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <HeregistrasiPage />
               </ProtectedRoute>
             } />
             <Route path="/mahasiswa/chat" element={

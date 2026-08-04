@@ -53,17 +53,12 @@ export default function TawkChat() {
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = new Date();
 
-    // Position the Tawk bubble to the LEFT of the in-house bot (which sits at
-    // right:28px, ~52px wide). Use Tawk's official customStyle API — it must be
-    // set BEFORE the embed script loads. Offsets are relative to Tawk's default
-    // 20px margin, so xOffset:80 => bubble ~100px from the right edge.
+    // The in-house FloatingChat bot is stacked ABOVE the Tawk bubble
+    // (bottom:96px, right:28px), so the Tawk bubble can keep its default
+    // bottom-right position — the two no longer overlap.
     window.Tawk_API.customStyle = {
       visitor: { name: WIDGET_TITLE },
       zIndex: 9998,
-      bubble: {
-        xOffset: 80,
-        yOffset: 0,
-      },
     };
 
     // Rebrand the visitor context to "UGN Chat" once the widget loads.
@@ -84,33 +79,18 @@ export default function TawkChat() {
 
     const first = document.getElementsByTagName("script")[0];
     first?.parentNode?.insertBefore(s, first);
-
-    // Nudge the Tawk bubble to the LEFT of the in-house bot (which sits at right:28px)
-    // so both widgets are visible side-by-side for comparison.
-    const style = document.createElement("style");
-    style.id = "tawk-to-position";
-    style.textContent = `
-      /* Fallback in case customStyle is ignored: push every Tawk iframe left,
-         clear of the in-house bot at right:28px. */
-      iframe[src*="tawk.to"],
-      iframe[title*="chat" i][src*="tawk.to"],
-      .widget-visible iframe[src*="tawk.to"] {
-        right: 100px !important;
-      }
-    `;
-    document.head.appendChild(style);
   }, []);
 
   if (!PROPERTY_ID) return null;
 
-  // Small label so it's clear which bubble is the Tawk.to one during comparison.
+  // Small label above the Tawk bubble so it's clear which is which.
   return (
     <div
       style={{
         position: "fixed",
-        bottom: "10px",
-        right: "100px",
-        zIndex: 9998,
+        bottom: "78px",
+        right: "20px",
+        zIndex: 9997,
         fontSize: "10px",
         fontWeight: 600,
         color: "#6b7280",

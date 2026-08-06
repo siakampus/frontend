@@ -159,7 +159,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       }
     } catch (err) {
       logger.error(err);
-      setErrorMessage("Γ¥î Terjadi kesalahan koneksi ke server.");
+      setErrorMessage("Server sedang Down.");
     } finally {
       setLoading(false);
     }

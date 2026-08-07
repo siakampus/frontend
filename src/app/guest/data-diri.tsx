@@ -58,7 +58,7 @@ export default function DataDiriPage() {
   const [dokumen, setDokumen] = useState<Record<string, any>>({}); // includes File objects + URL strings from API
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const API_URL = "";
+  const API_URL = API_BASE;
   const token = localStorage.getItem("token");
 
   const getAuthHeaders = (): HeadersInit => {

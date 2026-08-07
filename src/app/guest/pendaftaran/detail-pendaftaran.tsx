@@ -1,5 +1,6 @@
 import React, { useState } from "react" 
 import { logger } from "@/lib/logger"
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 import { User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -27,8 +28,8 @@ export default function DetailPendaftaranPage() {
     
     // State untuk menangani proses loading/submission
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const API_URL = "";
-    const token = localStorage.getItem("token");
+    const API_URL = API_BASE;
+        const token = localStorage.getItem("token");
 
     const formatDate = (dateString: string) => {
         const options: Intl.DateTimeFormatOptions = {

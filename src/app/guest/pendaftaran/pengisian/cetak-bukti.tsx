@@ -11,11 +11,12 @@ import React, { useState } from "react"
 import { AppLayout } from "@/components/ui/app-layout"
 
 import { logger } from "@/lib/logger"
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 export default function CetakBuktiPesertaPage() {
     const [isGenerating, setIsGenerating] = useState(false); 
 
-    const API_URL = "";
-    const token = localStorage.getItem("token"); 
+    const API_URL = API_BASE;
+    const token = localStorage.getItem("token");
 
     // Mock Data Bukti Peserta (tetap)
     const dataPeserta = {

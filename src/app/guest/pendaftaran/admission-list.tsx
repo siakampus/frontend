@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/ui/app-layout";
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 import React from "react";
 
 import { logger } from "@/lib/logger"
@@ -166,8 +167,8 @@ export function AdmissionsPage() {
   const [selectedPath, setSelectedPath] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = "";
-  const token = localStorage.getItem("token");
+  const API_URL = API_BASE;
+    const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) {

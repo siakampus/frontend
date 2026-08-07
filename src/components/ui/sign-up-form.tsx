@@ -118,7 +118,7 @@ export function SignUpForm() {
       setVerified(false)
 
       const res = await fetch(
-        `/auth/request-verification`,
+        `${API_BASE}/auth/request-verification`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -136,7 +136,7 @@ export function SignUpForm() {
       }
     } catch (error) {
       logger.error(error)
-      setMessage("Γ¥î Terjadi kesalahan saat mengirim email.")
+      setMessage("Terjadi kesalahan saat mengirim email.")
     } finally {
       setLoading(false)
     }
@@ -154,7 +154,7 @@ export function SignUpForm() {
       setTokenMessage("ΓÅ│ Memverifikasi kode...")
 
       const res = await fetch(
-        `/auth/verify-code`,
+        `${API_BASE}/auth/verify-code`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

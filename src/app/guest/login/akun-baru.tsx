@@ -228,12 +228,12 @@ export default function LoginAkunBaru({
                   <Label>Verifikasi Keamanan</Label>
                   <div className="mt-2 w-full">
                     <Turnstile
-                      sitekey="0x4AAAAAAB6AdQ7RikUW15dg"
-                      size="flexible"
-                      theme="light"
-                      onVerify={(token) => setCaptchaToken(token)}
-                      onError={() => setCaptchaToken("dummy-captcha-token")}
-                    />
+                          sitekey={import.meta.env.VITE_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+                          size="flexible"
+                          theme="light"
+                          onVerify={(token) => setCaptchaToken(token)}
+                          onError={() => setCaptchaToken("dummy-captcha-token")}
+                        />
                   </div>
                 </div>
 

@@ -65,7 +65,7 @@ export default function DataDiriPage() {
     return token ? { "Authorization": `Bearer ${token}` } : {};
   };
 
-  // Map backend camelCase ΓåÆ UI display keys
+  // Map backend camelCase  UI display keys
   const mapApiToPribadi = (d: Record<string, any>, user: any) => ({
     "Nama Lengkap": d.fullName || user?.name || "",
     "NIK": d.nik || "",
@@ -83,7 +83,7 @@ export default function DataDiriPage() {
     "Kota/Kabupaten": d.city || "",
   });
 
-  // Map UI display keys ΓåÆ backend field names for PUT
+  // Map UI display keys  backend field names for PUT
   const mapPribadiToApi = (p: Record<string, any>) => {
     let dob = p["Tanggal Lahir"];
     if (dob && !dob.includes("T")) {
@@ -208,7 +208,7 @@ export default function DataDiriPage() {
           if (res3.ok) {
             const json = await res3.json();
             const raw = json.data || {};
-            // Normalize common API field name variants ΓåÆ kk_file / ktp_file
+            // Normalize common API field name variants  kk_file / ktp_file
             if (!raw.kk_file) {
               raw.kk_file =
                 raw.kkFile || raw.kkFileUrl || raw.kk_url ||
@@ -254,7 +254,7 @@ export default function DataDiriPage() {
     try {
       setSaving(true);
 
-      // Map UI labels ΓåÆ backend field names
+      // Map UI labels  backend field names
       let apiData: Record<string, any> = data;
       if (type === 1) apiData = mapPribadiToApi(data);
       if (type === 2) apiData = mapKontakToApi(data);
@@ -262,7 +262,7 @@ export default function DataDiriPage() {
       let res: Response;
 
       if (type === 3) {
-        // Type 3 has file uploads ΓåÆ use FormData
+        // Type 3 has file uploads  use FormData
         const formData = new FormData();
         Object.entries(apiData).forEach(([k, v]) => {
           if (v instanceof File) {
@@ -278,7 +278,7 @@ export default function DataDiriPage() {
           body: formData,
         });
       } else {
-        // Types 1 & 2 are plain data ΓåÆ send JSON
+        // Types 1 & 2 are plain data  send JSON
         // Remove empty values
         const cleanData = Object.fromEntries(
           Object.entries(apiData).filter(([, v]) => v !== null && v !== undefined && v !== "")
@@ -305,7 +305,7 @@ export default function DataDiriPage() {
           if (resData.ok) {
             const json = await resData.json();
             const raw = json.data || {};
-            // Normalize common API field name variants ΓåÆ kk_file / ktp_file
+            // Normalize common API field name variants  kk_file / ktp_file
             const normalized: Record<string, any> = { ...raw };
             if (!normalized.kk_file) {
               normalized.kk_file =

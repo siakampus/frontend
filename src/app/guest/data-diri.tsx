@@ -222,7 +222,7 @@ export default function DataDiriPage() {
             setDokumen(raw);
           }
         } catch (err) {
-          logger.error("Γ¥î Gagal mengambil data:", err);
+          logger.error("Gagal mengambil data:", err);
         } finally {
           setLoading(false);
         }
@@ -334,18 +334,18 @@ export default function DataDiriPage() {
 
         // Handle case where backend locks the data but frontend missed it
         if (errorText.toLowerCase().includes("personal data is locked")) {
-          alert("Γ¥î Data Anda telah dikunci secara permanen dan tidak dapat diubah lagi.");
+          alert("Data Anda telah dikunci secara permanen dan tidak dapat diubah lagi.");
           setLocked(true);
           setIsEditPribadi(false);
           setIsEditKontak(false);
           setIsEditDokumen(false);
         } else {
-          alert(`Γ¥î Gagal menyimpan data.\nError: ${errorText.substring(0, 100)}`);
+          alert(` Gagal menyimpan data.\nError: ${errorText.substring(0, 100)}`);
         }
       }
     } catch (err) {
       logger.error(err);
-      alert("Γ¥î Kesalahan server saat menyimpan data.");
+      alert(" Kesalahan server saat menyimpan data.");
     } finally {
       setSaving(false);
     }
@@ -410,11 +410,11 @@ export default function DataDiriPage() {
           const errBody = await res.json();
           errMsg = errBody.message || errBody.error || JSON.stringify(errBody);
         } catch { }
-        alert(`Γ¥î ${errMsg}`);
+        alert(` ${errMsg}`);
       }
     } catch (err) {
       logger.error(err);
-      alert("Γ¥î Server error saat mengunci data.");
+      alert(" Server error saat mengunci data.");
     } finally {
       setSaving(false);
     }

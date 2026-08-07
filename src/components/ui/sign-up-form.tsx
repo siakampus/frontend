@@ -106,13 +106,13 @@ export function SignUpForm() {
   // Kirim kode verifikasi
   const handleSendVerification = async () => {
     if (!email) {
-      setMessage("Γ¥î Harap isi email terlebih dahulu.")
+      setMessage(" Harap isi email terlebih dahulu.")
       return
     }
 
     try {
       setLoading(true)
-      setMessage("ΓÅ│ Mengirim kode verifikasi...")
+      setMessage("Mengirim kode verifikasi")
       setVerificationCode("")
       setTokenMessage("")
       setVerified(false)
@@ -132,7 +132,7 @@ export function SignUpForm() {
         setMessage(` ${data.message}`)
         if (data.verificationCode) setVerificationCode(data.verificationCode)
       } else {
-        setMessage(`Γ¥î ${data.message || "Gagal mengirim kode verifikasi."}`)
+        setMessage(` ${data.message || "Gagal mengirim kode verifikasi."}`)
       }
     } catch (error) {
       logger.error(error)
@@ -145,7 +145,7 @@ export function SignUpForm() {
   // Verifikasi kode token
   const handleVerifyToken = async () => {
     if (!token) {
-      setTokenMessage("Γ¥î Harap isi token terlebih dahulu.")
+      setTokenMessage(" Harap isi token terlebih dahulu.")
       return
     }
 
@@ -168,11 +168,11 @@ export function SignUpForm() {
         setTokenMessage(" Email berhasil diverifikasi!")
       } else {
         setVerified(false)
-        setTokenMessage("Γ¥î Token salah atau sudah kadaluarsa.")
+        setTokenMessage(" Token salah atau sudah kadaluarsa.")
       }
     } catch (error) {
       logger.error(error)
-      setTokenMessage("Γ¥î Gagal menghubungi server.")
+      setTokenMessage(" Gagal menghubungi server.")
     } finally {
       setLoading(false)
     }
@@ -184,12 +184,12 @@ export function SignUpForm() {
     setRegisterMessage("")
 
     if (!checkDisclaimer) {
-      setRegisterMessage("Γ¥î Harap centang pernyataan terlebih dahulu.")
+      setRegisterMessage(" Harap centang pernyataan terlebih dahulu.")
       return
     }
 
     if (!passwordMatch) {
-      setRegisterMessage("Γ¥î Password tidak cocok.")
+      setRegisterMessage(" Password tidak cocok.")
       return
     }
 
@@ -223,7 +223,7 @@ export function SignUpForm() {
           signUpData?.error?.message ||
           signUpData?.message ||
           "Gagal mendaftar."
-        setRegisterMessage(`Γ¥î ${errMsg}`)
+        setRegisterMessage(` ${errMsg}`)
         return
       }
 
@@ -272,7 +272,7 @@ export function SignUpForm() {
       window.location.href = "/pendaftaran/berhasil/login"
     } catch (error) {
       logger.error(error)
-      setRegisterMessage("Γ¥î Terjadi kesalahan saat mendaftar.")
+      setRegisterMessage(" Terjadi kesalahan saat mendaftar.")
     } finally {
       setLoading(false)
     }
@@ -390,7 +390,7 @@ export function SignUpForm() {
                       : "text-transparent"
                     }`}
                 >
-                  {passwordMatch ? " Password cocok" : passwordError ? "Γ¥î Password tidak sama" : "placeholder"}
+                  {passwordMatch ? " Password cocok" : passwordError ? "Password tidak sama" : "placeholder"}
                 </p>
               </div>
             </CardContent>

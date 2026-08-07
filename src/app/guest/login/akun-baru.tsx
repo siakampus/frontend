@@ -151,12 +151,12 @@ export default function LoginAkunBaru({
         const errMsg =
           data?.error?.message ||
           data?.message ||
-          "Γ¥î Email atau password salah."
+          " Email atau password salah."
         setErrorMessage(errMsg)
       }
     } catch (err) {
       logger.error(err)
-      setErrorMessage("Γ¥î Gagal terhubung ke server.")
+      setErrorMessage(" Gagal terhubung ke server.")
     } finally {
       setLoading(false)
     }
@@ -228,12 +228,12 @@ export default function LoginAkunBaru({
                   <Label>Verifikasi Keamanan</Label>
                   <div className="mt-2 w-full">
                     <Turnstile
-                          sitekey={import.meta.env.VITE_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
-                          size="flexible"
-                          theme="light"
-                          onVerify={(token) => setCaptchaToken(token)}
-                          onError={() => setCaptchaToken("dummy-captcha-token")}
-                        />
+                      sitekey={import.meta.env.VITE_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+                      size="flexible"
+                      theme="light"
+                      onVerify={(token) => setCaptchaToken(token)}
+                      onError={() => setCaptchaToken("dummy-captcha-token")}
+                    />
                   </div>
                 </div>
 

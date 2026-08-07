@@ -250,7 +250,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                           setCaptchaToken(null);
                         }}
                         onError={() => {
-                          logger.error("Γ¥î CAPTCHA error.");
+                          logger.error(" CAPTCHA error.");
                           setCaptchaToken(null);
                         }}
                         theme="light"

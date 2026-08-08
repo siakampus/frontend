@@ -22,8 +22,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Link } from "react-router-dom"
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { AppLayout } from "@/components/ui/app-layout"
+
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 type StepStatus = "Selesai" | "Belum Selesai" | "Revisi" | "Belum dibuka"
 
@@ -53,6 +55,30 @@ const CustomAlert: React.FC<{ title: string; description: React.ReactNode; varia
 
 
 export default function ProsesPendaftaranPage() {
+  const [userData, setUserData] = useState<{name: string, nik: string, email: string} | null>(null);
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/admissiondata/1`, {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserData({
+            name: data.fullName || data.name || "User",
+            nik: data.nik || "-",
+            email: data.email || "-",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch user data", err);
+      }
+    };
+    if (token) fetchUserData();
+  }, [token]);
   
   const programTitle = "Seleksi Mandiri Program Sarjana (2025)"
   const programId = "SM-SARJANA-2025"
@@ -242,9 +268,9 @@ export default function ProsesPendaftaranPage() {
                     </AvatarFallback>
                 </Avatar>
                 <div>
-                    <h2 className="font-bold text-xl text-gray-800">Sumbuludun</h2>
-                    <p className="text-sm text-muted-foreground">NIK: 3404100701990002</p>
-                    <p className="text-sm text-muted-foreground">Email: sumbuludun@example.com</p>
+                    <h2 className="font-bold text-xl text-gray-800">{userData?.name || "Loading..."}</h2>
+                    <p className="text-sm text-muted-foreground">NIK: {userData?.nik || "-"}</p>
+                    <p className="text-sm text-muted-foreground">Email: {userData?.email || "-"}</p>
                 </div>
             </div>
 

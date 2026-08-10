@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Select,
   SelectContent,
@@ -31,6 +30,8 @@ export default function DataDiriPendaftaranPage() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isLocked, setIsLocked] = useState(false)
+  const [initialData, setInitialData] = useState<Record<string, string>>({})
 
   // Form state
   const [formData, setFormData] = useState({
@@ -92,6 +93,19 @@ export default function DataDiriPendaftaranPage() {
           return
         }
 
+        // Check lock status
+        const lockRes = await fetch(`${API_BASE}/admissiondata/locked`, {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        })
+        if (lockRes.ok) {
+          const lockData = await lockRes.json()
+          const locked = lockData?.isLocked === true || 
+                        lockData?.data?.isLocked === true ||
+                        lockData === true
+          setIsLocked(locked)
+        }
+
         // Fetch admission data types 1 and 2
         const [res1, res2] = await Promise.all([
           fetch(`${API_BASE}/admissiondata/1`, {
@@ -110,7 +124,7 @@ export default function DataDiriPendaftaranPage() {
           const d1 = data1.data || {}
           const d2 = data2.data || {}
 
-          setFormData({
+          const loadedData = {
             namaLengkap: d1.fullName || "",
             nik: d1.nik || "",
             tempatLahir: d1.birthPlace || "",
@@ -142,7 +156,10 @@ export default function DataDiriPendaftaranPage() {
             tinggiBadan: d1.height || "",
             beratBadan: d1.weight || "",
             disabilitas: d1.disability || "none",
-          })
+          }
+          
+          setFormData(loadedData)
+          setInitialData(loadedData) // Save initial data to check which fields are filled
         }
       } catch (err) {
         logger.error("Failed to load data:", err)
@@ -153,6 +170,11 @@ export default function DataDiriPendaftaranPage() {
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  // Check if field should be disabled (locked AND already has data)
+  const isFieldDisabled = (fieldName: keyof typeof formData): boolean => {
+    return isLocked && !!initialData[fieldName] && initialData[fieldName] !== ""
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -230,12 +252,20 @@ export default function DataDiriPendaftaranPage() {
         }),
       ])
 
-      if (res1.ok && res2.ok) {
-        alert("✓ Data Diri berhasil disimpan!")
+      // Handle success or 403 (locked data)
+      const success1 = res1.ok || res1.status === 403
+      const success2 = res2.ok || res2.status === 403
+
+      if (success1 && success2) {
+        if (res1.status === 403 || res2.status === 403) {
+          alert("ℹ️ Data sudah terkunci. Melanjutkan ke langkah berikutnya...")
+        } else {
+          alert("✓ Data Diri berhasil disimpan!")
+        }
         navigate("/pendaftaran/sarjana-2025")
       } else {
-        const err1 = res1.ok ? null : await res1.text()
-        const err2 = res2.ok ? null : await res2.text()
+        const err1 = success1 ? null : await res1.text()
+        const err2 = success2 ? null : await res2.text()
         const errorMsg = err1 || err2 || "Gagal menyimpan data"
         setError(errorMsg)
         alert(`✗ Gagal menyimpan data.\n${errorMsg.substring(0, 100)}`)
@@ -268,6 +298,16 @@ export default function DataDiriPendaftaranPage() {
             </CardHeader>
             <CardContent className="space-y-8 p-6">
 
+                {isLocked && (
+                  <div className="bg-blue-50 border border-blue-300 text-blue-800 px-4 py-3 rounded flex items-start gap-3">
+                    <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold">Data Terkunci</p>
+                      <p className="text-sm">Data yang sudah terisi tidak dapat diubah. Anda hanya dapat melengkapi field yang masih kosong.</p>
+                    </div>
+                  </div>
+                )}
+
                 {error && (
                   <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                     {error}
@@ -287,16 +327,18 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: Budi Santoso" 
                               required
                               value={formData.namaLengkap}
+                              disabled={isFieldDisabled("namaLengkap")}
                               onChange={(e) => handleChange("namaLengkap", e.target.value)}
                             />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="nik">NIK <span className="text-red-500">*</span></Label>
                             <Input 
-                              id="nik" 
+                              id="nik"
                               placeholder="Contoh: 1234567890123456" 
                               required
                               value={formData.nik}
+                              disabled={isFieldDisabled("nik")}
                               onChange={(e) => handleChange("nik", e.target.value)}
                             />
                         </div>
@@ -309,6 +351,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: Jakarta" 
                               required
                               value={formData.tempatLahir}
+                              disabled={isFieldDisabled("tempatLahir")}
                               onChange={(e) => handleChange("tempatLahir", e.target.value)}
                             />
                         </div>
@@ -319,6 +362,7 @@ export default function DataDiriPendaftaranPage() {
                               type="date" 
                               required
                               value={formData.tanggalLahir}
+                              disabled={isFieldDisabled("tanggalLahir")}
                               onChange={(e) => handleChange("tanggalLahir", e.target.value)}
                             />
                         </div>
@@ -329,6 +373,7 @@ export default function DataDiriPendaftaranPage() {
                             <Select 
                               value={formData.jenisKelamin} 
                               onValueChange={(val) => handleChange("jenisKelamin", val)}
+                              disabled={isFieldDisabled("jenisKelamin")}
                               required
                             >
                                 <SelectTrigger id="jenisKelamin">
@@ -345,6 +390,7 @@ export default function DataDiriPendaftaranPage() {
                             <Select 
                               value={formData.agama} 
                               onValueChange={(val) => handleChange("agama", val)}
+                              disabled={isFieldDisabled("agama")}
                               required
                             >
                                 <SelectTrigger id="agama">
@@ -376,6 +422,7 @@ export default function DataDiriPendaftaranPage() {
                           rows={3} 
                           required
                           value={formData.alamatLengkap}
+                          disabled={isFieldDisabled("alamatLengkap")}
                           onChange={(e) => handleChange("alamatLengkap", e.target.value)}
                         />
                     </div>
@@ -387,6 +434,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: Jawa Barat" 
                               required
                               value={formData.provinsi}
+                              disabled={isFieldDisabled("provinsi")}
                               onChange={(e) => handleChange("provinsi", e.target.value)}
                             />
                         </div>
@@ -397,6 +445,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: Bekasi" 
                               required
                               value={formData.kota}
+                              disabled={isFieldDisabled("kota")}
                               onChange={(e) => handleChange("kota", e.target.value)}
                             />
                         </div>
@@ -406,6 +455,7 @@ export default function DataDiriPendaftaranPage() {
                               id="kodePos" 
                               placeholder="Contoh: 17510"
                               value={formData.kodePos}
+                              disabled={isFieldDisabled("kodePos")}
                               onChange={(e) => handleChange("kodePos", e.target.value)}
                             />
                         </div>
@@ -425,6 +475,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: 081234567890" 
                               required
                               value={formData.noTelepon}
+                              disabled={isFieldDisabled("noTelepon")}
                               onChange={(e) => handleChange("noTelepon", e.target.value)}
                             />
                         </div>
@@ -436,6 +487,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: budi@example.com" 
                               required
                               value={formData.email}
+                              disabled={isFieldDisabled("email")}
                               onChange={(e) => handleChange("email", e.target.value)}
                             />
                         </div>
@@ -455,6 +507,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: SMA Negeri 1 Jakarta" 
                               required
                               value={formData.asalSekolah}
+                              disabled={isFieldDisabled("asalSekolah")}
                               onChange={(e) => handleChange("asalSekolah", e.target.value)}
                             />
                         </div>
@@ -463,6 +516,7 @@ export default function DataDiriPendaftaranPage() {
                             <Select 
                               value={formData.jurusan} 
                               onValueChange={(val) => handleChange("jurusan", val)}
+                              disabled={isFieldDisabled("jurusan")}
                               required
                             >
                                 <SelectTrigger id="jurusan">
@@ -484,6 +538,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: 2024" 
                               required
                               value={formData.tahunLulus}
+                              disabled={isFieldDisabled("tahunLulus")}
                               onChange={(e) => handleChange("tahunLulus", e.target.value)}
                             />
                         </div>
@@ -493,6 +548,7 @@ export default function DataDiriPendaftaranPage() {
                               id="nilaiUN" 
                               placeholder="Contoh: 85.5"
                               value={formData.nilaiUN}
+                              disabled={isFieldDisabled("nilaiUN")}
                               onChange={(e) => handleChange("nilaiUN", e.target.value)}
                             />
                         </div>
@@ -512,6 +568,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Nama lengkap ayah" 
                               required
                               value={formData.namaAyah}
+                              disabled={isFieldDisabled("namaAyah")}
                               onChange={(e) => handleChange("namaAyah", e.target.value)}
                             />
                         </div>
@@ -522,6 +579,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: PNS" 
                               required
                               value={formData.pekerjaanAyah}
+                              disabled={isFieldDisabled("pekerjaanAyah")}
                               onChange={(e) => handleChange("pekerjaanAyah", e.target.value)}
                             />
                         </div>
@@ -534,6 +592,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Nama lengkap ibu" 
                               required
                               value={formData.namaIbu}
+                              disabled={isFieldDisabled("namaIbu")}
                               onChange={(e) => handleChange("namaIbu", e.target.value)}
                             />
                         </div>
@@ -544,6 +603,7 @@ export default function DataDiriPendaftaranPage() {
                               placeholder="Contoh: Ibu Rumah Tangga" 
                               required
                               value={formData.pekerjaanIbu}
+                              disabled={isFieldDisabled("pekerjaanIbu")}
                               onChange={(e) => handleChange("pekerjaanIbu", e.target.value)}
                             />
                         </div>
@@ -554,6 +614,7 @@ export default function DataDiriPendaftaranPage() {
                             <Select 
                               value={formData.penghasilanOrtu} 
                               onValueChange={(val) => handleChange("penghasilanOrtu", val)}
+                              disabled={isFieldDisabled("penghasilanOrtu")}
                             >
                                 <SelectTrigger id="penghasilanOrtu">
                                     <SelectValue placeholder="Pilih rentang penghasilan" />
@@ -572,6 +633,7 @@ export default function DataDiriPendaftaranPage() {
                               id="noTeleponOrtu" 
                               placeholder="Contoh: 081234567890"
                               value={formData.noTeleponOrtu}
+                              disabled={isFieldDisabled("noTeleponOrtu")}
                               onChange={(e) => handleChange("noTeleponOrtu", e.target.value)}
                             />
                         </div>
@@ -589,6 +651,7 @@ export default function DataDiriPendaftaranPage() {
                             <Select 
                               value={formData.golonganDarah} 
                               onValueChange={(val) => handleChange("golonganDarah", val)}
+                              disabled={isFieldDisabled("golonganDarah")}
                             >
                                 <SelectTrigger id="golonganDarah">
                                     <SelectValue placeholder="Pilih golongan darah" />
@@ -607,6 +670,7 @@ export default function DataDiriPendaftaranPage() {
                               id="tinggiBadan" 
                               placeholder="Contoh: 170"
                               value={formData.tinggiBadan}
+                              disabled={isFieldDisabled("tinggiBadan")}
                               onChange={(e) => handleChange("tinggiBadan", e.target.value)}
                             />
                         </div>
@@ -616,6 +680,7 @@ export default function DataDiriPendaftaranPage() {
                               id="beratBadan" 
                               placeholder="Contoh: 60"
                               value={formData.beratBadan}
+                              disabled={isFieldDisabled("beratBadan")}
                               onChange={(e) => handleChange("beratBadan", e.target.value)}
                             />
                         </div>
@@ -625,6 +690,7 @@ export default function DataDiriPendaftaranPage() {
                         <Select 
                           value={formData.disabilitas} 
                           onValueChange={(val) => handleChange("disabilitas", val)}
+                              disabled={isFieldDisabled("disabilitas")}
                         >
                             <SelectTrigger id="disabilitas">
                                 <SelectValue placeholder="Pilih disabilitas" />

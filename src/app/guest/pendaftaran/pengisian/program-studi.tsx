@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import React from "react"
+import { useNavigate } from "react-router-dom"
 // --- PATH IMPORT APP LAYOUT YANG BENAR ---
 import { AppLayout } from "@/components/ui/app-layout"
 
@@ -32,11 +33,12 @@ const DUMMY_PRODI = [
 ]
 
 export default function PemilihanProgramStudiPage() {
+  const navigate = useNavigate()
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Mengganti alert dengan notifikasi atau modal kustom di lingkungan produksi
-    alert("Pemilihan Program Studi berhasil disimpan! Kembali ke proses pendaftaran.")
-    // Logic to save data and redirect to /pendaftaran
+    alert("Pemilihan Program Studi berhasil disimpan!")
+    navigate("/pendaftaran/sarjana-2025")
   }
 
   const renderPilihanForm = (pilihan: number) => (

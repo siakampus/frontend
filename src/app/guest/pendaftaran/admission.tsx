@@ -56,22 +56,67 @@ const CustomAlert: React.FC<{ title: string; description: React.ReactNode; varia
 
 export default function ProsesPendaftaranPage() {
   const [userData, setUserData] = useState<{name: string, nik: string, email: string} | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [filled, setFilled] = useState<{ dataDiri: boolean; program: boolean; upload: boolean }>({
+    dataDiri: false,
+    program: false,
+    upload: false,
+  });
   const token = localStorage.getItem("token");
+  const getAuthHeaders = (): HeadersInit =>
+    token ? { Authorization: `Bearer ${token}` } : {};
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await fetch(`${API_BASE}/admissiondata/1`, {
-          headers: { Authorization: `Bearer ${token}` },
+        // Section 1 — identity (also drives the header + "data diri" completion)
+        const res1 = await fetch(`${API_BASE}/admissiondata/1`, {
+          headers: getAuthHeaders(),
           credentials: "include",
         });
-        if (res.ok) {
-          const data = await res.json();
+        let d1: Record<string, unknown> = {};
+        if (res1.ok) {
+          const json = await res1.json();
+          d1 = json.data ?? json ?? {};
           setUserData({
-            name: data.fullName || data.name || "User",
-            nik: data.nik || "-",
-            email: data.email || "-",
+            name: d1.fullName || d1.name || "User",
+            nik: d1.nik || "-",
+            email: d1.email || "-",
           });
+        }
+
+        // Section 2 — contact/address; Section 3 — documents
+        const [res2, res3] = await Promise.all([
+          fetch(`${API_BASE}/admissiondata/2`, { headers: getAuthHeaders(), credentials: "include" }),
+          fetch(`${API_BASE}/admissiondata/3`, { headers: getAuthHeaders(), credentials: "include" }),
+        ]);
+        const d2 = res2.ok ? ((await res2.json()).data ?? {}) : {};
+        const d3 = res3.ok ? ((await res3.json()).data ?? {}) : {};
+
+        // A section counts as "filled" when its core fields are present.
+        const hasVal = (o: Record<string, unknown>) => Object.values(o).some((v) => v !== null && v !== undefined && v !== "");
+        setFilled({
+          dataDiri: Boolean(d1.fullName && d1.nik) && hasVal(d2),
+          program: Boolean(d1.major || d1.schoolOrigin),
+          upload: Boolean(d3.photo_url || d3.raport_url || d3.kk_url || d3.ijazah_url),
+        });
+
+        // Lock status
+        const lockRes = await fetch(`${API_BASE}/admissiondata/locked`, {
+          headers: getAuthHeaders(),
+          credentials: "include",
+        });
+        if (lockRes.ok) {
+          const lockData = await lockRes.json();
+          setIsLocked(
+            typeof lockData === "boolean"
+              ? lockData
+              : Boolean(
+                  lockData?.isLocked === true ||
+                  lockData?.data?.isLocked === true ||
+                  lockData?.data === true,
+                ),
+          );
         }
       } catch (err) {
         console.error("Failed to fetch user data", err);
@@ -107,7 +152,7 @@ export default function ProsesPendaftaranPage() {
       description: "Lengkapi biodata dan informasi pribadi.",
       schedule: "2 - 6 Juli 2025",
       icon: FileText,
-      status: "Selesai", 
+      status: filled.dataDiri ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/data-diri",
     },
     {
@@ -116,7 +161,7 @@ export default function ProsesPendaftaranPage() {
       description: "Pilih jurusan / program studi yang diminati.",
       schedule: "3 - 7 Juli 2025",
       icon: GraduationCap,
-      status: "Selesai", 
+      status: filled.program ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/program-studi",
     },
     {
@@ -125,7 +170,7 @@ export default function ProsesPendaftaranPage() {
       description: "Unggah berkas yang diperlukan.",
       schedule: "4 - 8 Juli 2025",
       icon: Upload,
-      status: "Belum Selesai",
+      status: filled.upload ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/upload",
 
     },
@@ -203,7 +248,16 @@ export default function ProsesPendaftaranPage() {
 
   const overallStatus = getOverallStatus(steps)
 
-  const renderStatus = (status: StepStatus) => {
+  const renderStatus = (status: StepStatus, locked: boolean) => {
+    if (status === "Selesai") {
+      const { badge: badgeClass } = getStatusProps("Selesai")
+      return (
+        <Badge className={`flex items-center gap-1 ${badgeClass}`}>
+          {locked ? <Lock className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
+          {locked ? "Terkunci" : "Selesai"}
+        </Badge>
+      )
+    }
     if (status === "Revisi" || status === "Belum dibuka") {
       const { icon: Icon, badge: badgeClass } = getStatusProps(status)
       return (
@@ -291,11 +345,17 @@ export default function ProsesPendaftaranPage() {
             {steps.map((step, index) => {
               const isDisabled = step.status === "Belum dibuka"
               const isRevision = step.status === "Revisi"
+              // UGM-style: once data is locked, a completed step becomes static
+              // (view-only, not re-enterable).
+              const isCompletedLocked = step.status === "Selesai" && isLocked
+              const isStatic = isDisabled || isCompletedLocked
               const content = (
             <Card
               className={`transition-all duration-200 transform p-0 ${
                 isDisabled
                   ? "opacity-50 pointer-events-none"
+                  : isCompletedLocked
+                  ? "pointer-events-none border-green-200 bg-green-50/40"
                   : "hover:shadow-lg hover:scale-[1.01] transition-transform"
               } ${isRevision ? 'border-border bg-white' : ''}`}
             > <CardContent className="flex items-start justify-between p-4">
@@ -303,7 +363,7 @@ export default function ProsesPendaftaranPage() {
                       <div className="flex items-center gap-2">
                         <step.icon className="h-5 w-5 text-primary" />
                         <h2 className="font-bold">{step.title}</h2>
-                        {renderStatus(step.status)} 
+                        {renderStatus(step.status, isLocked)} 
                       </div>
                       <p className="text-sm text-muted-foreground">{step.description}</p>
 
@@ -316,6 +376,11 @@ export default function ProsesPendaftaranPage() {
                           </div>
                       )}
 
+                      {isCompletedLocked && (
+                          <div className="bg-green-100/70 border border-green-300 rounded p-2 text-xs text-green-800 mt-2 flex items-center gap-2">
+                              <Lock className="h-3 w-3" /> Data sudah terkunci dan tidak dapat diubah.
+                          </div>
+                      )}
 
                       <div className="bg-muted/50 border border-dashed rounded p-2 text-xs text-muted-foreground mt-2">
                         Jadwal Pelaksanaan:{" "}
@@ -334,7 +399,7 @@ export default function ProsesPendaftaranPage() {
                   <div className="absolute -left-[14px] top-2 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">
                     {index + 1}
                   </div>
-                  {isDisabled ? content : <Link to={step.path} className="block group">{content}</Link>}
+                  {isStatic ? content : <Link to={step.path} className="block group">{content}</Link>}
                 </div>
               )
             })}

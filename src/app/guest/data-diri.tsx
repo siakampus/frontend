@@ -35,6 +35,14 @@ export default function DataDiriPage() {
   const [saving, setSaving] = useState(false);
   const [agree, setAgree] = useState(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
+  
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordChanging, setPasswordChanging] = useState(false);
 
   const defaultPribadi = {
     "Nama Lengkap": "",
@@ -351,6 +359,65 @@ export default function DataDiriPage() {
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (locked) {
+      alert("Data sudah dikunci permanen dan password tidak dapat diubah.");
+      return;
+    }
+
+    const { oldPassword, newPassword, confirmPassword } = passwordData;
+
+    // Validation
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      alert("Semua field password harus diisi!");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("Password baru dan konfirmasi tidak cocok!");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      alert("Password baru minimal 8 karakter!");
+      return;
+    }
+
+    setPasswordChanging(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/change-password`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        body: JSON.stringify({
+          currentPassword: oldPassword,
+          newPassword: newPassword,
+        }),
+      });
+
+      if (res.ok) {
+        alert("✓ Password berhasil diubah!");
+        // Clear password fields
+        setPasswordData({
+          oldPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      } else {
+        const errorText = await res.text();
+        alert(`✗ Gagal mengubah password.\n${errorText.substring(0, 100)}`);
+      }
+    } catch (err) {
+      logger.error("Password change error:", err);
+      alert("✗ Kesalahan server saat mengubah password.");
+    } finally {
+      setPasswordChanging(false);
+    }
+  };
+
   const handleLockData = async () => {
     if (!agree) {
       alert("Harap centang pernyataan sebelum mengunci data.");
@@ -664,17 +731,41 @@ export default function DataDiriPage() {
               <div className="grid gap-3 max-w-lg">
                 <div className="space-y-2">
                   <Label htmlFor="old">Password Lama</Label>
-                  <Input id="old" type="password" disabled={locked} />
+                  <Input 
+                    id="old" 
+                    type="password" 
+                    disabled={locked} 
+                    value={passwordData.oldPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, oldPassword: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new">Password Baru</Label>
-                  <Input id="new" type="password" disabled={locked} />
+                  <Input 
+                    id="new" 
+                    type="password" 
+                    disabled={locked}
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm">Konfirmasi Password Baru</Label>
-                  <Input id="confirm" type="password" disabled={locked} />
+                  <Input 
+                    id="confirm" 
+                    type="password" 
+                    disabled={locked}
+                    value={passwordData.confirmPassword}
+                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  />
                 </div>
-                <Button className="mt-4 max-w-[200px]" disabled={locked}>Update Password</Button>
+                <Button 
+                  className="mt-4 max-w-[200px]" 
+                  disabled={locked || passwordChanging}
+                  onClick={handlePasswordChange}
+                >
+                  {passwordChanging ? "Mengubah..." : "Update Password"}
+                </Button>
               </div>
               {locked && <p className="text-sm text-green-700 font-medium">Anda tidak dapat mengubah password setelah data dikunci.</p>}
             </TabsContent>

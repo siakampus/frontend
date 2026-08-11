@@ -97,7 +97,7 @@ export default function ProsesPendaftaranPage() {
         const hasVal = (o: Record<string, unknown>) => Object.values(o).some((v) => v !== null && v !== undefined && v !== "");
         setFilled({
           dataDiri: Boolean(d1.fullName && d1.nik) && hasVal(d2),
-          program: Boolean(d1.major || d1.schoolOrigin),
+          program: Boolean(d2.programChoice1Faculty && d2.programChoice1Major),
           upload: Boolean(d3.photo_url || d3.raport_url || d3.kk_url || d3.ijazah_url),
         });
 

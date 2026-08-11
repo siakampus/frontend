@@ -3,6 +3,7 @@
 import {
   GraduationCap,
   Save,
+  AlertCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -44,6 +45,8 @@ export default function PemilihanProgramStudiPage() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [faculties, setFaculties] = useState<Faculty[]>([])
+  const [isLocked, setIsLocked] = useState(false)
+  const [unlocking, setUnlocking] = useState(false)
   
   // Pilihan 1
   const [faculty1, setFaculty1] = useState("")
@@ -82,6 +85,22 @@ export default function PemilihanProgramStudiPage() {
           if (d.programChoice2Faculty) setFaculty2(d.programChoice2Faculty)
           if (d.programChoice2Major) setMajor2(d.programChoice2Major)
         }
+
+        // Check lock status
+        const lockRes = await fetch(`${API_BASE}/admissiondata/locked`, {
+          headers: token ? {
+            Authorization: `Bearer ${token}`,
+          } : {},
+          credentials: "include",
+        })
+        if (lockRes.ok) {
+          const lockData = await lockRes.json()
+          setIsLocked(
+            lockData?.data === true || 
+            lockData?.isLocked === true ||
+            lockData?.data?.isLocked === true
+          )
+        }
       } catch (err) {
         console.error("Failed to load program studi data:", err)
       }
@@ -89,8 +108,27 @@ export default function PemilihanProgramStudiPage() {
     fetchData()
   }, [])
 
+  const handleUnlock = async () => {
+    setUnlocking(true)
+    try {
+      await admissionDataApi.unlock()
+      setIsLocked(false)
+      alert("Data berhasil di-unlock. Anda sekarang bisa mengedit pilihan program studi.")
+    } catch (err) {
+      console.error("Failed to unlock:", err)
+      alert("Gagal unlock data. Coba lagi.")
+    } finally {
+      setUnlocking(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (isLocked) {
+      alert("Data masih ter-lock. Klik tombol 'Unlock untuk Edit' terlebih dahulu.")
+      return
+    }
     
     if (!faculty1 || !major1) {
       alert("Pilihan 1 (Fakultas dan Program Studi) wajib diisi!")
@@ -113,7 +151,12 @@ export default function PemilihanProgramStudiPage() {
       navigate("/pendaftaran/sarjana-2025")
     } catch (err) {
       console.error("Failed to save:", err)
-      alert("Gagal menyimpan. Coba lagi.")
+      const errorMsg = (err as any)?.message || "Gagal menyimpan"
+      if (errorMsg.includes("403") || errorMsg.includes("Forbidden") || errorMsg.includes("locked")) {
+        alert("Data ter-lock. Klik 'Unlock untuk Edit' untuk melanjutkan.")
+      } else {
+        alert("Gagal menyimpan. Coba lagi.")
+      }
     } finally {
       setLoading(false)
     }
@@ -247,6 +290,31 @@ export default function PemilihanProgramStudiPage() {
               </p>
             </CardHeader>
             <CardContent className="space-y-8 p-6">
+              {/* Lock Warning */}
+              {isLocked && (
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-yellow-900">Data Ter-lock</h4>
+                      <p className="text-sm text-yellow-800 mt-1">
+                        Data pendaftaran Anda saat ini ter-lock dan tidak dapat diedit. 
+                        Klik tombol di bawah untuk membuka kembali (unlock) data agar bisa melakukan perubahan.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={handleUnlock}
+                        disabled={unlocking}
+                        className="mt-3 bg-yellow-600 hover:bg-yellow-700"
+                        size="sm"
+                      >
+                        {unlocking ? "Membuka..." : "Unlock untuk Edit"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Render Pilihan 1 */}
               {renderPilihanForm(
                 1,
@@ -270,10 +338,15 @@ export default function PemilihanProgramStudiPage() {
               )}
 
               <div className="pt-4 border-t">
-                <Button type="submit" className="w-full md:w-auto" disabled={loading}>
+                <Button type="submit" className="w-full md:w-auto" disabled={loading || isLocked}>
                   <Save className="h-4 w-4 mr-2" />
                   {loading ? "Menyimpan..." : "Simpan & Lanjut ke Langkah Berikutnya"}
                 </Button>
+                {isLocked && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Unlock data terlebih dahulu untuk dapat menyimpan perubahan.
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

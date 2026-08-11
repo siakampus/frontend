@@ -148,7 +148,8 @@ export default function PemilihanProgramStudiPage() {
       await admissionDataApi.updateByType("2", payload)
       
       alert("Pemilihan Program Studi berhasil disimpan!")
-      navigate("/pendaftaran/sarjana-2025")
+      // Force refresh admission dashboard to re-check filled status
+      window.location.href = "/pendaftaran/sarjana-2025"
     } catch (err) {
       console.error("Failed to save:", err)
       const errorMsg = (err as any)?.message || "Gagal menyimpan"

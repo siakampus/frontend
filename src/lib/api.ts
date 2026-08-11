@@ -253,6 +253,13 @@ export const admissionDataApi = {
       headers: authHeaders(),
     }),
 
+  /** PUT /admissiondata/unlock — Unlock personal data */
+  unlock: () =>
+    apiFetch("/admissiondata/unlock", {
+      method: "PUT",
+      headers: authHeaders(),
+    }),
+
   /** PUT /admissiondata/:type — Update personal data (multipart: kk_file, ktp_file optional) */
   updateByType: (
     type: string,

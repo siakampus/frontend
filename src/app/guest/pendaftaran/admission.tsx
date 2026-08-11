@@ -180,7 +180,7 @@ export default function ProsesPendaftaranPage() {
       description: "Kunci data agar tidak bisa diubah kembali.",
       schedule: "5 - 9 Juli 2025",
       icon: Lock,
-      status: "Belum Selesai",
+      status: isLocked ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/lock",
     },
     {
@@ -239,7 +239,20 @@ export default function ProsesPendaftaranPage() {
     },
   ]
   
-  const steps = initialSteps 
+  // Progressive unlock (UGM-style): a step only opens once every step before
+  // it is "Selesai". Not-yet-reachable steps become "Belum dibuka" (locked).
+  // Steps that already carry an explicit "Revisi" keep it (admin override).
+  let unlocked = true
+  const steps = initialSteps.map((step) => {
+    if (step.status === "Revisi") return step
+    const gated: StepStatus = unlocked ? step.status : "Belum dibuka"
+    if (unlocked && step.status !== "Selesai") {
+      // First not-yet-completed reachable step stays open; everything after
+      // it is locked until this one is done.
+      unlocked = false
+    }
+    return { ...step, status: gated }
+  })
 
   const totalSteps = steps.length
   const completedSteps = steps.filter((s) => s.status === "Selesai").length

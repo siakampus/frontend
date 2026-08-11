@@ -61,10 +61,10 @@ export default function PemilihanProgramStudiPage() {
       try {
         // Fetch faculties with nested departments and majors
         const token = localStorage.getItem("token")
-        const res = await fetch(`${API_BASE}/jurusan/all-nested`, {
-          headers: {
+        const res = await fetch(`${API_BASE}/jurusan/public/faculties`, {
+          headers: token ? {
             Authorization: `Bearer ${token}`,
-          },
+          } : {},
           credentials: "include",
         })
         

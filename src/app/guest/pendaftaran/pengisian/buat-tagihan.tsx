@@ -83,8 +83,8 @@ export default function BillingPendaftaranPage() {
             const token = localStorage.getItem("token");
             const API_BASE = import.meta.env.VITE_PUBLIC_API_URL || "https://ugnapi.online";
             
-            // Get current user ID from profile
-            const profileRes = await fetch(`${API_BASE}/auth/profile`, {
+            // Get current user's numeric ID from /user/profile
+            const profileRes = await fetch(`${API_BASE}/user/profile`, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json"
@@ -96,29 +96,12 @@ export default function BillingPendaftaranPage() {
                 return;
             }
             
-            const profile = await profileRes.json();
-            console.log("Profile response:", profile); // Debug log
-            
-            // Better-auth uses UUID, but we need integer userId from Registration table
-            // Get userId via custom endpoint that maps better-auth user to Registration
-            const userInfoRes = await fetch(`${API_BASE}/auth/me`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            let userId = null;
-            if (userInfoRes.ok) {
-                const userInfo = await userInfoRes.json();
-                userId = userInfo.userId || userInfo.id;
-            }
-            
-            // Fallback: try profile.id if it's numeric
-            if (!userId && profile.id && !isNaN(parseInt(profile.id))) {
-                userId = parseInt(profile.id);
-            }
+            const profileData = await profileRes.json();
+            const userId = profileData.data?.id;
             
             if (!userId) {
-                alert(`User ID tidak ditemukan. Profile ID: ${profile.id}. Silakan contact admin untuk mapping user.`);
-                console.error("Cannot find numeric userId. Profile:", profile);
+                alert("User ID tidak ditemukan. Silakan login ulang.");
+                console.error("Profile response:", profileData);
                 return;
             }
 

@@ -83,46 +83,11 @@ export default function BillingPendaftaranPage() {
             const token = localStorage.getItem("token");
             const API_BASE = import.meta.env.VITE_PUBLIC_API_URL || "https://ugnapi.online";
             
-            // Get current user's numeric ID from /user/profile
-            const profileRes = await fetch(`${API_BASE}/user/profile`, {
-                headers: { 
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-            
-            if (!profileRes.ok) {
-                alert("Gagal mendapatkan profile. Silakan login ulang.");
-                return;
-            }
-            
-            const profileData = await profileRes.json();
-            const userId = profileData.data?.id;
-            
-            if (!userId) {
-                alert("User ID tidak ditemukan. Silakan login ulang.");
-                console.error("Profile response:", profileData);
-                return;
-            }
-
-            // Call admin bypass endpoint (requires admin login)
-            const adminLoginRes = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "admin@sia.com", password: "admin123" })
-            });
-            const adminAuth = await adminLoginRes.json();
-            
-            if (!adminAuth.token) {
-                alert("Gagal login sebagai admin untuk bypass.");
-                return;
-            }
-
-            // Mark bill as paid via admin endpoint
-            const bypassRes = await fetch(`${API_BASE}/admin/bills/${userId}/mark-paid-test`, {
+            // Call self-service bypass endpoint (no admin required)
+            const bypassRes = await fetch(`${API_BASE}/testing/bypass-payment`, {
                 method: "POST",
                 headers: { 
-                    "Authorization": `Bearer ${adminAuth.token}`,
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 }
             });

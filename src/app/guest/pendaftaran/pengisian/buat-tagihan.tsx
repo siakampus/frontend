@@ -83,10 +83,16 @@ export default function BillingPendaftaranPage() {
             const token = localStorage.getItem("token");
             const API_BASE = import.meta.env.VITE_PUBLIC_API_URL || "https://ugnapi.online";
             
-            // Get current user ID from session or token
-            const sessionRes = await fetch(`${API_BASE}/api/auth/session`, {
+            // Get current user ID from session
+            const sessionRes = await fetch(`${API_BASE}/auth/session`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            
+            if (!sessionRes.ok) {
+                alert("Gagal mendapatkan session. Silakan login ulang.");
+                return;
+            }
+            
             const session = await sessionRes.json();
             const userId = session.user?.id;
             
@@ -96,7 +102,6 @@ export default function BillingPendaftaranPage() {
             }
 
             // Call admin bypass endpoint (requires admin login)
-            // For testing, admin credentials are: admin@sia.com / admin123
             const adminLoginRes = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

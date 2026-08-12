@@ -83,18 +83,18 @@ export default function BillingPendaftaranPage() {
             const token = localStorage.getItem("token");
             const API_BASE = import.meta.env.VITE_PUBLIC_API_URL || "https://ugnapi.online";
             
-            // Get current user ID from session
-            const sessionRes = await fetch(`${API_BASE}/auth/session`, {
+            // Get current user ID from profile
+            const profileRes = await fetch(`${API_BASE}/auth/profile`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            if (!sessionRes.ok) {
-                alert("Gagal mendapatkan session. Silakan login ulang.");
+            if (!profileRes.ok) {
+                alert("Gagal mendapatkan profile. Silakan login ulang.");
                 return;
             }
             
-            const session = await sessionRes.json();
-            const userId = session.user?.id;
+            const profile = await profileRes.json();
+            const userId = profile.id;
             
             if (!userId) {
                 alert("User ID tidak ditemukan. Silakan login ulang.");

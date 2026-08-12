@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import {
   LogOut,
   Home,
@@ -9,6 +9,7 @@ import {
   CheckCircle,
   Banknote,
   Copy,
+  Zap,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -36,6 +37,7 @@ export default function BillingPendaftaranPage() {
     const [tagihanStatus, setTagihanStatus] = useState<'Belum Dibuat' | 'Menunggu Pembayaran' | 'Lunas'>('Belum Dibuat');
     const [vaNumber, setVaNumber] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
+    const [bypassing, setBypassing] = useState(false);
     
     const navigate = useNavigate();
 
@@ -72,6 +74,64 @@ export default function BillingPendaftaranPage() {
             setTimeout(() => setIsCopied(false), 2000);
         }
     }
+
+    const handleBypassPayment = async () => {
+        if (!confirm("Bypass pembayaran untuk testing? Bill akan langsung di-mark sebagai LUNAS.")) return;
+        
+        setBypassing(true);
+        try {
+            const token = localStorage.getItem("token");
+            const API_BASE = import.meta.env.VITE_PUBLIC_API_URL || "https://ugnapi.online";
+            
+            // Get current user ID from session or token
+            const sessionRes = await fetch(`${API_BASE}/api/auth/session`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const session = await sessionRes.json();
+            const userId = session.user?.id;
+            
+            if (!userId) {
+                alert("User ID tidak ditemukan. Silakan login ulang.");
+                return;
+            }
+
+            // Call admin bypass endpoint (requires admin login)
+            // For testing, admin credentials are: admin@sia.com / admin123
+            const adminLoginRes = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: "admin@sia.com", password: "admin123" })
+            });
+            const adminAuth = await adminLoginRes.json();
+            
+            if (!adminAuth.token) {
+                alert("Gagal login sebagai admin untuk bypass. Pastikan backend sudah deploy perubahan terbaru.");
+                return;
+            }
+
+            // Mark bill as paid via admin endpoint
+            const bypassRes = await fetch(`${API_BASE}/admin/bills/${userId}/mark-paid-test`, {
+                method: "POST",
+                headers: { 
+                    "Authorization": `Bearer ${adminAuth.token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (bypassRes.ok) {
+                const result = await bypassRes.json();
+                setTagihanStatus('Lunas');
+                alert(`✓ Bypass berhasil! Bill ID ${result.data.billId} telah di-mark sebagai VERIFIED. Anda dapat melanjutkan ke langkah berikutnya.`);
+            } else {
+                const error = await bypassRes.json();
+                alert(`Gagal bypass: ${error.message || error.error}`);
+            }
+        } catch (err: any) {
+            alert(`Error bypass: ${err.message}`);
+        } finally {
+            setBypassing(false);
+        }
+    };
 
     const statusProps = getStatusProps(tagihanStatus);
 
@@ -145,13 +205,24 @@ export default function BillingPendaftaranPage() {
                         )}
 
                         {tagihanStatus === 'Belum Dibuat' && (
-                            <Button 
-                                onClick={handleCreateBilling}
-                                variant="secondary"
-                                className="w-full md:w-auto mt-2"
-                            >
-                                <CreditCard className="h-4 w-4 mr-2" /> Generate Virtual Account (VA)
-                            </Button>
+                            <div className="flex flex-col md:flex-row gap-2 mt-2">
+                                <Button 
+                                    onClick={handleCreateBilling}
+                                    variant="secondary"
+                                    className="flex-1"
+                                >
+                                    <CreditCard className="h-4 w-4 mr-2" /> Generate Virtual Account (VA)
+                                </Button>
+                                <Button 
+                                    onClick={handleBypassPayment}
+                                    disabled={bypassing}
+                                    variant="outline"
+                                    className="flex-1 bg-yellow-50 hover:bg-yellow-100 border-yellow-300 text-yellow-700"
+                                >
+                                    <Zap className="h-4 w-4 mr-2" /> 
+                                    {bypassing ? "Bypassing..." : "Bypass Pembayaran (Testing)"}
+                                </Button>
+                            </div>
                         )}
                     </div>
                     

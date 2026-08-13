@@ -62,6 +62,10 @@ export default function ProsesPendaftaranPage() {
     program: false,
     upload: false,
   });
+  const [billStatus, setBillStatus] = useState<{ hasBill: boolean; isVerified: boolean }>({
+    hasBill: false,
+    isVerified: false,
+  });
   const token = localStorage.getItem("token");
   const getAuthHeaders = (): HeadersInit =>
     token ? { Authorization: `Bearer ${token}` } : {};
@@ -117,6 +121,19 @@ export default function ProsesPendaftaranPage() {
                   lockData?.data === true,
                 ),
           );
+        }
+
+        // Bill status (for billing & payment steps)
+        const billRes = await fetch(`${API_BASE}/user/bill/status`, {
+          headers: getAuthHeaders(),
+          credentials: "include",
+        });
+        if (billRes.ok) {
+          const billData = await billRes.json();
+          setBillStatus({
+            hasBill: billData.data?.hasBill || false,
+            isVerified: billData.data?.isVerified || false,
+          });
         }
       } catch (err) {
         console.error("Failed to fetch user data", err);
@@ -189,7 +206,7 @@ export default function ProsesPendaftaranPage() {
       description: "Generate tagihan biaya pendaftaran.",
       schedule: "6 - 10 Juli 2025",
       icon: CreditCard,
-      status: "Belum Selesai",
+      status: billStatus.hasBill ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/billing",
     },
     {
@@ -198,7 +215,7 @@ export default function ProsesPendaftaranPage() {
       description: "Lakukan pembayaran biaya pendaftaran.",
       schedule: "7 - 12 Juli 2025",
       icon: CreditCard,
-      status: "Belum Selesai",
+      status: billStatus.isVerified ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/payment",
     },
     {

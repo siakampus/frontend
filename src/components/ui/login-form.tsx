@@ -105,13 +105,33 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         // Fetch session to get the fully populated user object including role
         let role = data.user?.role || "";
 
+        // Helper: retry fetch with exponential backoff for Cloudflare challenge
+        const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 2) => {
+          for (let i = 0; i <= maxRetries; i++) {
+            try {
+              const res = await fetch(url, options);
+              // Skip retry on 401 Cloudflare challenge — just log and continue
+              if (res.status === 401) {
+                logger.error(`Cloudflare 401 challenge on ${url}, skipping role fetch`);
+                return null;
+              }
+              if (res.ok) return res;
+            } catch (err) {
+              if (i === maxRetries) throw err;
+            }
+            // Exponential backoff: 500ms, 1s, 2s
+            await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, i)));
+          }
+          return null;
+        };
+
         try {
           // Attempt 1: BetterAuth get-session using cookie and token
-          const sessionRes = await fetch(`${API_BASE}/api/auth/get-session`, {
+          const sessionRes = await fetchWithRetry(`${API_BASE}/api/auth/get-session`, {
             credentials: "include",
             headers: data.token ? { "Authorization": `Bearer ${data.token}` } : {}
           });
-          if (sessionRes.ok) {
+          if (sessionRes) {
             const sessionData = await sessionRes.json();
             if (sessionData?.user?.role) {
               role = sessionData.user.role;
@@ -124,11 +144,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         if (!role || role === "guest") {
           try {
             // Attempt 2: Custom backend profile endpoint
-            const profileRes = await fetch(`${API_BASE}/auth/profile`, {
+            const profileRes = await fetchWithRetry(`${API_BASE}/auth/profile`, {
               credentials: "include",
               headers: data.token ? { "Authorization": `Bearer ${data.token}` } : {}
             });
-            if (profileRes.ok) {
+            if (profileRes) {
               const profileData = await profileRes.json();
               if (profileData?.data?.role) {
                 role = profileData.data.role;
@@ -139,6 +159,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           }
         }
 
+        // Fallback: jika role masih kosong setelah semua attempt, gunakan "guest"
+        if (!role) {
+          logger.error("Role fetch failed after all attempts, defaulting to guest");
+          role = "guest";
+        }
+
         logger.log("Resolved Role:", role);
 
         localStorage.setItem("userEmail", data.user?.email || email);
@@ -146,9 +172,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
         const redirectPath = getRedirectPathByRole(role);
         setSuccessMessage(" Login berhasil! Mengarahkan ke " + redirectPath);
+        
+        // Delay 2 detik untuk memberi Cloudflare waktu memproses session
         setTimeout(() => {
           window.location.href = redirectPath;
-        }, 1000);
+        }, 2000);
       } else {
         // BetterAuth errors: { error: { message } } or { message }
         const errMsg =

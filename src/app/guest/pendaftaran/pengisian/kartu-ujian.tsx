@@ -4,6 +4,7 @@ import {
   Calendar,
   Clock,
   MapPin,
+  CheckCircle,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,37 +14,56 @@ import {
 } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import React from "react"
-// --- PATH IMPORT APP LAYOUT YANG BENAR ---
+import React, { useEffect, useState } from "react"
 import { AppLayout } from "@/components/ui/app-layout"
 
-
 export default function CetakKartuUjianPage() {
-    // Mock Data Kartu Ujian
-    const dataKartu = {
-        nama: "Sumbuludun Udin",
-        nomorPendaftaran: "SM-SARJANA-2025-123456",
-        tanggalLahir: "01 Januari 2000",
-        programStudi: "Teknik Informatika",
-        fotoUrl: "/avatar.png", 
-        sesi: {
-            tanggal: "Sabtu, 15 Januari 2026",
-            waktu: "Sesi 2 (Pukul 10:00 - 12:00 WIB)",
-            lokasi: "Gedung Utama, Ruang 301 (Lab Komputer)",
-        },
-        peraturan: [
-            "Wajib hadir 30 menit sebelum ujian dimulai.",
-            "Membawa Kartu Ujian dan identitas diri (KTP/SIM).",
-            "Mengenakan pakaian rapi dan sopan (kemeja/polo, celana panjang).",
-            "Dilarang membawa alat komunikasi (HP, Smartwatch) ke ruang ujian."
-        ]
-    };
-    
-    // Fungsi untuk mensimulasikan cetak/unduh
-    const handlePrintCard = () => {
-        alert('Mengunduh Kartu Ujian. Harap siapkan printer.');
-        // Logika cetak atau download PDF di sini
-    };
+  const [cbtSesi, setCbtSesi] = useState({
+    tanggal: "Sabtu, 15 Januari 2026",
+    waktu: "Sesi 2 (Pukul 10:00 - 12:00 WIB)",
+    lokasi: "Gedung Utama, Ruang 301 (Lab Komputer)",
+  })
+  const [isPrinted, setIsPrinted] = useState(false)
+
+  useEffect(() => {
+    const raw = localStorage.getItem("cbt_session")
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw)
+        setCbtSesi({
+          tanggal: parsed.tanggal || "Sabtu, 15 Januari 2026",
+          waktu: parsed.waktu || "Sesi 2 (Pukul 10:00 - 12:00 WIB)",
+          lokasi: parsed.lokasi || "Gedung Utama, Ruang 301 (Lab Komputer)",
+        })
+      } catch (e) {
+        // ignore
+      }
+    }
+    setIsPrinted(localStorage.getItem("card_printed") === "true")
+  }, [])
+
+  // Mock Data Kartu Ujian
+  const dataKartu = {
+    nama: "Sumbuludun Udin",
+    nomorPendaftaran: "SM-SARJANA-2025-123456",
+    tanggalLahir: "01 Januari 2000",
+    programStudi: "Teknik Informatika",
+    fotoUrl: "/avatar.png",
+    sesi: cbtSesi,
+    peraturan: [
+      "Wajib hadir 30 menit sebelum ujian dimulai.",
+      "Membawa Kartu Ujian dan identitas diri (KTP/SIM).",
+      "Mengenakan pakaian rapi dan sopan (kemeja/polo, celana panjang).",
+      "Dilarang membawa alat komunikasi (HP, Smartwatch) ke ruang ujian."
+    ]
+  }
+
+  // Fungsi untuk mensimulasikan cetak/unduh
+  const handlePrintCard = () => {
+    localStorage.setItem("card_printed", "true")
+    setIsPrinted(true)
+    window.print()
+  }
 
     return (
         // Menggunakan AppLayout untuk menyediakan Sidebar dan Header

@@ -57,10 +57,12 @@ export default function CetakBuktiPesertaPage() {
             const downloadUrl = data?.downloadUrl;
 
             if (downloadUrl) {
+                localStorage.setItem("proof_printed", "true");
                 // PDF dibuka di tab baru
                 window.open(downloadUrl, "_blank");
             } else {
-                alert("URL unduhan tidak ditemukan dalam respons API.");
+                localStorage.setItem("proof_printed", "true");
+                window.print();
             }
 
         } catch (error) {

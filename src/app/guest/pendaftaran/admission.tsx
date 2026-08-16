@@ -141,6 +141,18 @@ export default function ProsesPendaftaranPage() {
     };
     if (token) fetchUserData();
   }, [token]);
+
+  // Cek apakah sesi CBT sudah ditetapkan oleh Admin atau dikonfirmasi
+  const [cbtAssigned, setCbtAssigned] = useState(false);
+  const [proofPrinted, setProofPrinted] = useState(false);
+  const [cardPrinted, setCardPrinted] = useState(false);
+
+  useEffect(() => {
+    const rawCbt = localStorage.getItem("cbt_session") || localStorage.getItem("cbt_confirmed");
+    setCbtAssigned(Boolean(rawCbt));
+    setProofPrinted(localStorage.getItem("proof_printed") === "true");
+    setCardPrinted(localStorage.getItem("card_printed") === "true");
+  }, []);
   
   const programTitle = "Seleksi Mandiri Program Sarjana (2025)"
   const programId = "SM-SARJANA-2025"
@@ -224,7 +236,7 @@ export default function ProsesPendaftaranPage() {
       description: "Pilih sesi ujian berbasis komputer (CBT).",
       schedule: "10 - 15 Juli 2025",
       icon: FileText,
-      status: "Belum Selesai",
+      status: cbtAssigned ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/cbt",
     },
     {
@@ -233,7 +245,7 @@ export default function ProsesPendaftaranPage() {
       description: "Cetak bukti pendaftaran Anda.",
       schedule: "12 - 16 Juli 2025",
       icon: Printer,
-      status: "Belum Selesai",
+      status: proofPrinted ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/print-form",
     },
     {
@@ -242,7 +254,7 @@ export default function ProsesPendaftaranPage() {
       description: "Cetak kartu ujian resmi.",
       schedule: "15 - 18 Juli 2025",
       icon: Printer,
-      status: "Belum Selesai",
+      status: cardPrinted ? "Selesai" : "Belum Selesai",
       path: "/pendaftaran/print-card",
     },
     {

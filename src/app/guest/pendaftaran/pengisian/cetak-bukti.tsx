@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import React, { useEffect, useState } from "react"
 import { AppLayout } from "@/components/ui/app-layout"
 import { logger } from "@/lib/logger"
+import { generateBuktiPesertaPdf } from "@/lib/pdf-generator"
 
 const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? ""
 
@@ -139,47 +140,16 @@ export default function CetakBuktiPesertaPage() {
     fetchParticipantData()
   }, [token])
 
-  // Fungsi untuk memanggil API dan mengunduh PDF
+  // Fungsi untuk men-generate dan mengunduh PDF secara langsung (Native Vector PDF)
   const handlePrint = async () => {
-    if (!token) {
-      alert("Sesi berakhir. Mohon login kembali.")
-      window.location.href = "/login"
-      return
-    }
-
     setIsGenerating(true)
-
     try {
-      const res = await fetch(`${API_BASE}/admissiondata/generate-pdf`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      })
-
-      if (!res.ok) {
-        const errorText = await res.text()
-        logger.error("Gagal generate PDF via backend:", errorText)
-        localStorage.setItem("proof_printed", "true")
-        window.print()
-        return
-      }
-
-      const data = await res.json()
-      const downloadUrl = data?.downloadUrl
-
-      if (downloadUrl) {
-        localStorage.setItem("proof_printed", "true")
-        window.open(downloadUrl, "_blank")
-      } else {
-        localStorage.setItem("proof_printed", "true")
-        window.print()
-      }
-    } catch (error) {
-      logger.error("Kesalahan koneksi saat generate PDF:", error)
+      // Generate clean vector PDF directly using jsPDF
+      generateBuktiPesertaPdf(dataPeserta)
       localStorage.setItem("proof_printed", "true")
-      window.print()
+    } catch (error) {
+      logger.error("Kesalahan saat generate PDF:", error)
+      alert("Terjadi kendala saat membuat dokumen PDF. Silakan coba lagi.")
     } finally {
       setIsGenerating(false)
     }

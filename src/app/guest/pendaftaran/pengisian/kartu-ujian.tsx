@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator"
 import React, { useEffect, useState } from "react"
 import { AppLayout } from "@/components/ui/app-layout"
 import { logger } from "@/lib/logger"
+import { generateKartuUjianPdf } from "@/lib/pdf-generator"
 
 const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? ""
 
@@ -145,11 +146,25 @@ export default function CetakKartuUjianPage() {
     ]
   }
 
-  // Fungsi untuk mensimulasikan cetak/unduh
+  // Fungsi untuk men-generate dan mengunduh Kartu Ujian (Native Vector PDF)
   const handlePrintCard = () => {
-    localStorage.setItem("card_printed", "true")
-    setIsPrinted(true)
-    window.print()
+    try {
+      generateKartuUjianPdf({
+        nomorPendaftaran: dataPeserta.nomorPendaftaran,
+        nama: dataPeserta.nama,
+        tanggalLahir: dataPeserta.tanggalLahir,
+        programStudi: dataPeserta.programStudi,
+        tanggalUjian: cbtSesi.tanggal,
+        waktuUjian: cbtSesi.waktu,
+        lokasiUjian: cbtSesi.lokasi,
+        fotoUrl: dataPeserta.fotoUrl,
+      })
+      localStorage.setItem("card_printed", "true")
+      setIsPrinted(true)
+    } catch (error) {
+      logger.error("Gagal membuat PDF kartu ujian:", error)
+      alert("Terjadi kendala saat mengunduh Kartu Ujian. Silakan coba lagi.")
+    }
   }
 
     return (

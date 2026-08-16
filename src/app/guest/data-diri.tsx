@@ -187,11 +187,11 @@ export default function DataDiriPage() {
           });
           if (res1.ok) {
             const json = await res1.json();
-            logger.log("✅ Data Pribadi (API /admissiondata/1) diterima:", json);
+            logger.log("Data Pribadi (API /admissiondata/1) diterima:", json);
             const d = json.data || {};
             setPribadi(mapApiToPribadi(d, user));
           } else {
-            logger.warn("⚠️ Gagal mengambil Data Pribadi dari API (mungkin belum diisi)");
+            logger.warn("Gagal mengambil Data Pribadi dari API (mungkin belum diisi)");
             setPribadi(mapApiToPribadi({}, user));
           }
 

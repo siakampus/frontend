@@ -72,14 +72,14 @@ export default function AssignmentDetailPage() {
     setSubmitting(true);
     const res = await assignmentsApi.submit(id, content || undefined, file || undefined);
     if (res.ok) {
-      notify("✅ Tugas berhasil dikumpulkan!");
+      notify("Tugas berhasil dikumpulkan.");
       const subRes = await assignmentsApi.getMySubmission(id);
       if (subRes.ok && subRes.data) {
         const body = subRes.data as { data?: Submission };
         setSubmission(body.data || (subRes.data as unknown as Submission) || null);
       }
     } else {
-      notify("❌ Gagal mengumpulkan tugas.");
+      notify("Gagal mengumpulkan tugas.");
     }
     setSubmitting(false);
   };

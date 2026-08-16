@@ -94,8 +94,8 @@ export default function AdminRegistrationConfigPage() {
 
     notify(
       visRes.ok && reqRes.ok
-        ? "✅ Konfigurasi berhasil disimpan."
-        : "❌ Gagal menyimpan sebagian konfigurasi."
+        ? "Konfigurasi berhasil disimpan."
+        : "Gagal menyimpan sebagian konfigurasi."
     );
     setSaving(false);
   };

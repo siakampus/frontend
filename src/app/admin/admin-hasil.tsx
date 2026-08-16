@@ -88,11 +88,11 @@ export default function AdminResultsPage() {
       if (editedNote.trim()) {
         await adminRegistrationsApi.setFeedback(selected.id, editedNote)
       }
-      notify(`✅ Hasil untuk ${selected.registrationData?.fullName || selected.user?.name} berhasil disimpan.`)
+      notify(`Hasil untuk ${selected.registrationData?.fullName || selected.user?.name} berhasil disimpan.`)
       setSelected(null)
       fetchRegistrations()
     } else {
-      notify("❌ Gagal menyimpan hasil.")
+      notify("Gagal menyimpan hasil.")
     }
     setSaving(false)
   }

@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 
 export default function AdminLayout() {
-  // 🧭 Sidebar Items untuk semua halaman admin
+  // Sidebar Items untuk semua halaman admin
   const sidebarItems: SidebarItem[] = [
     { to: "/admin",                   label: "Dashboard",              icon: <Home className="h-4 w-4" /> },
     { to: "/admin/pendaftaran",       label: "Program Pendaftaran",    icon: <GraduationCap className="h-4 w-4" /> },

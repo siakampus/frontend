@@ -28,7 +28,7 @@ export default function AdminUploadPage() {
     }
 
     setUploadedFiles((prev) => [...prev, selectedFile.name])
-    alert(`✅ File "${selectedFile.name}" berhasil diunggah (dummy mode)`)
+    alert(`File "${selectedFile.name}" berhasil diunggah (dummy mode)`)
     setSelectedFile(null)
   }
 
@@ -61,7 +61,7 @@ export default function AdminUploadPage() {
 
           <Button
             variant="outline"
-            onClick={() => alert("🔄 Data di-refresh (dummy only).")}
+            onClick={() => alert("Data di-refresh (dummy only).")}
             className="flex items-center gap-2"
           >
             <RefreshCcw className="h-4 w-4" /> Refresh

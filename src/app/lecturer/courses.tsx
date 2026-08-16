@@ -114,7 +114,7 @@ export default function LecturerCoursesPage() {
       capacity
     } as any);
     if (res.ok) {
-      notify("✅ Mata Kuliah berhasil ditambahkan.");
+      notify("Mata Kuliah berhasil ditambahkan.");
       setIsDialogOpen(false);
       setTitle("");
       setDescription("");
@@ -122,7 +122,7 @@ export default function LecturerCoursesPage() {
       setCapacity(40);
       fetchCourses();
     } else {
-      notify("❌ Gagal menambahkan mata kuliah.");
+      notify("Gagal menambahkan mata kuliah.");
     }
     setIsCreating(false);
   };
@@ -190,7 +190,7 @@ export default function LecturerCoursesPage() {
              finalDesc += `\n\n[Materi Lampiran: ${materiFile.name}](${data.url})`;
           }
         } else {
-          notify("❌ Gagal mengunggah file materi.");
+          notify("Gagal mengunggah file materi.");
           setIsUpdatingMateri(false);
           return;
         }
@@ -198,17 +198,17 @@ export default function LecturerCoursesPage() {
 
       const res = await coursesApi.update(selectedCourse.id, { description: finalDesc });
       if (res.ok) {
-        notify("✅ Materi berhasil diperbarui.");
+        notify("Materi berhasil diperbarui.");
         setEditMateriDesc(finalDesc);
         setMateriFile(null);
         // Update the course list
         setCourses(courses.map(c => c.id === selectedCourse.id ? { ...c, description: finalDesc } : c));
         setSelectedCourse({ ...selectedCourse, description: finalDesc });
       } else {
-        notify("❌ Gagal memperbarui materi.");
+        notify("Gagal memperbarui materi.");
       }
     } catch (err) {
-      notify("❌ Terjadi kesalahan saat memperbarui materi.");
+      notify("Terjadi kesalahan saat memperbarui materi.");
     } finally {
       setIsUpdatingMateri(false);
     }
@@ -234,17 +234,17 @@ export default function LecturerCoursesPage() {
       });
 
       if (res.ok) {
-        notify("✅ Materi berhasil ditambahkan.");
+        notify("Materi berhasil ditambahkan.");
         setIsCreateMateriDialogOpen(false);
         setNewMateriTitle("");
         setNewMateriDesc("");
         setNewMateriFile(null);
         await fetchCourseMaterials(selectedCourse.id);
       } else {
-        notify("❌ Gagal menambahkan materi.");
+        notify("Gagal menambahkan materi.");
       }
     } catch (err) {
-      notify("❌ Terjadi kesalahan saat menambahkan materi.");
+      notify("Terjadi kesalahan saat menambahkan materi.");
     } finally {
       setIsCreatingMateri(false);
     }
@@ -255,10 +255,10 @@ export default function LecturerCoursesPage() {
     if (!window.confirm(`Hapus materi "${materialTitle}"? Tindakan ini tidak dapat dibatalkan.`)) return;
     const res = await materialsApi.delete(materialId);
     if (res.ok) {
-      notify("✅ Materi berhasil dihapus.");
+      notify("Materi berhasil dihapus.");
       setCourseMaterials((prev) => prev.filter((m) => m.id !== materialId));
     } else {
-      notify("❌ Gagal menghapus materi.");
+      notify("Gagal menghapus materi.");
     }
   };
 
@@ -267,10 +267,10 @@ export default function LecturerCoursesPage() {
     if (!window.confirm(`Hapus mata kuliah "${course.title}"? Tindakan ini tidak dapat dibatalkan.`)) return;
     const res = await coursesApi.delete(course.id);
     if (res.ok) {
-      notify("✅ Mata Kuliah berhasil dihapus.");
+      notify("Mata Kuliah berhasil dihapus.");
       setCourses((prev) => prev.filter((c) => c.id !== course.id));
     } else {
-      notify("❌ Gagal menghapus mata kuliah.");
+      notify("Gagal menghapus mata kuliah.");
     }
   };
 
@@ -293,7 +293,7 @@ export default function LecturerCoursesPage() {
              finalDesc += `\n\n[Lampiran Tugas: ${newAssignFile.name}](${data.url})`;
           }
         } else {
-          notify("❌ Gagal mengunggah file tugas.");
+          notify("Gagal mengunggah file tugas.");
           setIsCreatingAssign(false);
           return;
         }
@@ -307,7 +307,7 @@ export default function LecturerCoursesPage() {
       });
 
       if (res.ok) {
-        notify("✅ Tugas berhasil ditambahkan.");
+        notify("Tugas berhasil ditambahkan.");
         setIsAssignDialogOpen(false);
         setNewAssignTitle("");
         setNewAssignDesc("");
@@ -320,10 +320,10 @@ export default function LecturerCoursesPage() {
            setCourseAssignments(body.data || []);
         }
       } else {
-        notify("❌ Gagal menambahkan tugas.");
+        notify("Gagal menambahkan tugas.");
       }
     } catch (err) {
-       notify("❌ Terjadi kesalahan saat membuat tugas.");
+       notify("Terjadi kesalahan saat membuat tugas.");
     } finally {
       setIsCreatingAssign(false);
     }

@@ -68,27 +68,27 @@ export default function AdminUsersPage() {
     const newRole = prompt(`Masukkan role baru untuk user (admin/lecturer/student/guest):`, role);
     if (!newRole) return;
     const res = await adminUsersApi.updateRole(id, newRole.trim());
-    notify(res.ok ? "✅ Role berhasil diubah." : "❌ Gagal mengubah role.");
+    notify(res.ok ? "Role berhasil diubah." : "Gagal mengubah role.");
     fetchUsers();
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const newStatus: "active" | "inactive" = currentStatus === "active" ? "inactive" : "active";
     const res = await adminUsersApi.updateStatus(id, newStatus);
-    notify(res.ok ? `✅ Status diubah ke ${newStatus}.` : "❌ Gagal mengubah status.");
+    notify(res.ok ? `Status diubah ke ${newStatus}.` : "Gagal mengubah status.");
     fetchUsers();
   };
 
   const handleResetPassword = async (id: string) => {
     if (!confirm("Kirim email reset password ke user ini?")) return;
     const res = await adminUsersApi.resetPassword(id);
-    notify(res.ok ? "✅ Email reset password terkirim." : "❌ Gagal mengirim email.");
+    notify(res.ok ? "Email reset password terkirim." : "Gagal mengirim email.");
   };
 
   const handleDelete = async (id: string, email: string) => {
     if (!confirm(`Hapus permanen user "${email}"? Tindakan ini tidak bisa dibatalkan.`)) return;
     const res = await adminUsersApi.delete(id);
-    notify(res.ok ? "✅ User berhasil dihapus." : "❌ Gagal menghapus user.");
+    notify(res.ok ? "User berhasil dihapus." : "Gagal menghapus user.");
     fetchUsers();
   };
 

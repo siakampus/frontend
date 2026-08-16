@@ -147,19 +147,19 @@ export default function AdminRegistrationsPage() {
       res = await adminRegistrationsApi.validate([r.id])
     }
 
-    notify(res.ok ? "✅ Pendaftaran berhasil divalidasi." : "❌ Gagal memvalidasi.")
+    notify(res.ok ? "Pendaftaran berhasil divalidasi." : "Gagal memvalidasi.")
     fetchRegistrations()
   }
 
   const handleUnlockRegistration = async (userId: string) => {
     const res = await adminRegistrationsApi.unlockRegistration(userId)
-    notify(res.ok ? "✅ Kunci pendaftaran dibuka." : "❌ Gagal membuka kunci.")
+    notify(res.ok ? "Kunci pendaftaran dibuka." : "Gagal membuka kunci.")
     fetchRegistrations()
   }
 
   const handleUnlockPersonalData = async (userId: string) => {
     const res = await adminRegistrationsApi.unlockPersonalData(userId)
-    notify(res.ok ? "✅ Kunci data pribadi dibuka." : "❌ Gagal membuka kunci data pribadi.")
+    notify(res.ok ? "Kunci data pribadi dibuka." : "Gagal membuka kunci data pribadi.")
     fetchRegistrations()
   }
 
@@ -194,7 +194,7 @@ export default function AdminRegistrationsPage() {
     localStorage.setItem("cbt_session", JSON.stringify(payload))
     localStorage.setItem("cbt_confirmed", "true")
 
-    notify(`✅ Sesi CBT untuk ${cbtModalUser.fullName || cbtModalUser.user?.name || "pendaftar"} berhasil ditetapkan!`)
+    notify(`Sesi CBT untuk ${cbtModalUser.fullName || cbtModalUser.user?.name || "pendaftar"} berhasil ditetapkan.`)
     setCbtModalUser(null)
     fetchRegistrations()
   }
@@ -204,7 +204,7 @@ export default function AdminRegistrationsPage() {
     localStorage.removeItem(`cbt_session_${userId}`)
     localStorage.removeItem("cbt_session")
     localStorage.removeItem("cbt_confirmed")
-    notify("ℹ️ Sesi CBT pendaftar telah dihapus.")
+    notify("Sesi CBT pendaftar telah dihapus.")
     setCbtModalUser(null)
     fetchRegistrations()
   }
@@ -291,7 +291,7 @@ export default function AdminRegistrationsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant={r.isValidated ? "default" : "outline"} className="text-xs">
-                          {r.isValidated ? "✅ Valid" : "Belum"}
+                          {r.isValidated ? "Valid" : "Belum"}
                         </Badge>
                       </td>
                       <td className="px-4 py-3">

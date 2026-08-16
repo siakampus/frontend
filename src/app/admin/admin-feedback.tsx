@@ -75,11 +75,11 @@ export default function AdminFeedbackPage() {
     const res = await adminRegistrationsApi.setFeedback(selected.id, feedbackText)
     setSaving(false)
     if (res.ok) {
-      notify("✅ Feedback berhasil disimpan.")
+      notify("Feedback berhasil disimpan.")
       setSelected(null)
       fetchRegistrations()
     } else {
-      notify("❌ Gagal menyimpan feedback.")
+      notify("Gagal menyimpan feedback.")
     }
   }
 

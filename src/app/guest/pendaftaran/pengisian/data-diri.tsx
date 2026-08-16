@@ -258,9 +258,9 @@ export default function DataDiriPendaftaranPage() {
 
       if (success1 && success2) {
         if (res1.status === 403 || res2.status === 403) {
-          alert("ℹ️ Data sudah terkunci. Melanjutkan ke langkah berikutnya...")
+          alert("Data sudah terkunci. Melanjutkan ke langkah berikutnya...")
         } else {
-          alert("✓ Data Diri berhasil disimpan!")
+          alert("Data Diri berhasil disimpan.")
         }
         navigate("/pendaftaran/sarjana-2025")
       } else {

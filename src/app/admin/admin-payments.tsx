@@ -53,7 +53,7 @@ export default function AdminPaymentsPage() {
   const handleConfirm = async (id: string) => {
     if (!confirm("Konfirmasi pembayaran ini?")) return;
     const res = await adminPaymentsApi.confirm(id);
-    notify(res.ok ? "✅ Pembayaran dikonfirmasi." : "❌ Gagal mengkonfirmasi pembayaran.");
+    notify(res.ok ? "Pembayaran dikonfirmasi." : "Gagal mengkonfirmasi pembayaran.");
     fetchPayments();
   };
 

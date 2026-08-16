@@ -56,13 +56,13 @@ export default function AdminLecturersPage() {
   const handleDeactivate = async (id: string) => {
     if (!confirm("Nonaktifkan dosen ini?")) return;
     const res = await adminUsersApi.updateStatus(id, "inactive");
-    notify(res.ok ? "✅ Dosen berhasil dinonaktifkan." : "❌ Gagal menonaktifkan dosen.");
+    notify(res.ok ? "Dosen berhasil dinonaktifkan." : "Gagal menonaktifkan dosen.");
     fetchLecturers();
   };
 
   const handleReactivate = async (id: string) => {
     const res = await adminUsersApi.updateStatus(id, "active");
-    notify(res.ok ? "✅ Dosen berhasil diaktifkan kembali." : "❌ Gagal mengaktifkan dosen.");
+    notify(res.ok ? "Dosen berhasil diaktifkan kembali." : "Gagal mengaktifkan dosen.");
     fetchLecturers();
   };
 
@@ -73,13 +73,13 @@ export default function AdminLecturersPage() {
     }
     const res = await adminLecturersApi.create(formData as Record<string, unknown>);
     if (res.ok) {
-      notify("✅ Dosen berhasil ditambahkan.");
+      notify("Dosen berhasil ditambahkan.");
       setShowForm(false);
       setFormData({});
       fetchLecturers();
     } else {
       const err = res.data as { message?: string };
-      notify(`❌ Gagal: ${err?.message || "Error."}`);
+      notify(`Gagal: ${err?.message || "Error."}`);
     }
   };
 

@@ -114,9 +114,9 @@ export default function LecturerAssignmentsPage() {
 
   const handleGrade = async (submissionId: number) => {
     const grade = parseFloat(gradeInput);
-    if (isNaN(grade)) { notify("❌ Masukkan nilai yang valid."); return; }
+    if (isNaN(grade)) { notify("Masukkan nilai yang valid."); return; }
     const res = await assignmentsApi.gradeSubmission(submissionId, grade, feedbackInput || undefined);
-    notify(res.ok ? "✅ Nilai berhasil disimpan." : "❌ Gagal menyimpan nilai.");
+    notify(res.ok ? "Nilai berhasil disimpan." : "Gagal menyimpan nilai.");
     setGradingId(null);
     setGradeInput("");
     setFeedbackInput("");
@@ -142,14 +142,14 @@ export default function LecturerAssignmentsPage() {
       dueDate: newDueDate ? new Date(newDueDate).toISOString() : undefined
     });
     if (res.ok) {
-      notify("✅ Tugas berhasil ditambahkan.");
+      notify("Tugas berhasil ditambahkan.");
       setIsDialogOpen(false);
       setNewTitle("");
       setNewDesc("");
       setNewDueDate("");
       fetchAssignments(selectedCourse);
     } else {
-      notify("❌ Gagal menambahkan tugas.");
+      notify("Gagal menambahkan tugas.");
     }
     setIsCreatingAssignment(false);
   };

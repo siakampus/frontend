@@ -170,7 +170,7 @@ export default function AdminLecturesPage() {
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Hapus kelas "${name}"?`)) return;
     const res = await adminLecturesApi.delete(id);
-    notify(res.ok ? "✅ Kelas berhasil dihapus." : "❌ Gagal menghapus kelas.");
+    notify(res.ok ? "Kelas berhasil dihapus." : "Gagal menghapus kelas.");
     fetchLectures();
   };
 

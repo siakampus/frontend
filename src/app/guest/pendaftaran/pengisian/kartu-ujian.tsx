@@ -5,6 +5,7 @@ import {
   Clock,
   MapPin,
   CheckCircle,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,16 +17,32 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import React, { useEffect, useState } from "react"
 import { AppLayout } from "@/components/ui/app-layout"
+import { logger } from "@/lib/logger"
+
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? ""
 
 export default function CetakKartuUjianPage() {
+  const [loading, setLoading] = useState(true)
   const [cbtSesi, setCbtSesi] = useState({
     tanggal: "Sabtu, 15 Januari 2026",
     waktu: "Sesi 2 (Pukul 10:00 - 12:00 WIB)",
     lokasi: "Gedung Utama, Ruang 301 (Lab Komputer)",
   })
   const [isPrinted, setIsPrinted] = useState(false)
+  const [dataPeserta, setDataPeserta] = useState({
+    nama: "—",
+    nomorPendaftaran: "—",
+    tanggalLahir: "—",
+    programStudi: "—",
+    fotoUrl: "/avatar.png",
+  })
+
+  const token = localStorage.getItem("token")
+  const getAuthHeaders = (): HeadersInit =>
+    token ? { Authorization: `Bearer ${token}` } : {}
 
   useEffect(() => {
+    // 1. Ambil Sesi CBT dari storage
     const raw = localStorage.getItem("cbt_session")
     if (raw) {
       try {
@@ -40,15 +57,85 @@ export default function CetakKartuUjianPage() {
       }
     }
     setIsPrinted(localStorage.getItem("card_printed") === "true")
-  }, [])
 
-  // Mock Data Kartu Ujian
+    // 2. Fetch data pendaftar dari backend database
+    const fetchData = async () => {
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        const [res1, res2, res3, userRes] = await Promise.all([
+          fetch(`${API_BASE}/admissiondata/1`, {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          }),
+          fetch(`${API_BASE}/admissiondata/2`, {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          }),
+          fetch(`${API_BASE}/admissiondata/3`, {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          }),
+          fetch(`${API_BASE}/user/profile`, {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          }),
+        ])
+
+        const d1 = res1.ok ? ((await res1.json()).data ?? {}) : {}
+        const d2 = res2.ok ? ((await res2.json()).data ?? {}) : {}
+        const d3 = res3.ok ? ((await res3.json()).data ?? {}) : {}
+        const userJson = userRes.ok ? await userRes.json() : {}
+        const profile = userJson.data ?? userJson ?? {}
+
+        const fullName = d1.fullName || profile.name || profile.fullName || "Pendaftar"
+        const identifier = String(profile.id || profile.userId || d1.nik || "123456").replace(/\D/g, "")
+        const regNum = `SM-SARJANA-2025-${identifier.slice(-6).padStart(6, "0")}`
+
+        let birthDateFormatted = d1.tanggalLahir || d1.birthDate || "01 Januari 2000"
+        if (d1.birthDate || d1.tanggalLahir) {
+          try {
+            const rawDate = d1.birthDate || d1.tanggalLahir
+            birthDateFormatted = new Date(rawDate).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          } catch (e) {
+            birthDateFormatted = d1.tanggalLahir || d1.birthDate
+          }
+        }
+
+        const major = d2.programChoice1Major
+          ? `${d2.programChoice1Faculty ? d2.programChoice1Faculty + " / " : ""}${d2.programChoice1Major}`
+          : "Teknik Informatika"
+
+        const photo = d3.photo_url || d3.photoUrl || profile.profilePicture || "/avatar.png"
+
+        setDataPeserta({
+          nama: fullName,
+          nomorPendaftaran: regNum,
+          tanggalLahir: birthDateFormatted,
+          programStudi: major,
+          fotoUrl: photo,
+        })
+      } catch (err) {
+        logger.error("Gagal mengambil data peserta untuk kartu ujian:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [token])
+
+  // Data Kartu Ujian
   const dataKartu = {
-    nama: "Sumbuludun Udin",
-    nomorPendaftaran: "SM-SARJANA-2025-123456",
-    tanggalLahir: "01 Januari 2000",
-    programStudi: "Teknik Informatika",
-    fotoUrl: "/avatar.png",
+    ...dataPeserta,
     sesi: cbtSesi,
     peraturan: [
       "Wajib hadir 30 menit sebelum ujian dimulai.",

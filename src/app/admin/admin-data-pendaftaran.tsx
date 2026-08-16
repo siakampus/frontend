@@ -137,9 +137,16 @@ export default function AdminRegistrationsPage() {
     setTimeout(() => setActionMsg(""), 3000)
   }
 
-  const handleValidate = async (userId: string) => {
-    if (!confirm("Validasi pendaftaran ini?")) return
-    const res = await adminRegistrationsApi.validate([userId])
+  const handleValidate = async (r: Registration) => {
+    if (!confirm(`Validasi pendaftaran untuk ${r.fullName || r.user?.name || "pendaftar ini"}?`)) return
+    
+    // Coba setResult terlebih dahulu (PATCH /admin/registration/:id/result)
+    let res = await adminRegistrationsApi.setResult(r.id, true)
+    if (!res.ok) {
+      // Fallback ke validate API
+      res = await adminRegistrationsApi.validate([r.id])
+    }
+
     notify(res.ok ? "✅ Pendaftaran berhasil divalidasi." : "❌ Gagal memvalidasi.")
     fetchRegistrations()
   }
@@ -317,7 +324,7 @@ export default function AdminRegistrationsPage() {
                           {!r.isValidated && (
                             <button
                               title="Validasi"
-                              onClick={() => handleValidate(r.userId)}
+                              onClick={() => handleValidate(r)}
                               className="p-1.5 rounded hover:bg-green-50 text-green-600 transition-colors"
                             >
                               <CheckCircle className="h-4 w-4" />

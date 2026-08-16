@@ -980,13 +980,35 @@ export const adminRegistrationsApi = {
       headers: authHeaders(),
     }),
 
-  /** POST /admin/registrations/validate — Validate registrations */
-  validate: (registrationIds: string[]) =>
-    apiFetch("/admin/registrations/validate", {
+  /** POST /admin/registrations/validate — Validate registrations with fallback to /result */
+  validate: async (registrationIds: string[]) => {
+    const res = await apiFetch("/admin/registrations/validate", {
       method: "POST",
       headers: authHeaders(),
       body: JSON.stringify({ registrationIds }),
-    }),
+    });
+    if (res.ok || res.status !== 404) return res;
+
+    // Fallback: update via /admin/registration/:id/result
+    if (registrationIds.length > 0) {
+      const results = await Promise.all(
+        registrationIds.map((id) =>
+          apiFetch(`/admin/registration/${id}/result`, {
+            method: "PATCH",
+            headers: authHeaders(),
+            body: JSON.stringify({ isAccepted: true }),
+          })
+        )
+      );
+      const allOk = results.every((r) => r.ok);
+      return {
+        ok: allOk,
+        status: allOk ? 200 : results[0]?.status || 400,
+        data: results[0]?.data,
+      };
+    }
+    return res;
+  },
 
   /** POST /admin/registrations/lock — Lock registrations */
   lock: (ids: string[]) =>

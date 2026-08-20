@@ -10,7 +10,7 @@ import {
   Bell,
   Lock,
   XCircle,
-  User, 
+  User,
 } from "lucide-react"
 import {
   Avatar,
@@ -44,18 +44,18 @@ const getStatusProps = (status: StepStatus) => {
 }
 
 const CustomAlert: React.FC<{ title: string; description: React.ReactNode; variant?: "default" | "destructive" }> = ({ title, description, variant = "default" }) => (
-    <div className={`p-4 rounded-lg border flex items-start space-x-3 ${variant === 'destructive' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
-        <XCircle className={`h-5 w-5 flex-shrink-0 ${variant === 'destructive' ? 'text-red-600' : 'text-blue-600'}`} />
-        <div>
-            <h4 className="font-bold text-base">{title}</h4>
-            <div className="text-sm mt-1">{description}</div>
-        </div>
+  <div className={`p-4 rounded-lg border flex items-start space-x-3 ${variant === 'destructive' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+    <XCircle className={`h-5 w-5 flex-shrink-0 ${variant === 'destructive' ? 'text-red-600' : 'text-blue-600'}`} />
+    <div>
+      <h4 className="font-bold text-base">{title}</h4>
+      <div className="text-sm mt-1">{description}</div>
     </div>
+  </div>
 );
 
 
 export default function ProsesPendaftaranPage() {
-  const [userData, setUserData] = useState<{name: string, nik: string, email: string} | null>(null);
+  const [userData, setUserData] = useState<{ name: string, nik: string, email: string } | null>(null);
   const [isLocked, setIsLocked] = useState(false);
   const [filled, setFilled] = useState<{ dataDiri: boolean; program: boolean; upload: boolean }>({
     dataDiri: false,
@@ -116,10 +116,10 @@ export default function ProsesPendaftaranPage() {
             typeof lockData === "boolean"
               ? lockData
               : Boolean(
-                  lockData?.isLocked === true ||
-                  lockData?.data?.isLocked === true ||
-                  lockData?.data === true,
-                ),
+                lockData?.isLocked === true ||
+                lockData?.data?.isLocked === true ||
+                lockData?.data === true,
+              ),
           );
         }
 
@@ -153,7 +153,7 @@ export default function ProsesPendaftaranPage() {
     setProofPrinted(localStorage.getItem("proof_printed") === "true");
     setCardPrinted(localStorage.getItem("card_printed") === "true");
   }, []);
-  
+
   const programTitle = "Seleksi Mandiri Program Sarjana (2025)"
   const programId = "SM-SARJANA-2025"
 
@@ -175,99 +175,99 @@ export default function ProsesPendaftaranPage() {
     path: string
     comment?: string
   }[] = [
-    {
-      id: "data-entry",
-      title: "Pengisian Data Diri",
-      description: "Lengkapi biodata dan informasi pribadi.",
-      schedule: "2 - 6 Juli 2025",
-      icon: FileText,
-      status: filled.dataDiri ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/data-diri",
-    },
-    {
-      id: "program",
-      title: "Pemilihan Program Studi",
-      description: "Pilih jurusan / program studi yang diminati.",
-      schedule: "3 - 7 Juli 2025",
-      icon: GraduationCap,
-      status: filled.program ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/program-studi",
-    },
-    {
-      id: "upload",
-      title: "Upload Dokumen",
-      description: "Unggah berkas yang diperlukan.",
-      schedule: "4 - 8 Juli 2025",
-      icon: Upload,
-      status: filled.upload ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/upload",
+      {
+        id: "data-entry",
+        title: "Pengisian Data Diri",
+        description: "Lengkapi biodata dan informasi Diri.",
+        schedule: "2 - 6 Juli 2025",
+        icon: FileText,
+        status: filled.dataDiri ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/data-diri",
+      },
+      {
+        id: "program",
+        title: "Pemilihan Program Studi",
+        description: "Pilih jurusan / program studi yang diminati.",
+        schedule: "3 - 7 Juli 2025",
+        icon: GraduationCap,
+        status: filled.program ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/program-studi",
+      },
+      {
+        id: "upload",
+        title: "Upload Dokumen",
+        description: "Unggah berkas yang diperlukan.",
+        schedule: "4 - 8 Juli 2025",
+        icon: Upload,
+        status: filled.upload ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/upload",
 
-    },
-    {
-      id: "lock",
-      title: "Penguncian Data",
-      description: "Kunci data agar tidak bisa diubah kembali.",
-      schedule: "5 - 9 Juli 2025",
-      icon: Lock,
-      status: isLocked ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/lock",
-    },
-    {
-      id: "billing",
-      title: "Buat Tagihan (Billing)",
-      description: "Generate tagihan biaya pendaftaran.",
-      schedule: "6 - 10 Juli 2025",
-      icon: CreditCard,
-      status: billStatus.hasBill ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/billing",
-    },
-    {
-      id: "payment",
-      title: "Pembayaran Pendaftaran",
-      description: "Lakukan pembayaran biaya pendaftaran.",
-      schedule: "7 - 12 Juli 2025",
-      icon: CreditCard,
-      status: billStatus.isVerified ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/payment",
-    },
-    {
-      id: "cbt",
-      title: "Penetapan Sesi CBT",
-      description: "Pilih sesi ujian berbasis komputer (CBT).",
-      schedule: "10 - 15 Juli 2025",
-      icon: FileText,
-      status: cbtAssigned ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/cbt",
-    },
-    {
-      id: "print-form",
-      title: "Cetak Bukti Peserta",
-      description: "Cetak bukti pendaftaran Anda.",
-      schedule: "12 - 16 Juli 2025",
-      icon: Printer,
-      status: proofPrinted ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/print-form",
-    },
-    {
-      id: "print-card",
-      title: "Cetak Kartu Ujian",
-      description: "Cetak kartu ujian resmi.",
-      schedule: "15 - 18 Juli 2025",
-      icon: Printer,
-      status: cardPrinted ? "Selesai" : "Belum Selesai",
-      path: "/pendaftaran/print-card",
-    },
-    {
-      id: "announcement",
-      title: "Pengumuman Hasil",
-      description: "Lihat hasil seleksi pendaftaran.",
-      schedule: "20 Juli 2025",
-      icon: Bell,
-      status: "Belum Selesai",
-      path: "/pendaftaran/announcement",
-    },
-  ]
-  
+      },
+      {
+        id: "lock",
+        title: "Penguncian Data",
+        description: "Kunci data agar tidak bisa diubah kembali.",
+        schedule: "5 - 9 Juli 2025",
+        icon: Lock,
+        status: isLocked ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/lock",
+      },
+      {
+        id: "billing",
+        title: "Buat Tagihan (Billing)",
+        description: "Generate tagihan biaya pendaftaran.",
+        schedule: "6 - 10 Juli 2025",
+        icon: CreditCard,
+        status: billStatus.hasBill ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/billing",
+      },
+      {
+        id: "payment",
+        title: "Pembayaran Pendaftaran",
+        description: "Lakukan pembayaran biaya pendaftaran.",
+        schedule: "7 - 12 Juli 2025",
+        icon: CreditCard,
+        status: billStatus.isVerified ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/payment",
+      },
+      {
+        id: "cbt",
+        title: "Penetapan Sesi CBT",
+        description: "Pilih sesi ujian berbasis komputer (CBT).",
+        schedule: "10 - 15 Juli 2025",
+        icon: FileText,
+        status: cbtAssigned ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/cbt",
+      },
+      {
+        id: "print-form",
+        title: "Cetak Bukti Peserta",
+        description: "Cetak bukti pendaftaran Anda.",
+        schedule: "12 - 16 Juli 2025",
+        icon: Printer,
+        status: proofPrinted ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/print-form",
+      },
+      {
+        id: "print-card",
+        title: "Cetak Kartu Ujian",
+        description: "Cetak kartu ujian resmi.",
+        schedule: "15 - 18 Juli 2025",
+        icon: Printer,
+        status: cardPrinted ? "Selesai" : "Belum Selesai",
+        path: "/pendaftaran/print-card",
+      },
+      {
+        id: "announcement",
+        title: "Pengumuman Hasil",
+        description: "Lihat hasil seleksi pendaftaran.",
+        schedule: "20 Juli 2025",
+        icon: Bell,
+        status: "Belum Selesai",
+        path: "/pendaftaran/announcement",
+      },
+    ]
+
   // Progressive unlock (UGM-style): a step only opens once every step before
   // it is "Selesai". Not-yet-reachable steps become "Belum dibuka" (locked).
   // Steps that already carry an explicit "Revisi" keep it (admin override).
@@ -313,42 +313,42 @@ export default function ProsesPendaftaranPage() {
   }
 
   const RevisionAlert = () => {
-      if (revisiSteps.length === 0) return null
+    if (revisiSteps.length === 0) return null
 
-      return (
-          <CustomAlert 
-              variant="destructive"
-              title={`Perhatian: Terdapat ${revisiSteps.length} Langkah Perlu Revisi!`}
-              description={"mohon segera periksa langkah-langkah di bawah ini yang memerlukan revisi sesuai catatan dari admin untuk melanjutkan proses pendaftaran."
-              }
-          />
-      )
+    return (
+      <CustomAlert
+        variant="destructive"
+        title={`Perhatian: Terdapat ${revisiSteps.length} Langkah Perlu Revisi!`}
+        description={"mohon segera periksa langkah-langkah di bawah ini yang memerlukan revisi sesuai catatan dari admin untuk melanjutkan proses pendaftaran."
+        }
+      />
+    )
   }
 
 
   return (
     <AppLayout
-        menuTemplate="admisi" // Menggunakan template menu Admisi
-        title={programTitle} 
-        subtitle="Status dan progress pendaftaran Anda"
-        backTo="/pendaftaran" // Link kembali ke halaman utama pendaftaran
+      menuTemplate="admisi" // Menggunakan template menu Admisi
+      title={programTitle}
+      subtitle="Status dan progress pendaftaran Anda"
+      backTo="/pendaftaran" // Link kembali ke halaman utama pendaftaran
     >
-        <main className="flex-1 overflow-y-auto bg-muted/30 p-6 space-y-6">
-        
+      <main className="flex-1 overflow-y-auto bg-muted/30 p-6 space-y-6">
+
         <Card className="shadow-sm border rounded-lg p-4 bg-primary/5 border-primary/20">
-            <div className="flex justify-between items-center text-sm font-medium text-primary">
-                <span>ID Pendaftaran: {programId}</span>
-                <Badge 
-                    variant="secondary" 
-                    className={
-                        overallStatus === "PERLU REVISI" ? "bg-red-700 text-white" : 
-                        overallStatus === "DALAM PROSES" ? "bg-orange-600 text-white" : 
-                        "bg-blue-700 text-white"
-                    }
-                >
-                    {overallStatus}
-                </Badge>
-            </div>
+          <div className="flex justify-between items-center text-sm font-medium text-primary">
+            <span>ID Pendaftaran: {programId}</span>
+            <Badge
+              variant="secondary"
+              className={
+                overallStatus === "PERLU REVISI" ? "bg-red-700 text-white" :
+                  overallStatus === "DALAM PROSES" ? "bg-orange-600 text-white" :
+                    "bg-blue-700 text-white"
+              }
+            >
+              {overallStatus}
+            </Badge>
+          </div>
         </Card>
 
         <RevisionAlert />
@@ -356,18 +356,18 @@ export default function ProsesPendaftaranPage() {
         <Card className="shadow-sm border rounded-lg">
           <CardContent className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4 flex-grow">
-                <Avatar className="h-14 w-14 border-2 border-primary">
-                    <AvatarImage src="/avatar.png" alt="User" />
-                    {/* AVATAR FALLBACK DENGAN ICON USER */}
-                    <AvatarFallback>
-                        <User className="h-8 w-8 text-muted-foreground" />
-                    </AvatarFallback>
-                </Avatar>
-                <div>
-                    <h2 className="font-bold text-xl text-gray-800">{userData?.name || "Loading..."}</h2>
-                    <p className="text-sm text-muted-foreground">NIK: {userData?.nik || "-"}</p>
-                    <p className="text-sm text-muted-foreground">Email: {userData?.email || "-"}</p>
-                </div>
+              <Avatar className="h-14 w-14 border-2 border-primary">
+                <AvatarImage src="/avatar.png" alt="User" />
+                {/* AVATAR FALLBACK DENGAN ICON USER */}
+                <AvatarFallback>
+                  <User className="h-8 w-8 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="font-bold text-xl text-gray-800">{userData?.name || "Loading..."}</h2>
+                <p className="text-sm text-muted-foreground">NIK: {userData?.nik || "-"}</p>
+                <p className="text-sm text-muted-foreground">Email: {userData?.email || "-"}</p>
+              </div>
             </div>
 
             <div className="w-full md:w-64 pt-2 md:pt-0 flex-shrink-0">
@@ -383,70 +383,69 @@ export default function ProsesPendaftaranPage() {
           </CardContent>
         </Card>
 
-          <div className="relative border-l-2 border-gray-200 border-dashed space-y-6">
-            {steps.map((step, index) => {
-              const isDisabled = step.status === "Belum dibuka"
-              const isRevision = step.status === "Revisi"
-              // UGM-style: once data is locked, a completed step becomes static
-              // (view-only, not re-enterable).
-              const isCompletedLocked = step.status === "Selesai" && isLocked
-              const isStatic = isDisabled || isCompletedLocked
-              const content = (
-            <Card
-              className={`transition-all duration-200 transform p-0 ${
-                isDisabled
-                  ? "opacity-50 pointer-events-none"
-                  : isCompletedLocked
-                  ? "pointer-events-none border-green-200 bg-green-50/40"
-                  : "hover:shadow-lg hover:scale-[1.01] transition-transform"
-              } ${isRevision ? 'border-border bg-white' : ''}`}
-            > <CardContent className="flex items-start justify-between p-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <step.icon className="h-5 w-5 text-primary" />
-                        <h2 className="font-bold">{step.title}</h2>
-                        {renderStatus(step.status, isLocked)} 
-                      </div>
-                      <p className="text-sm text-muted-foreground">{step.description}</p>
-
-                      {isRevision && step.comment && (
-                          <div className="bg-red-100/70 border border-red-300 rounded p-3 text-sm mt-3">
-                              <p className="font-semibold flex items-center gap-2 text-red-800">
-                                  <AlertCircle className="h-4 w-4" /> Catatan Revisi Admin:
-                              </p>
-                              <p className="mt-1 text-red-700">{step.comment}</p>
-                          </div>
-                      )}
-
-                      {isCompletedLocked && (
-                          <div className="bg-green-100/70 border border-green-300 rounded p-2 text-xs text-green-800 mt-2 flex items-center gap-2">
-                              <Lock className="h-3 w-3" /> Data sudah terkunci dan tidak dapat diubah.
-                          </div>
-                      )}
-
-                      <div className="bg-muted/50 border border-dashed rounded p-2 text-xs text-muted-foreground mt-2">
-                        Jadwal Pelaksanaan:{" "}
-                        <span className="font-medium text-foreground">{step.schedule}</span>
-                      </div>
+        <div className="relative border-l-2 border-gray-200 border-dashed space-y-6">
+          {steps.map((step, index) => {
+            const isDisabled = step.status === "Belum dibuka"
+            const isRevision = step.status === "Revisi"
+            // UGM-style: once data is locked, a completed step becomes static
+            // (view-only, not re-enterable).
+            const isCompletedLocked = step.status === "Selesai" && isLocked
+            const isStatic = isDisabled || isCompletedLocked
+            const content = (
+              <Card
+                className={`transition-all duration-200 transform p-0 ${isDisabled
+                    ? "opacity-50 pointer-events-none"
+                    : isCompletedLocked
+                      ? "pointer-events-none border-green-200 bg-green-50/40"
+                      : "hover:shadow-lg hover:scale-[1.01] transition-transform"
+                  } ${isRevision ? 'border-border bg-white' : ''}`}
+              > <CardContent className="flex items-start justify-between p-4">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <step.icon className="h-5 w-5 text-primary" />
+                      <h2 className="font-bold">{step.title}</h2>
+                      {renderStatus(step.status, isLocked)}
                     </div>
-                  </CardContent>
-                </Card>
-              )
+                    <p className="text-sm text-muted-foreground">{step.description}</p>
 
-              return (
-                <div
-                  key={step.id}
-                  className={`relative pl-4 ${isDisabled ? "opacity-70" : ""}`}
-                >
-                  <div className="absolute -left-[14px] top-2 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">
-                    {index + 1}
+                    {isRevision && step.comment && (
+                      <div className="bg-red-100/70 border border-red-300 rounded p-3 text-sm mt-3">
+                        <p className="font-semibold flex items-center gap-2 text-red-800">
+                          <AlertCircle className="h-4 w-4" /> Catatan Revisi Admin:
+                        </p>
+                        <p className="mt-1 text-red-700">{step.comment}</p>
+                      </div>
+                    )}
+
+                    {isCompletedLocked && (
+                      <div className="bg-green-100/70 border border-green-300 rounded p-2 text-xs text-green-800 mt-2 flex items-center gap-2">
+                        <Lock className="h-3 w-3" /> Data sudah terkunci dan tidak dapat diubah.
+                      </div>
+                    )}
+
+                    <div className="bg-muted/50 border border-dashed rounded p-2 text-xs text-muted-foreground mt-2">
+                      Jadwal Pelaksanaan:{" "}
+                      <span className="font-medium text-foreground">{step.schedule}</span>
+                    </div>
                   </div>
-                  {isStatic ? content : <Link to={step.path} className="block group">{content}</Link>}
+                </CardContent>
+              </Card>
+            )
+
+            return (
+              <div
+                key={step.id}
+                className={`relative pl-4 ${isDisabled ? "opacity-70" : ""}`}
+              >
+                <div className="absolute -left-[14px] top-2 flex items-center justify-center w-6 h-6 rounded-full bg-primary text-white text-xs font-bold">
+                  {index + 1}
                 </div>
-              )
-            })}
-          </div>
-        </main>
+                {isStatic ? content : <Link to={step.path} className="block group">{content}</Link>}
+              </div>
+            )
+          })}
+        </div>
+      </main>
     </AppLayout>
   )
 }

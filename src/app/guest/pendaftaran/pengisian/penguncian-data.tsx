@@ -92,10 +92,10 @@ export default function LockDataPendaftaranPage() {
             typeof lockData === "boolean"
               ? lockData
               : Boolean(
-                  lockData?.isLocked === true ||
-                    lockData?.data?.isLocked === true ||
-                    lockData?.data === true,
-                ),
+                lockData?.isLocked === true ||
+                lockData?.data?.isLocked === true ||
+                lockData?.data === true,
+              ),
           )
         }
       } catch (err) {
@@ -164,7 +164,7 @@ export default function LockDataPendaftaranPage() {
                 <Lock className="h-5 w-5 text-primary" />Penguncian Data Pendaftaran
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Pastikan semua data sudah benar, karena setelah dikunci, Anda tidak akan bisa mengubah data pribadi, pilihan program studi, dan unggahan dokumen.
+                Pastikan semua data sudah benar, karena setelah dikunci, Anda tidak akan bisa mengubah Data Diri, pilihan program studi, dan unggahan dokumen.
               </p>
             </CardHeader>
             <CardContent className="space-y-6 p-6">

@@ -19,7 +19,7 @@ interface AdmissionPath {
   description: string;
   startDate: string;
   endDate: string;
-  programType?: string; 
+  programType?: string;
   faculty?: string;
   enrollmentFee?: number;
 }
@@ -29,7 +29,7 @@ const NotLockedAlert: React.FC = () => (
     <Lock className="h-5 w-5 mt-0.5 flex-shrink-0 text-yellow-600" />
     <div>
       <p className="font-medium">
-        Data pribadi Anda belum dikunci.
+        Data Diri Anda belum dikunci.
       </p>
       <p className="text-sm">
         Harap lakukan <strong>Kunci Data Permanen</strong> di halaman{" "}
@@ -105,7 +105,7 @@ const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[], selectedPath: 
               {activePaths.length > 0 ? (
                 activePaths.map((path) => {
                   const isSelected = selectedId === path.id;
-                  
+
                   return (
                     <tr
                       key={path.id}
@@ -132,9 +132,9 @@ const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[], selectedPath: 
                           </Button>
                         ) : (
                           <Button size="sm" asChild disabled={!!selectedPath}>
-                            <Link 
-                                to={selectedPath ? "#" : `/pendaftaran/detail-pendaftaran/${path.id}`}
-                                state={{ pathDetail: path }}
+                            <Link
+                              to={selectedPath ? "#" : `/pendaftaran/detail-pendaftaran/${path.id}`}
+                              state={{ pathDetail: path }}
                             >
                               Daftar
                             </Link>
@@ -168,7 +168,7 @@ export function AdmissionsPage() {
   const [loading, setLoading] = useState(true);
 
   const API_URL = API_BASE;
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) {
@@ -200,10 +200,10 @@ export function AdmissionsPage() {
       return typeof data === "boolean" ? data : Boolean(
         data === true ||
         data?.isLocked === true ||
-        data?.isPersonalDataLocked === true || 
-        data?.locked === true || 
+        data?.isPersonalDataLocked === true ||
+        data?.locked === true ||
         data?.data?.isLocked === true ||
-        data?.data?.isPersonalDataLocked === true || 
+        data?.data?.isPersonalDataLocked === true ||
         data?.data?.locked === true ||
         data?.status === "LOCKED" ||
         data?.data === true
@@ -227,10 +227,10 @@ export function AdmissionsPage() {
       const data: AdmissionPath[] = await res.json();
       // Tambahkan data mock default yang dibutuhkan DetailPendaftaranPage jika API list tidak menyediakannya
       return data.map(path => ({
-          ...path,
-          programType: path.programType || "Sarjana", 
-          faculty: path.faculty || "Fakultas Umum",
-          enrollmentFee: path.enrollmentFee || 350000 
+        ...path,
+        programType: path.programType || "Sarjana",
+        faculty: path.faculty || "Fakultas Umum",
+        enrollmentFee: path.enrollmentFee || 350000
       }));
     };
 
@@ -280,11 +280,11 @@ export function AdmissionsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
         <div className="flex items-center space-x-2">
-            <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Memuat data...</span>
+          <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Memuat data...</span>
         </div>
       </div>
     );

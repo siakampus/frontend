@@ -27,7 +27,7 @@ import { AppLayout } from "@/components/ui/app-layout";
 import { logger } from "@/lib/logger"
 const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 export default function DataDiriPage() {
-  const [isEditPribadi, setIsEditPribadi] = useState(false);
+  const [isEditDiri, setIsEditDiri] = useState(false);
   const [isEditKontak, setIsEditKontak] = useState(false);
   const [isEditDokumen, setIsEditDokumen] = useState(false);
   const [locked, setLocked] = useState(false);
@@ -35,7 +35,7 @@ export default function DataDiriPage() {
   const [saving, setSaving] = useState(false);
   const [agree, setAgree] = useState(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
-  
+
   // Password change state
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
@@ -44,7 +44,7 @@ export default function DataDiriPage() {
   });
   const [passwordChanging, setPasswordChanging] = useState(false);
 
-  const defaultPribadi = {
+  const defaultDiri = {
     "Nama Lengkap": "",
     "NIK": "",
     "Tempat Lahir": "",
@@ -61,7 +61,7 @@ export default function DataDiriPage() {
     "Kota/Kabupaten": "",
   };
 
-  const [pribadi, setPribadi] = useState<Record<string, any>>(defaultPribadi);
+  const [Diri, setDiri] = useState<Record<string, any>>(defaultDiri);
   const [kontak, setKontak] = useState<Record<string, any>>(defaultKontak);
   const [dokumen, setDokumen] = useState<Record<string, any>>({}); // includes File objects + URL strings from API
 
@@ -74,7 +74,7 @@ export default function DataDiriPage() {
   };
 
   // Map backend camelCase  UI display keys
-  const mapApiToPribadi = (d: Record<string, any>, user: any) => ({
+  const mapApiToDiri = (d: Record<string, any>, user: any) => ({
     "Nama Lengkap": d.fullName || user?.name || "",
     "NIK": d.nik || "",
     "Tempat Lahir": d.birthPlace || "",
@@ -92,7 +92,7 @@ export default function DataDiriPage() {
   });
 
   // Map UI display keys  backend field names for PUT
-  const mapPribadiToApi = (p: Record<string, any>) => {
+  const mapDiriToApi = (p: Record<string, any>) => {
     let dob = p["Tanggal Lahir"];
     if (dob && !dob.includes("T")) {
       dob = `${dob}T00:00:00.000Z`;
@@ -163,7 +163,7 @@ export default function DataDiriPage() {
             setLocked(isLocked);
             localStorage.setItem("data_locked", String(isLocked));
             if (isLocked) {
-              setIsEditPribadi(false);
+              setIsEditDiri(false);
               setIsEditKontak(false);
               setIsEditDokumen(false);
             }
@@ -180,19 +180,19 @@ export default function DataDiriPage() {
           setLoading(true);
           await fetchLockStatus();
 
-          // Fetch type 1 (Pribadi)
+          // Fetch type 1 (Diri)
           const res1 = await fetch(`${API_URL}/admissiondata/1`, {
             credentials: "include",
             headers: getAuthHeaders(),
           });
           if (res1.ok) {
             const json = await res1.json();
-            logger.log("Data Pribadi (API /admissiondata/1) diterima:", json);
+            logger.log("Data Diri (API /admissiondata/1) diterima:", json);
             const d = json.data || {};
-            setPribadi(mapApiToPribadi(d, user));
+            setDiri(mapApiToDiri(d, user));
           } else {
-            logger.warn("Gagal mengambil Data Pribadi dari API (mungkin belum diisi)");
-            setPribadi(mapApiToPribadi({}, user));
+            logger.warn("Gagal mengambil Data Diri dari API (mungkin belum diisi)");
+            setDiri(mapApiToDiri({}, user));
           }
 
           // Fetch type 2 (Kontak)
@@ -264,7 +264,7 @@ export default function DataDiriPage() {
 
       // Map UI labels  backend field names
       let apiData: Record<string, any> = data;
-      if (type === 1) apiData = mapPribadiToApi(data);
+      if (type === 1) apiData = mapDiriToApi(data);
       if (type === 2) apiData = mapKontakToApi(data);
 
       let res: Response;
@@ -344,7 +344,7 @@ export default function DataDiriPage() {
         if (errorText.toLowerCase().includes("personal data is locked")) {
           alert("Data Anda telah dikunci secara permanen dan tidak dapat diubah lagi.");
           setLocked(true);
-          setIsEditPribadi(false);
+          setIsEditDiri(false);
           setIsEditKontak(false);
           setIsEditDokumen(false);
         } else {
@@ -425,7 +425,7 @@ export default function DataDiriPage() {
     }
 
     // Validate personal + contact data completeness
-    const isPribadiLengkap = Object.values(pribadi).every((v) => v !== "" && v !== null && v !== undefined);
+    const isDiriLengkap = Object.values(Diri).every((v) => v !== "" && v !== null && v !== undefined);
     const isKontakLengkap = Object.values(kontak).every((v) => v !== "" && v !== null && v !== undefined);
 
     // Dokumen: accept either a File object (newly selected) or a truthy string (URL from API meaning already uploaded)
@@ -436,9 +436,9 @@ export default function DataDiriPage() {
     const isDokumenLengkap = kkOk && ktpOk;
 
     const missingParts: string[] = [];
-    if (!isPribadiLengkap) {
-      missingParts.push("Data Pribadi");
-      logger.log("Debug - Data Pribadi belum lengkap:", pribadi);
+    if (!isDiriLengkap) {
+      missingParts.push("Data Diri");
+      logger.log("Debug - Data Diri belum lengkap:", Diri);
     }
     if (!isKontakLengkap) {
       missingParts.push("Data Kontak");
@@ -468,7 +468,7 @@ export default function DataDiriPage() {
         alert("Data berhasil dikunci permanen!");
         setLocked(true);
         localStorage.setItem("data_locked", "true");
-        setIsEditPribadi(false);
+        setIsEditDiri(false);
         setIsEditKontak(false);
         setIsEditDokumen(false);
       } else {
@@ -505,7 +505,7 @@ export default function DataDiriPage() {
     <AppLayout
       menuTemplate="admisi" // <-- Menggunakan template menu untuk admisi
       title="Data Diri" // <-- Judul untuk AppHeader
-      subtitle="Kelola informasi pribadi, kontak, dan dokumen pendaftaran Anda" // <-- Subtitle untuk AppHeader
+      subtitle="Kelola informasi Diri, kontak, dan dokumen pendaftaran Anda" // <-- Subtitle untuk AppHeader
     >
       {/* FOTO PROFIL */}
       <Card className="shadow-sm border rounded-lg">
@@ -548,29 +548,29 @@ export default function DataDiriPage() {
           <h1 className="text-xl font-bold">Periksa & Edit Data Anda</h1>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="pribadi" className="w-full">
+          <Tabs defaultValue="Diri" className="w-full">
             <TabsList className="mb-6 flex flex-wrap gap-2 bg-muted/30 p-1 rounded-md">
-              <TabsTrigger value="pribadi">Pribadi</TabsTrigger>
+              <TabsTrigger value="Diri">Diri</TabsTrigger>
               <TabsTrigger value="kontak">Kontak</TabsTrigger>
               <TabsTrigger value="dokumen">Dokumen</TabsTrigger>
               <TabsTrigger value="password">Password</TabsTrigger>
             </TabsList>
 
-            {/* === PRIBADI === */}
-            <TabsContent value="pribadi" className="space-y-6">
+            {/* === Diri === */}
+            <TabsContent value="Diri" className="space-y-6">
               <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-lg">Data Pribadi</h3>
+                <h3 className="font-semibold text-lg">Data Diri</h3>
                 {!locked && (
                   <Button
-                    variant={isEditPribadi ? "default" : "secondary"}
+                    variant={isEditDiri ? "default" : "secondary"}
                     onClick={() =>
-                      isEditPribadi
-                        ? handleSave(1, pribadi, () => setIsEditPribadi(false))
-                        : setIsEditPribadi(true)
+                      isEditDiri
+                        ? handleSave(1, Diri, () => setIsEditDiri(false))
+                        : setIsEditDiri(true)
                     }
                     disabled={saving}
                   >
-                    {isEditPribadi ? (
+                    {isEditDiri ? (
                       <>
                         <Save className="h-4 w-4 mr-2" /> Simpan
                       </>
@@ -585,15 +585,15 @@ export default function DataDiriPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(pribadi).map(([k, v]) => (
+                {Object.entries(Diri).map(([k, v]) => (
                   <div key={k} className="space-y-2">
                     <Label>{k}</Label>
                     <Input
                       type={k === "Tanggal Lahir" ? "date" : "text"}
                       value={safeVal(v)}
-                      disabled={!isEditPribadi || locked}
+                      disabled={!isEditDiri || locked}
                       onChange={(e) =>
-                        setPribadi({ ...pribadi, [k]: e.target.value })
+                        setDiri({ ...Diri, [k]: e.target.value })
                       }
                     />
                   </div>
@@ -731,19 +731,19 @@ export default function DataDiriPage() {
               <div className="grid gap-3 max-w-lg">
                 <div className="space-y-2">
                   <Label htmlFor="old">Password Lama</Label>
-                  <Input 
-                    id="old" 
-                    type="password" 
-                    disabled={locked} 
+                  <Input
+                    id="old"
+                    type="password"
+                    disabled={locked}
                     value={passwordData.oldPassword}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, oldPassword: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new">Password Baru</Label>
-                  <Input 
-                    id="new" 
-                    type="password" 
+                  <Input
+                    id="new"
+                    type="password"
                     disabled={locked}
                     value={passwordData.newPassword}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
@@ -751,16 +751,16 @@ export default function DataDiriPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm">Konfirmasi Password Baru</Label>
-                  <Input 
-                    id="confirm" 
-                    type="password" 
+                  <Input
+                    id="confirm"
+                    type="password"
                     disabled={locked}
                     value={passwordData.confirmPassword}
                     onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                   />
                 </div>
-                <Button 
-                  className="mt-4 max-w-[200px]" 
+                <Button
+                  className="mt-4 max-w-[200px]"
                   disabled={locked || passwordChanging}
                   onClick={handlePasswordChange}
                 >

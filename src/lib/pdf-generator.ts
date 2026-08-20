@@ -147,7 +147,7 @@ export function generateBuktiPesertaPdf(data: BuktiPesertaData) {
   y += 6
   const rules = [
     "1. Dokumen ini adalah tanda bukti sah bahwa Anda telah terdaftar sebagai peserta seleksi PMB UGN.",
-    "2. Harap simpan dokumen ini dalam format PDF atau cetak untuk arsip pribadi.",
+    "2. Harap simpan dokumen ini dalam format PDF atau cetak untuk arsip Diri.",
     "3. Jadwal dan ruang sesi ujian CBT dapat dilihat pada portal pendaftaran atau pada Kartu Ujian resmi.",
     "4. Peserta wajib mencetak Kartu Tanda Peserta Ujian sebelum pelaksanaan ujian dimulai.",
     "5. Informasi resmi dan hasil pengumuman kelulusan hanya dipublikasikan melalui pmb.ugn.ac.id.",

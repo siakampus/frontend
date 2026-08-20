@@ -6,12 +6,12 @@ import { AppLayout } from "@/components/ui/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  User, 
-  GraduationCap, 
-  Lock, 
-  Unlock, 
-  CheckCircle, 
+import {
+  User,
+  GraduationCap,
+  Lock,
+  Unlock,
+  CheckCircle,
   ArrowRight,
   ShieldAlert,
   ClipboardList
@@ -80,10 +80,10 @@ export default function GuestDashboardPage() {
           const locked = typeof lockData === "boolean" ? lockData : Boolean(
             lockData === true ||
             lockData.isLocked === true ||
-            lockData.isPersonalDataLocked === true || 
-            lockData.locked === true || 
+            lockData.isPersonalDataLocked === true ||
+            lockData.locked === true ||
             lockData.data?.isLocked === true ||
-            lockData.data?.isPersonalDataLocked === true || 
+            lockData.data?.isPersonalDataLocked === true ||
             lockData.data?.locked === true ||
             lockData.status === "LOCKED" ||
             lockData.data === true
@@ -127,7 +127,7 @@ export default function GuestDashboardPage() {
           <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm shadow-sm">
             <ShieldAlert className="h-5 w-5 flex-shrink-0 text-amber-600" />
             <div>
-              <h4 className="font-bold mb-1">Data Pribadi Belum Dikunci</h4>
+              <h4 className="font-bold mb-1">Data Diri Belum Dikunci</h4>
               <p className="leading-relaxed">
                 Anda wajib mengisi dan melakukan **Kunci Data Permanen** pada tab <strong>Data Diri</strong> terlebih dahulu sebelum diperbolehkan mendaftar ke jalur program studi yang dibuka.
               </p>
@@ -137,7 +137,7 @@ export default function GuestDashboardPage() {
           <div className="flex gap-3 bg-green-50 border border-green-200 rounded-lg p-4 text-green-800 text-sm shadow-sm">
             <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600" />
             <div>
-              <h4 className="font-bold mb-1">Data Pribadi Berhasil Dikunci</h4>
+              <h4 className="font-bold mb-1">Data Diri Berhasil Dikunci</h4>
               <p className="leading-relaxed">
                 Data diri Anda telah dikunci dan siap untuk proses pendaftaran program studi. Silakan lanjutkan ke menu <strong>Pendaftaran</strong> untuk memilih program studi pilihan Anda.
               </p>
@@ -155,10 +155,10 @@ export default function GuestDashboardPage() {
                   <span className="flex items-center gap-2">
                     <User className="h-5 w-5" /> Data Diri
                   </span>
-                  <Badge 
+                  <Badge
                     className={
-                      isLocked 
-                        ? "bg-green-100 text-green-700 border border-green-200" 
+                      isLocked
+                        ? "bg-green-100 text-green-700 border border-green-200"
                         : "bg-amber-100 text-amber-700 border border-amber-200"
                     }
                   >
@@ -172,7 +172,7 @@ export default function GuestDashboardPage() {
               <CardContent className="p-5 text-sm text-gray-600 leading-relaxed">
                 {isLocked ? (
                   <div className="flex items-center gap-2 text-green-700 font-medium">
-                    <Lock className="h-4 w-4" /> Data pribadi Anda sudah terkunci dan aman.
+                    <Lock className="h-4 w-4" /> Data Diri Anda sudah terkunci dan aman.
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 text-amber-700 font-medium">
@@ -239,9 +239,8 @@ export default function GuestDashboardPage() {
             <div className="relative border-l-2 border-gray-200 border-dashed space-y-6 ml-3">
               {/* Step 1 */}
               <div className="relative pl-6">
-                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${
-                  isLocked ? "bg-green-600" : "bg-primary animate-pulse"
-                }`}>
+                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${isLocked ? "bg-green-600" : "bg-primary animate-pulse"
+                  }`}>
                   1
                 </div>
                 <div>
@@ -250,16 +249,15 @@ export default function GuestDashboardPage() {
                     {isLocked && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none scale-90">Selesai</Badge>}
                   </h4>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Isi data pribadi, data kontak, pas foto, serta unggah dokumen wajib (KTP & KK).
+                    Isi Data Diri, data kontak, pas foto, serta unggah dokumen wajib (KTP & KK).
                   </p>
                 </div>
               </div>
 
               {/* Step 2 */}
               <div className="relative pl-6">
-                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${
-                  isLocked ? "bg-green-600" : "bg-gray-400"
-                }`}>
+                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${isLocked ? "bg-green-600" : "bg-gray-400"
+                  }`}>
                   2
                 </div>
                 <div>
@@ -275,9 +273,8 @@ export default function GuestDashboardPage() {
 
               {/* Step 3 */}
               <div className="relative pl-6">
-                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${
-                  isLocked ? "bg-primary animate-pulse" : "bg-gray-400"
-                }`}>
+                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${isLocked ? "bg-primary animate-pulse" : "bg-gray-400"
+                  }`}>
                   3
                 </div>
                 <div>

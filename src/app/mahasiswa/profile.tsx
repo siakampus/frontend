@@ -9,12 +9,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Phone, 
-  Mail, 
-  Shield, 
-  Camera, 
-  Save, 
+import {
+  Phone,
+  Mail,
+  Shield,
+  Camera,
+  Save,
   Edit,
   ArrowLeft,
   Calendar
@@ -54,7 +54,7 @@ export default function ProfilePage() {
         credentials: "include",
         headers: getAuthHeaders(),
       });
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           navigate("/login");
@@ -62,7 +62,7 @@ export default function ProfilePage() {
         }
         throw new Error("Gagal mengambil data profil");
       }
-      
+
       const json = await res.json();
       if (json.success && json.data) {
         setProfile(json.data);
@@ -192,12 +192,12 @@ export default function ProfilePage() {
       menuTemplate="student"
       sidebarTitle="SIA Dashboard"
       title="Profil Saya"
-      subtitle="Kelola data pribadi, nomor kontak, dan foto profil Anda"
+      subtitle="Kelola Data Diri, nomor kontak, dan foto profil Anda"
     >
       <div className="max-w-4xl mx-auto space-y-6">
-        <Button 
-          variant="outline" 
-          onClick={() => navigate("/mahasiswa")} 
+        <Button
+          variant="outline"
+          onClick={() => navigate("/mahasiswa")}
           className="flex items-center gap-2 hover:bg-muted"
         >
           <ArrowLeft className="h-4 w-4" /> Kembali ke Dashboard
@@ -242,9 +242,9 @@ export default function ProfilePage() {
               </div>
 
               {profile?.profilePicture && (
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
+                <Button
+                  variant="destructive"
+                  size="sm"
                   onClick={handleDeletePicture}
                   disabled={saving}
                   className="w-full text-xs"
@@ -299,9 +299,9 @@ export default function ProfilePage() {
                     <Phone className="h-3.5 w-3.5 text-primary/75" /> Nomor Telepon
                   </span>
                   {!isEditingPhone && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setIsEditingPhone(true)}
                       className="h-7 text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50/50"
                     >
@@ -322,7 +322,7 @@ export default function ProfilePage() {
                         className="h-9"
                       />
                     </div>
-                    <Button 
+                    <Button
                       onClick={handleUpdatePhone}
                       disabled={saving}
                       size="sm"
@@ -330,8 +330,8 @@ export default function ProfilePage() {
                     >
                       <Save className="h-3.5 w-3.5" /> Simpan
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => {
                         setIsEditingPhone(false);
                         setNewPhone(profile?.phoneNumber || "");

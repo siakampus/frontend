@@ -396,9 +396,9 @@ export function SignUpForm() {
             </CardContent>
           </Card>
 
-          {/* Data Pribadi */}
+          {/* Data Diri */}
           <Card className="overflow-hidden pt-0 animate-fadeIn">
-            <SectionHeader icon={User} title="Data Pribadi" />
+            <SectionHeader icon={User} title="Data Diri" />
             <CardContent className="grid md:grid-cols-2 gap-4">
               <div className="grid gap-3">
                 <Label className="flex items-center gap-1 text-sm">

@@ -59,7 +59,7 @@ export default function AdminRegistrationsPage() {
   const [search, setSearch] = useState("")
   const [actionMsg, setActionMsg] = useState("")
   const [selected, setSelected] = useState<Registration | null>(null)
-  
+
   // CBT Assignment Modal State
   const [cbtModalUser, setCbtModalUser] = useState<Registration | null>(null)
   const [cbtForm, setCbtForm] = useState<{ tanggal: string; waktu: string; lokasi: string }>({
@@ -139,7 +139,7 @@ export default function AdminRegistrationsPage() {
 
   const handleValidate = async (r: Registration) => {
     if (!confirm(`Validasi pendaftaran untuk ${r.fullName || r.user?.name || "pendaftar ini"}?`)) return
-    
+
     // Coba setResult terlebih dahulu (PATCH /admin/registration/:id/result)
     let res = await adminRegistrationsApi.setResult(r.id, true)
     if (!res.ok) {
@@ -159,7 +159,7 @@ export default function AdminRegistrationsPage() {
 
   const handleUnlockPersonalData = async (userId: string) => {
     const res = await adminRegistrationsApi.unlockPersonalData(userId)
-    notify(res.ok ? "Kunci data pribadi dibuka." : "Gagal membuka kunci data pribadi.")
+    notify(res.ok ? "Kunci Data Diri dibuka." : "Gagal membuka kunci Data Diri.")
     fetchRegistrations()
   }
 
@@ -341,7 +341,7 @@ export default function AdminRegistrationsPage() {
                           )}
                           {r.isPersonalDataLocked && (
                             <button
-                              title="Buka Kunci Data Pribadi"
+                              title="Buka Kunci Data Diri"
                               onClick={() => handleUnlockPersonalData(r.userId)}
                               className="p-1.5 rounded hover:bg-purple-50 text-purple-600 transition-colors"
                             >
@@ -475,7 +475,7 @@ export default function AdminRegistrationsPage() {
               <div><span className="text-muted-foreground">Program:</span> {selected.programChoice1Major || "—"}</div>
               <div><span className="text-muted-foreground">Status:</span> {selected.status}</div>
               <div><span className="text-muted-foreground">Dikunci:</span> {selected.isLocked ? "Ya" : "Tidak"}</div>
-              <div><span className="text-muted-foreground">Data Pribadi Dikunci:</span> {selected.isPersonalDataLocked ? "Ya" : "Tidak"}</div>
+              <div><span className="text-muted-foreground">Data Diri Dikunci:</span> {selected.isPersonalDataLocked ? "Ya" : "Tidak"}</div>
               <div><span className="text-muted-foreground">Tervalidasi:</span> {selected.isValidated ? "Ya" : "Tidak"}</div>
               <div>
                 <span className="text-muted-foreground">Sesi CBT:</span>{" "}

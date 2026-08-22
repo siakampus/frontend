@@ -550,7 +550,7 @@ export default function DataDiriPage() {
         <CardContent>
           <Tabs defaultValue="Diri" className="w-full">
             <TabsList className="mb-6 flex flex-wrap gap-2 bg-muted/30 p-1 rounded-md">
-              <TabsTrigger value="Diri">Diri</TabsTrigger>
+              <TabsTrigger value="Diri">Data Diri</TabsTrigger>
               <TabsTrigger value="kontak">Kontak</TabsTrigger>
               <TabsTrigger value="dokumen">Dokumen</TabsTrigger>
               <TabsTrigger value="password">Password</TabsTrigger>

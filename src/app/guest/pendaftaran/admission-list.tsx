@@ -130,10 +130,14 @@ const EnrollmentContent: React.FC<{ activePaths: AdmissionPath[], selectedPath: 
                               Lanjutkan
                             </Link>
                           </Button>
+                        ) : selectedPath ? (
+                          <Button size="sm" disabled className="cursor-not-allowed opacity-50">
+                            Daftar
+                          </Button>
                         ) : (
-                          <Button size="sm" asChild disabled={!!selectedPath}>
+                          <Button size="sm" asChild>
                             <Link
-                              to={selectedPath ? "#" : `/pendaftaran/detail-pendaftaran/${path.id}`}
+                              to={`/pendaftaran/detail-pendaftaran/${path.id}`}
                               state={{ pathDetail: path }}
                             >
                               Daftar

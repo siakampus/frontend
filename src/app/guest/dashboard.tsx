@@ -14,7 +14,13 @@ import {
   CheckCircle,
   ArrowRight,
   ShieldAlert,
-  ClipboardList
+  ClipboardList,
+  FileText,
+  Upload,
+  CreditCard,
+  Printer,
+  Bell,
+  Monitor,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
@@ -25,11 +31,33 @@ interface UserSession {
   name?: string;
 }
 
+interface StepInfo {
+  title: string;
+  description: string;
+  icon: React.ElementType;
+  completed: boolean;
+}
+
 export default function GuestDashboardPage() {
   const [userData, setUserData] = useState<UserSession | null>(null);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Step completion states
+  const [filled, setFilled] = useState<{ dataDiri: boolean; program: boolean; upload: boolean }>({
+    dataDiri: false,
+    program: false,
+    upload: false,
+  });
+  const [billStatus, setBillStatus] = useState<{ hasBill: boolean; isVerified: boolean }>({
+    hasBill: false,
+    isVerified: false,
+  });
+  const [cbtAssigned, setCbtAssigned] = useState(false);
+  const [proofPrinted, setProofPrinted] = useState(false);
+  const [cardPrinted, setCardPrinted] = useState(false);
+  const [hasSelectedPath, setHasSelectedPath] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -38,7 +66,7 @@ export default function GuestDashboardPage() {
   };
 
   useEffect(() => {
-    const fetchSessionAndLockStatus = async () => {
+    const fetchSessionAndAllStatus = async () => {
       try {
         setLoading(true);
         // 1. Get user session
@@ -90,6 +118,67 @@ export default function GuestDashboardPage() {
           );
           setIsLocked(locked);
         }
+
+        // 3. Fetch admission data sections for step completion
+        const hasVal = (o: Record<string, unknown>) => Object.values(o).some((v) => v !== null && v !== undefined && v !== "");
+
+        try {
+          const [res1, res2, res3] = await Promise.all([
+            fetch(`${API_BASE}/admissiondata/1`, { headers: getAuthHeaders(), credentials: "include" }),
+            fetch(`${API_BASE}/admissiondata/2`, { headers: getAuthHeaders(), credentials: "include" }),
+            fetch(`${API_BASE}/admissiondata/3`, { headers: getAuthHeaders(), credentials: "include" }),
+          ]);
+
+          const d1 = res1.ok ? ((await res1.json()).data ?? {}) : {};
+          const d2 = res2.ok ? ((await res2.json()).data ?? {}) : {};
+          const d3 = res3.ok ? ((await res3.json()).data ?? {}) : {};
+
+          setFilled({
+            dataDiri: Boolean(d1.fullName && d1.nik) && hasVal(d2),
+            program: Boolean(d2.programChoice1Faculty && d2.programChoice1Major),
+            upload: Boolean(d3.photo_url || d3.raport_url || d3.kk_url || d3.ijazah_url),
+          });
+        } catch (err) {
+          logger.error("Error fetching admission data sections:", err);
+        }
+
+        // 4. Fetch bill status
+        try {
+          const billRes = await fetch(`${API_BASE}/user/bill/status`, {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          });
+          if (billRes.ok) {
+            const billData = await billRes.json();
+            setBillStatus({
+              hasBill: billData.data?.hasBill || false,
+              isVerified: billData.data?.isVerified || false,
+            });
+          }
+        } catch (err) {
+          logger.error("Error fetching bill status:", err);
+        }
+
+        // 5. Fetch selected path status
+        try {
+          const selectedRes = await fetch(`${API_BASE}/admission-paths/selected`, {
+            headers: getAuthHeaders(),
+            credentials: "include",
+          });
+          if (selectedRes.ok) {
+            const selectedData = await selectedRes.json();
+            setHasSelectedPath(Boolean(selectedData?.data?.id || selectedData?.id || selectedData?.data?.admissionPathId));
+          }
+        } catch (err) {
+          logger.error("Error fetching selected path:", err);
+        }
+
+        // 6. Check localStorage for CBT, print statuses
+        const rawCbt = localStorage.getItem("cbt_session") || localStorage.getItem("cbt_confirmed");
+        setCbtAssigned(Boolean(rawCbt));
+        setProofPrinted(localStorage.getItem("proof_printed") === "true");
+        setCardPrinted(localStorage.getItem("card_printed") === "true");
+
       } catch (error) {
         logger.error("Error fetching guest dashboard status:", error);
       } finally {
@@ -97,8 +186,76 @@ export default function GuestDashboardPage() {
       }
     };
 
-    fetchSessionAndLockStatus();
+    fetchSessionAndAllStatus();
   }, [navigate]);
+
+  // Build 10 steps with real completion data
+  const steps: StepInfo[] = [
+    {
+      title: "Lengkapi Data Diri & Dokumen",
+      description: "Isi data pribadi, data kontak, pas foto, serta unggah dokumen wajib (KTP & KK).",
+      icon: FileText,
+      completed: filled.dataDiri,
+    },
+    {
+      title: "Kunci Data Permanen",
+      description: "Kunci data Anda secara permanen untuk memvalidasi kelayakan pendaftaran program studi.",
+      icon: Lock,
+      completed: isLocked,
+    },
+    {
+      title: "Pilih Jalur & Program Studi",
+      description: "Pilih program studi yang Anda minati di menu Pendaftaran.",
+      icon: GraduationCap,
+      completed: hasSelectedPath || filled.program,
+    },
+    {
+      title: "Buat Tagihan (Billing)",
+      description: "Generate tagihan biaya pendaftaran Anda.",
+      icon: CreditCard,
+      completed: billStatus.hasBill,
+    },
+    {
+      title: "Pembayaran Pendaftaran",
+      description: "Lakukan pembayaran biaya pendaftaran.",
+      icon: CreditCard,
+      completed: billStatus.isVerified,
+    },
+    {
+      title: "Upload Dokumen Pendaftaran",
+      description: "Unggah berkas yang diperlukan untuk pendaftaran.",
+      icon: Upload,
+      completed: filled.upload,
+    },
+    {
+      title: "Penetapan Sesi CBT",
+      description: "Pilih atau terima sesi ujian berbasis komputer (CBT) dari panitia.",
+      icon: Monitor,
+      completed: cbtAssigned,
+    },
+    {
+      title: "Cetak Bukti Peserta",
+      description: "Cetak bukti pendaftaran resmi Anda.",
+      icon: Printer,
+      completed: proofPrinted,
+    },
+    {
+      title: "Cetak Kartu Ujian",
+      description: "Cetak kartu ujian resmi untuk hari pelaksanaan.",
+      icon: Printer,
+      completed: cardPrinted,
+    },
+    {
+      title: "Pengumuman Hasil",
+      description: "Lihat hasil seleksi pendaftaran Anda.",
+      icon: Bell,
+      completed: false, // Always pending until admin announces
+    },
+  ];
+
+  // Determine the current active step (first incomplete step)
+  const currentStepIndex = steps.findIndex(s => !s.completed);
+  const completedSteps = steps.filter(s => s.completed).length;
 
   if (loading) {
     return (
@@ -228,79 +385,44 @@ export default function GuestDashboardPage() {
           </Card>
         </div>
 
-        {/* Alur Proses Stepper Card */}
+        {/* Alur Proses Stepper Card — now synced with real data */}
         <Card className="shadow-sm border rounded-lg bg-white">
           <CardHeader className="border-b bg-muted/10 pb-4">
             <CardTitle className="text-lg flex items-center gap-2 font-serif text-primary">
               <ClipboardList className="h-5 w-5" /> Alur Tahapan Pendaftaran Admisi
             </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              {completedSteps} dari {steps.length} tahap selesai
+            </p>
           </CardHeader>
           <CardContent className="p-6">
             <div className="relative border-l-2 border-gray-200 border-dashed space-y-6 ml-3">
-              {/* Step 1 */}
-              <div className="relative pl-6">
-                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${isLocked ? "bg-green-600" : "bg-primary animate-pulse"
-                  }`}>
-                  1
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-gray-800 flex items-center gap-2">
-                    Lengkapi Data Diri & Dokumen
-                    {isLocked && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none scale-90">Selesai</Badge>}
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Isi Data Diri, data kontak, pas foto, serta unggah dokumen wajib (KTP & KK).
-                  </p>
-                </div>
-              </div>
+              {steps.map((step, index) => {
+                const isCompleted = step.completed;
+                const isCurrent = index === currentStepIndex;
+                const isFuture = !isCompleted && !isCurrent;
+                const StepIcon = step.icon;
 
-              {/* Step 2 */}
-              <div className="relative pl-6">
-                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${isLocked ? "bg-green-600" : "bg-gray-400"
-                  }`}>
-                  2
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-gray-800 flex items-center gap-2">
-                    Kunci Data Permanen
-                    {isLocked && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none scale-90">Selesai</Badge>}
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Kunci data Anda secara permanen untuk memvalidasi kelayakan pendaftaran program studi.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="relative pl-6">
-                <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${isLocked ? "bg-primary animate-pulse" : "bg-gray-400"
-                  }`}>
-                  3
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-gray-800">
-                    Pilih Jalur & Program Studi
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Pilih program studi yang Anda minati di menu Pendaftaran dan cetak tagihan pendaftaran Anda.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="relative pl-6">
-                <div className="absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full bg-gray-400 text-white text-xs font-bold">
-                  4
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-gray-800">
-                    Pembayaran & Sesi CBT (Ujian)
-                  </h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Lakukan pembayaran biaya pendaftaran, pilih sesi ujian berbasis komputer (CBT), dan cetak kartu ujian resmi Anda.
-                  </p>
-                </div>
-              </div>
+                return (
+                  <div key={index} className="relative pl-6">
+                    <div className={`absolute -left-[14px] top-1 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white ${
+                      isCompleted ? "bg-green-600" : isCurrent ? "bg-primary animate-pulse" : "bg-gray-400"
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-gray-800 flex items-center gap-2">
+                        {step.title}
+                        {isCompleted && <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none scale-90">Selesai</Badge>}
+                        {isCurrent && <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-none scale-90">Sedang Berlangsung</Badge>}
+                      </h4>
+                      <p className={`text-xs mt-1 ${isFuture ? 'text-gray-400' : 'text-muted-foreground'}`}>
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -308,3 +430,4 @@ export default function GuestDashboardPage() {
     </AppLayout>
   );
 }
+

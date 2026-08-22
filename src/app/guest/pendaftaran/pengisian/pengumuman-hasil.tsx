@@ -171,18 +171,25 @@ export default function PengumumanHasilPage() {
                         <div className="pt-4 border-t border-gray-100 space-y-4">
                             <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2"><Calendar className={`h-5 w-5 ${statusDisplay.primaryColorClass}`}/> Proses Daftar Ulang</h3>
                             
-                            <div className="grid grid-cols-2 gap-4 text-sm bg-green-50 p-4 rounded-lg border border-green-300">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm bg-green-50 p-4 rounded-lg border border-green-300">
                                 <div className="space-y-1">
                                     <p className="font-medium text-green-800">Periode Daftar Ulang</p>
                                     <p className="font-bold text-lg text-green-900">{dataHasil.infoDaftarUlang.tanggalMulai} s/d {dataHasil.infoDaftarUlang.tanggalSelesai}</p>
                                 </div>
                                 <div className="flex items-center justify-end">
                                      <Button 
-                                        onClick={() => navigate(dataHasil.infoDaftarUlang.linkDokumen)}
-                                        className="bg-green-600 hover:bg-green-700 text-white shadow-md"
+                                        disabled
+                                        className="bg-gray-400 text-white shadow-md cursor-not-allowed"
                                     >
                                         Lihat Panduan & Persyaratan
                                     </Button>
+                                </div>
+                            </div>
+                            <div className="p-4 rounded-lg border border-amber-200 bg-amber-50 flex items-start gap-3 mt-3">
+                                <Clock className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                                <div className="text-sm text-amber-700">
+                                    <p className="font-semibold">Menunggu Konfirmasi dari Admin</p>
+                                    <p>Panduan dan persyaratan daftar ulang sedang dalam proses persetujuan oleh Admin. Silakan cek kembali secara berkala untuk informasi terbaru.</p>
                                 </div>
                             </div>
                         </div>

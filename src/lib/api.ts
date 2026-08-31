@@ -1255,12 +1255,12 @@ export const krsApi = {
       headers: authHeaders(),
     }),
 
-  /** POST /api/krs/enroll — Submit or Save Draft KRS */
-  enroll: (courseIds: number[], action: "DRAFT" | "SUBMIT") =>
+  /** POST /api/krs/enroll — Add a single course to the student's KRS */
+  enroll: (courseId: number) =>
     apiFetch("/krs/enroll", {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ courseIds, action }),
+      body: JSON.stringify({ courseId }),
     }),
 
   // ── Admin: Academic Terms ──

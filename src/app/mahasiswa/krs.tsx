@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { krsApi } from "@/lib/api";
-import { Loader2, AlertCircle, CheckCircle, Save, Send } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Send } from "lucide-react";
 
 export default function KrsPage() {
   const [activeTerm, setActiveTerm] = useState<any>(null);
@@ -76,7 +76,7 @@ export default function KrsPage() {
     }
   };
 
-  const handleSubmit = async (action: "DRAFT" | "SUBMIT") => {
+  const handleSubmit = async () => {
     if (selectedCourses.length === 0) {
       alert("Pilih setidaknya satu mata kuliah");
       return;
@@ -84,16 +84,38 @@ export default function KrsPage() {
 
     setSubmitting(true);
     try {
-      const courseIds = selectedCourses.map(c => c.id);
-      const res = await krsApi.enroll(courseIds, action);
-      
-      if (res.ok) {
-        setActionMsg(`KRS berhasil ${action === "SUBMIT" ? "diajukan" : "disimpan"}.`);
-        fetchData();
+      // Determine which courses are new (not already in KRS)
+      const existingIds = new Set(
+        (myKrs?.krsItems || []).map((item: any) => item.course?.id)
+      );
+      const newCourses = selectedCourses.filter(c => !existingIds.has(c.id));
+
+      if (newCourses.length === 0) {
+        setActionMsg("Semua mata kuliah sudah terdaftar di KRS.");
         setTimeout(() => setActionMsg(""), 3000);
-      } else {
-        alert("Gagal menyimpan KRS.");
+        return;
       }
+
+      // Enroll each new course one-by-one
+      const errors: string[] = [];
+      for (const course of newCourses) {
+        const res = await krsApi.enroll(course.id);
+        if (!res.ok) {
+          const msg = (res.data as any)?.message || `Gagal menambahkan ${course.title}`;
+          errors.push(msg);
+        }
+      }
+
+      if (errors.length === 0) {
+        setActionMsg("KRS berhasil disimpan.");
+      } else if (errors.length < newCourses.length) {
+        setActionMsg(`Sebagian berhasil. Error: ${errors.join("; ")}`);
+      } else {
+        alert(`Gagal menyimpan KRS: ${errors.join("; ")}`);
+      }
+
+      fetchData();
+      setTimeout(() => setActionMsg(""), 5000);
     } catch (error) {
       console.error(error);
       alert("Terjadi kesalahan saat menyimpan.");
@@ -245,19 +267,11 @@ export default function KrsPage() {
               </div>
               <div className="flex w-full sm:w-auto gap-3">
                 <Button 
-                  variant="outline" 
-                  onClick={() => handleSubmit("DRAFT")}
-                  disabled={submitting || totalSks > maxSks}
-                  className="gap-2 flex-1 sm:flex-none"
-                >
-                  <Save className="h-4 w-4" /> Simpan Draft
-                </Button>
-                <Button 
-                  onClick={() => handleSubmit("SUBMIT")}
+                  onClick={() => handleSubmit()}
                   disabled={submitting || totalSks > maxSks || selectedCourses.length === 0}
                   className="gap-2 flex-1 sm:flex-none"
                 >
-                  <Send className="h-4 w-4" /> Ajukan KRS
+                  <Send className="h-4 w-4" /> Simpan KRS
                 </Button>
               </div>
             </CardContent>

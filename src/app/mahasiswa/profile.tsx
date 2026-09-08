@@ -185,7 +185,9 @@ export default function ProfilePage() {
     );
   }
 
-  const profilePicUrl = profile?.profilePicture ? `/user/profile-picture` : null;
+  const profilePicUrl = profile?.profilePicture
+    ? `${API_BASE}/${profile.profilePicture.replace(/\\\\/g, '/')}`
+    : null;
 
   return (
     <AppLayout
@@ -210,7 +212,7 @@ export default function ProfilePage() {
               <div className="relative group">
                 <Avatar className="h-32 w-32 border-4 border-primary/20 shadow-lg group-hover:opacity-90 transition">
                   {profilePicUrl ? (
-                    <AvatarImage src={`${profilePicUrl}?t=${new Date().getTime()}`} alt="Profile" />
+                    <AvatarImage src={profilePicUrl!} alt="Profile" />
                   ) : null}
                   <AvatarFallback className="bg-primary/10 text-primary font-bold text-2xl">
                     {profile ? getInitials(profile.email) : "ST"}

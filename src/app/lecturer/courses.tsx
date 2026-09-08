@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { coursesApi, assignmentsApi, filesApi, materialsApi } from "@/lib/api";
+import { coursesApi, assignmentsApi, filesApi, materialsApi, adminLecturesApi } from "@/lib/api";
 import { 
   BookOpen, 
   Plus, 
@@ -21,6 +21,11 @@ import {
   Trash2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+interface ClassOption {
+  id: number;
+  name: string;
+}
 
 interface Course {
   id: number;
@@ -57,6 +62,10 @@ export default function LecturerCoursesPage() {
   const [capacity, setCapacity] = useState(40);
   const [isCreating, setIsCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Available classes for dropdown
+  const [availableClasses, setAvailableClasses] = useState<ClassOption[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<number | "">("");
   
   // Detail View State
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -97,7 +106,30 @@ export default function LecturerCoursesPage() {
     setLoading(false);
   };
 
+  const fetchAvailableClasses = async () => {
+    // Try to get classes from admin lectures API first
+    try {
+      const res = await adminLecturesApi.list({ take: 100 });
+      if (res.ok && res.data) {
+        const body = res.data as { data?: Array<{ id: number; name: string }> };
+        if (body.data && body.data.length > 0) {
+          setAvailableClasses(body.data.map(c => ({ id: c.id, name: c.name })));
+          return;
+        }
+      }
+    } catch {
+      // Fallback: extract unique classes from existing courses
+    }
+    // Fallback: extract from already-loaded courses
+    const classMap = new Map<number, string>();
+    courses.forEach(c => {
+      if (c.class) classMap.set(c.class.id, c.class.name);
+    });
+    setAvailableClasses(Array.from(classMap, ([id, name]) => ({ id, name })));
+  };
+
   useEffect(() => { fetchCourses(); }, []);
+  useEffect(() => { if (isDialogOpen) fetchAvailableClasses(); }, [isDialogOpen]);
 
   const notify = (msg: string) => {
     setActionMsg(msg);
@@ -111,7 +143,8 @@ export default function LecturerCoursesPage() {
       title,
       description,
       credits,
-      capacity
+      capacity,
+      classId: typeof selectedClassId === "number" ? selectedClassId : undefined,
     } as any);
     if (res.ok) {
       notify("Mata Kuliah berhasil ditambahkan.");
@@ -120,6 +153,7 @@ export default function LecturerCoursesPage() {
       setDescription("");
       setCredits(3);
       setCapacity(40);
+      setSelectedClassId("");
       fetchCourses();
     } else {
       notify("Gagal menambahkan mata kuliah.");
@@ -669,6 +703,31 @@ export default function LecturerCoursesPage() {
                     onChange={(e) => setDescription(e.target.value)} 
                     placeholder="Deskripsi mata kuliah..." 
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Kelas *</label>
+                  {availableClasses.length > 0 ? (
+                    <select
+                      className="w-full border rounded-md px-3 py-2 text-sm bg-white"
+                      value={selectedClassId}
+                      onChange={(e) => setSelectedClassId(e.target.value ? parseInt(e.target.value) : "")}
+                      required
+                    >
+                      <option value="">— Pilih Kelas —</option>
+                      {availableClasses.map(c => (
+                        <option key={c.id} value={c.id}>{c.name} (ID: {c.id})</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <Input
+                      type="number"
+                      placeholder="Masukkan Class ID"
+                      value={selectedClassId}
+                      onChange={(e) => setSelectedClassId(e.target.value ? parseInt(e.target.value) : "")}
+                      required
+                      min="1"
+                    />
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">

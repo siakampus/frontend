@@ -131,6 +131,10 @@ export default defineConfig(({ mode }) => {
           target: API_TARGET,
           changeOrigin: true,
         },
+        "/uploads": {
+          target: API_TARGET,
+          changeOrigin: true,
+        },
       },
     },
 

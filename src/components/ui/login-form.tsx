@@ -63,7 +63,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     e.preventDefault();
 
     if (!captchaToken) {
-      setErrorMessage("ΓÜá∩╕Å Mohon selesaikan verifikasi keamanan terlebih dahulu.");
+      setErrorMessage(" Mohon selesaikan verifikasi keamanan terlebih dahulu.");
       return;
     }
 
@@ -172,7 +172,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
         const redirectPath = getRedirectPathByRole(role);
         setSuccessMessage(" Login berhasil! Mengarahkan ke " + redirectPath);
-        
+
         // Delay 2 detik untuk memberi Cloudflare waktu memproses session
         setTimeout(() => {
           window.location.href = redirectPath;
@@ -274,7 +274,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                           setCaptchaToken(token);
                         }}
                         onExpire={() => {
-                          logger.warn("ΓÜá∩╕Å CAPTCHA expired, please retry.");
+                          logger.warn(" CAPTCHA expired, please retry.");
                           setCaptchaToken(null);
                         }}
                         onError={() => {

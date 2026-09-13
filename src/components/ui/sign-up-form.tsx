@@ -262,7 +262,7 @@ export function SignUpForm() {
         // but warn them so they can update their profile later.
         logger.warn("Registration data save failed:", saveData)
         setRegisterMessage(
-          "ΓÜá∩╕Å Akun berhasil dibuat, tetapi data tambahan gagal disimpan. Harap perbarui profil Anda setelah login."
+          " Akun berhasil dibuat, tetapi data tambahan gagal disimpan. Harap perbarui profil Anda setelah login."
         )
       } else {
         setRegisterMessage(" User registered successfully")

@@ -145,8 +145,16 @@ export default function AdminLecturersPage() {
     { label: "NIK", key: "nik", placeholder: "Nomor Induk Kependudukan" },
   ];
 
+  const academicOptions = [
+    { value: "D3", label: "D3 (Diploma)" },
+    { value: "D4", label: "D4 (Sarjana Terapan)" },
+    { value: "S1", label: "S1 (Sarjana)" },
+    { value: "S2", label: "S2 (Magister)" },
+    { value: "S3", label: "S3 (Doktor)" },
+    { value: "Profesi", label: "Profesi" },
+  ];
+
   const textFieldsAfter = [
-    { label: "Akademik", key: "academics", placeholder: "Program akademik" },
     { label: "Telepon", key: "phoneNumber", placeholder: "Nomor telepon" },
     { label: "Email Akun *", key: "email", placeholder: "email@ugn.ac.id" },
     { label: "Password Sementara *", key: "password", placeholder: "Min. 8 karakter" },
@@ -329,6 +337,23 @@ export default function AdminLecturersPage() {
                   {departments.map((d) => (
                     <option key={d.id} value={d.name}>
                       {d.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Akademik Dropdown */}
+              <div>
+                <label className="text-sm font-medium">Akademik</label>
+                <select
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  value={(formData as Record<string, string>).academics || ""}
+                  onChange={(e) => setFormData({ ...formData, academics: e.target.value })}
+                >
+                  <option value="">— Pilih Program Akademik —</option>
+                  {academicOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
                     </option>
                   ))}
                 </select>

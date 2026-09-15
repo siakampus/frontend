@@ -125,7 +125,11 @@ export default function AdminLecturersPage() {
       alert("Mohon lengkapi Nama, NIP, dan Fakultas.");
       return;
     }
-    const res = await adminLecturersApi.create(formData as Record<string, unknown>);
+    const payload = {
+      ...formData,
+      course: formData.department || "",
+    };
+    const res = await adminLecturersApi.create(payload as Record<string, unknown>);
     if (res.ok) {
       notify("Dosen berhasil ditambahkan.");
       setShowForm(false);

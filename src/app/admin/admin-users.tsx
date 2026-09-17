@@ -32,8 +32,9 @@ import {
   ToggleRight,
   UserPlus,
   Loader2,
-  Copy,
   Check,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -79,12 +80,12 @@ export default function AdminUsersPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [addEmail, setAddEmail] = useState("");
   const [addName, setAddName] = useState("");
+  const [addPassword, setAddPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [addRole, setAddRole] = useState<RoleValue>("guest");
   const [addSubmitting, setAddSubmitting] = useState(false);
   const [addError, setAddError] = useState("");
-  const [addTempPassword, setAddTempPassword] = useState("");
   const [addSuccess, setAddSuccess] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -142,11 +143,11 @@ export default function AdminUsersPage() {
   const resetAddForm = () => {
     setAddEmail("");
     setAddName("");
+    setAddPassword("");
+    setShowPassword(false);
     setAddRole("guest");
     setAddError("");
-    setAddTempPassword("");
     setAddSuccess(false);
-    setCopied(false);
   };
 
   const handleAddOpenChange = (open: boolean) => {
@@ -164,6 +165,8 @@ export default function AdminUsersPage() {
     if (!email) { setAddError("Email wajib diisi."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setAddError("Format email tidak valid."); return; }
     if (!name) { setAddError("Nama wajib diisi."); return; }
+    if (!addPassword) { setAddError("Password wajib diisi."); return; }
+    if (addPassword.length < 8) { setAddError("Password minimal 8 karakter."); return; }
 
     if (addRole === "admin") {
       if (!confirm("Anda akan membuat user dengan role Admin. Lanjutkan?")) return;
@@ -171,7 +174,7 @@ export default function AdminUsersPage() {
 
     setAddSubmitting(true);
     try {
-      const res = await adminUsersApi.create({ email, name, role: addRole });
+      const res = await adminUsersApi.create({ email, name, password: addPassword, role: addRole });
 
       if (!res.ok) {
         const err = res.data as { message?: string; error?: string };
@@ -186,10 +189,6 @@ export default function AdminUsersPage() {
         return;
       }
 
-      const created = (res.data as { data?: { tempPassword?: string } })?.data;
-      if (created?.tempPassword) {
-        setAddTempPassword(created.tempPassword);
-      }
       setAddSuccess(true);
       notify(`User "${name}" berhasil dibuat.`);
       fetchUsers();
@@ -266,28 +265,6 @@ export default function AdminUsersPage() {
                       </DialogDescription>
                     </DialogHeader>
 
-                    {addTempPassword && (
-                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-2">
-                        <p className="text-xs font-medium text-amber-800">
-                          Password Sementara (hanya ditampilkan sekali)
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <code className="flex-1 rounded bg-white px-3 py-2 text-sm font-mono border select-all">
-                            {addTempPassword}
-                          </code>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCopyPassword}
-                            className="shrink-0"
-                          >
-                            {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
                     <DialogFooter>
                       <Button variant="outline" onClick={() => handleAddOpenChange(false)}>
                         Tutup
@@ -335,6 +312,34 @@ export default function AdminUsersPage() {
                           disabled={addSubmitting}
                           required
                         />
+                      </div>
+
+                      {/* Password */}
+                      <div className="grid gap-2">
+                        <Label htmlFor="add-user-password">Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="add-user-password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Minimal 8 karakter"
+                            value={addPassword}
+                            onChange={(e) => setAddPassword(e.target.value)}
+                            disabled={addSubmitting}
+                            required
+                            minLength={8}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground transition-colors"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                        </div>
+                        {addPassword.length > 0 && addPassword.length < 8 && (
+                          <p className="text-xs text-amber-600">Masih kurang {8 - addPassword.length} karakter</p>
+                        )}
                       </div>
 
                       {/* Role */}

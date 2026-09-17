@@ -735,6 +735,7 @@ export const adminUsersApi = {
   create: (payload: {
     email: string;
     name: string;
+    password: string;
     role?: "guest" | "calon_mahasiswa" | "student" | "assistant_lecturer" | "lecturer" | "admin";
   }) =>
     apiFetch("/admin/users", {

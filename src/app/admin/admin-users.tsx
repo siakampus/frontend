@@ -3,6 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { adminUsersApi } from "@/lib/api";
 import {
   Users,
@@ -13,6 +30,10 @@ import {
   Trash2,
   ToggleLeft,
   ToggleRight,
+  UserPlus,
+  Loader2,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -28,9 +49,22 @@ interface User {
 const ROLE_COLORS: Record<string, string> = {
   admin: "bg-purple-100 text-purple-700",
   lecturer: "bg-blue-100 text-blue-700",
+  assistant_lecturer: "bg-cyan-100 text-cyan-700",
   student: "bg-green-100 text-green-700",
+  calon_mahasiswa: "bg-amber-100 text-amber-700",
   guest: "bg-gray-100 text-gray-600",
 };
+
+const ROLE_OPTIONS = [
+  { value: "guest", label: "Guest" },
+  { value: "calon_mahasiswa", label: "Calon Mahasiswa" },
+  { value: "student", label: "Mahasiswa" },
+  { value: "assistant_lecturer", label: "Asisten Dosen" },
+  { value: "lecturer", label: "Dosen" },
+  { value: "admin", label: "Admin" },
+] as const;
+
+type RoleValue = (typeof ROLE_OPTIONS)[number]["value"];
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -40,6 +74,17 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [actionMsg, setActionMsg] = useState("");
   const navigate = useNavigate();
+
+  // Add-user modal state
+  const [addOpen, setAddOpen] = useState(false);
+  const [addEmail, setAddEmail] = useState("");
+  const [addName, setAddName] = useState("");
+  const [addRole, setAddRole] = useState<RoleValue>("guest");
+  const [addSubmitting, setAddSubmitting] = useState(false);
+  const [addError, setAddError] = useState("");
+  const [addTempPassword, setAddTempPassword] = useState("");
+  const [addSuccess, setAddSuccess] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -92,6 +137,75 @@ export default function AdminUsersPage() {
     fetchUsers();
   };
 
+  // ── Add-user modal handlers ──
+
+  const resetAddForm = () => {
+    setAddEmail("");
+    setAddName("");
+    setAddRole("guest");
+    setAddError("");
+    setAddTempPassword("");
+    setAddSuccess(false);
+    setCopied(false);
+  };
+
+  const handleAddOpenChange = (open: boolean) => {
+    setAddOpen(open);
+    if (!open) resetAddForm();
+  };
+
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddError("");
+
+    const email = addEmail.trim().toLowerCase();
+    const name = addName.trim();
+
+    if (!email) { setAddError("Email wajib diisi."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setAddError("Format email tidak valid."); return; }
+    if (!name) { setAddError("Nama wajib diisi."); return; }
+
+    if (addRole === "admin") {
+      if (!confirm("Anda akan membuat user dengan role Admin. Lanjutkan?")) return;
+    }
+
+    setAddSubmitting(true);
+    try {
+      const res = await adminUsersApi.create({ email, name, role: addRole });
+
+      if (!res.ok) {
+        const err = res.data as { message?: string; error?: string };
+        const msg = err?.message || err?.error || "Gagal membuat user.";
+        if (msg.includes("already exists")) {
+          setAddError("Email ini sudah terdaftar.");
+        } else if (msg.includes("Invalid role")) {
+          setAddError("Role tidak valid.");
+        } else {
+          setAddError(msg);
+        }
+        return;
+      }
+
+      const created = (res.data as { data?: { tempPassword?: string } })?.data;
+      if (created?.tempPassword) {
+        setAddTempPassword(created.tempPassword);
+      }
+      setAddSuccess(true);
+      notify(`User "${name}" berhasil dibuat.`);
+      fetchUsers();
+    } catch {
+      setAddError("Terjadi kesalahan jaringan.");
+    } finally {
+      setAddSubmitting(false);
+    }
+  };
+
+  const handleCopyPassword = async () => {
+    await navigator.clipboard.writeText(addTempPassword);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-6">
         {/* Toolbar */}
@@ -130,6 +244,158 @@ export default function AdminUsersPage() {
             <Button onClick={fetchUsers} variant="outline" className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" /> Cari
             </Button>
+
+            {/* ── Add User trigger ── */}
+            <Dialog open={addOpen} onOpenChange={handleAddOpenChange}>
+              <DialogTrigger asChild>
+                <Button id="add-user-btn" className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" /> Tambah User
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="sm:max-w-md">
+                {addSuccess ? (
+                  /* ─── Success state ─── */
+                  <div className="space-y-4">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2 text-green-700">
+                        <Check className="h-5 w-5" /> User Berhasil Dibuat
+                      </DialogTitle>
+                      <DialogDescription>
+                        Akun baru telah dibuat. Password sementara sudah dikirim via email.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    {addTempPassword && (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-2">
+                        <p className="text-xs font-medium text-amber-800">
+                          Password Sementara (hanya ditampilkan sekali)
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <code className="flex-1 rounded bg-white px-3 py-2 text-sm font-mono border select-all">
+                            {addTempPassword}
+                          </code>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCopyPassword}
+                            className="shrink-0"
+                          >
+                            {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => handleAddOpenChange(false)}>
+                        Tutup
+                      </Button>
+                      <Button onClick={resetAddForm}>
+                        <UserPlus className="h-4 w-4 mr-2" /> Tambah Lagi
+                      </Button>
+                    </DialogFooter>
+                  </div>
+                ) : (
+                  /* ─── Form state ─── */
+                  <form onSubmit={handleAddSubmit}>
+                    <DialogHeader>
+                      <DialogTitle>Tambah User Baru</DialogTitle>
+                      <DialogDescription>
+                        Buat akun pengguna baru. Password akan digenerate otomatis dan dikirim ke email.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4">
+                      {/* Email */}
+                      <div className="grid gap-2">
+                        <Label htmlFor="add-user-email">Email</Label>
+                        <Input
+                          id="add-user-email"
+                          type="email"
+                          placeholder="user@example.com"
+                          value={addEmail}
+                          onChange={(e) => setAddEmail(e.target.value)}
+                          disabled={addSubmitting}
+                          autoFocus
+                          required
+                        />
+                      </div>
+
+                      {/* Name */}
+                      <div className="grid gap-2">
+                        <Label htmlFor="add-user-name">Nama</Label>
+                        <Input
+                          id="add-user-name"
+                          type="text"
+                          placeholder="Nama lengkap"
+                          value={addName}
+                          onChange={(e) => setAddName(e.target.value)}
+                          disabled={addSubmitting}
+                          required
+                        />
+                      </div>
+
+                      {/* Role */}
+                      <div className="grid gap-2">
+                        <Label htmlFor="add-user-role">Role</Label>
+                        <Select
+                          value={addRole}
+                          onValueChange={(v) => setAddRole(v as RoleValue)}
+                          disabled={addSubmitting}
+                        >
+                          <SelectTrigger id="add-user-role" className="w-full">
+                            <SelectValue placeholder="Pilih role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROLE_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Admin role warning */}
+                      {addRole === "admin" && (
+                        <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                          ⚠ Role Admin memberikan akses penuh ke seluruh sistem.
+                        </div>
+                      )}
+
+                      {/* Error message */}
+                      {addError && (
+                        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                          {addError}
+                        </div>
+                      )}
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleAddOpenChange(false)}
+                        disabled={addSubmitting}
+                      >
+                        Batal
+                      </Button>
+                      <Button type="submit" disabled={addSubmitting} className="min-w-[100px]">
+                        {addSubmitting ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Membuat...
+                          </>
+                        ) : (
+                          "Buat User"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                )}
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 

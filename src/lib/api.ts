@@ -731,6 +731,18 @@ export const lecturerApi = {
 // ─────────────────────────────────────────────
 
 export const adminUsersApi = {
+  /** POST /admin/users — Create a new user (admin only) */
+  create: (payload: {
+    email: string;
+    name: string;
+    role?: "guest" | "calon_mahasiswa" | "student" | "assistant_lecturer" | "lecturer" | "admin";
+  }) =>
+    apiFetch("/admin/users", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
+
   /** GET /admin/users — List all users */
   list: (params?: {
     role?: string;

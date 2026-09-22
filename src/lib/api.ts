@@ -380,7 +380,7 @@ export const filesApi = {
   upload: (file: File) => {
     const form = new FormData();
     form.append("file", file);
-    return apiFetch("/files/upload", {
+    return apiFetch("/api/files/upload", {
       method: "POST",
       headers: authHeadersMultipart(),
       body: form,
@@ -392,14 +392,14 @@ export const filesApi = {
 
   /** DELETE /api/files/:fileId — Delete a file by ID */
   deleteFile: (fileId: string) =>
-    apiFetch(`/files/${fileId}`, {
+    apiFetch(`/api/files/${fileId}`, {
       method: "DELETE",
       headers: authHeaders(),
     }),
 
   /** GET /api/files/user/files — List all files for the current user */
   listUserFiles: () =>
-    apiFetch("/files/user/files", {
+    apiFetch("/api/files/user/files", {
       headers: authHeaders(),
     }),
 };

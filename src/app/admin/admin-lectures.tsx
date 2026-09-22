@@ -3,8 +3,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { adminLecturesApi, adminUsersApi } from "@/lib/api";
-import { BookOpen, Search, RefreshCw, Trash2, Users, ChevronDown, ChevronRight, Loader2, GraduationCap } from "lucide-react";
+import {
+  BookOpen,
+  Search,
+  RefreshCw,
+  Trash2,
+  Users,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  GraduationCap,
+  Plus,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -135,6 +155,15 @@ export default function AdminLecturesPage() {
 
   const [expandedLectures, setExpandedLectures] = useState<Set<string>>(new Set());
 
+  // Create dialog state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    name: "",
+    semester: "",
+    description: "",
+  });
+
   const toggleLecture = (id: string) => {
     setExpandedLectures((prev) => {
       const next = new Set(prev);
@@ -174,6 +203,43 @@ export default function AdminLecturesPage() {
     fetchLectures();
   };
 
+  const handleCreate = async () => {
+    if (!createForm.name.trim()) {
+      alert("Nama kelas wajib diisi.");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const payload: Record<string, unknown> = {
+        name: createForm.name.trim(),
+      };
+      if (createForm.semester.trim()) {
+        payload.semester = parseInt(createForm.semester.trim()) || createForm.semester.trim();
+      }
+      if (createForm.description.trim()) {
+        payload.description = createForm.description.trim();
+      }
+
+      const res = await adminLecturesApi.create(payload);
+
+      if (res.ok) {
+        notify("Kelas baru berhasil ditambahkan.");
+        setIsCreateOpen(false);
+        setCreateForm({ name: "", semester: "", description: "" });
+        fetchLectures();
+      } else {
+        const errData = res.data as any;
+        alert(errData?.message || "Gagal menambahkan kelas.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat menambahkan kelas.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
         <Card className="shadow-sm border rounded-lg">
@@ -205,6 +271,12 @@ export default function AdminLecturesPage() {
             </select>
             <Button onClick={fetchLectures} variant="outline" className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" /> Cari
+            </Button>
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" /> Tambah Kelas
             </Button>
           </CardContent>
         </Card>
@@ -299,6 +371,81 @@ export default function AdminLecturesPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Dialog Tambah Kelas */}
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogContent className="sm:max-w-[480px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-primary">
+                <Plus className="h-5 w-5" /> Tambah Kelas Baru
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="create-name">
+                  Nama Kelas <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="create-name"
+                  placeholder="Contoh: TI-2026-B"
+                  value={createForm.name}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="create-semester">Semester</Label>
+                <Input
+                  id="create-semester"
+                  placeholder="Contoh: 1"
+                  value={createForm.semester}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({ ...prev, semester: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="create-description">Deskripsi</Label>
+                <Textarea
+                  id="create-description"
+                  placeholder="Deskripsi kelas (opsional)"
+                  rows={3}
+                  value={createForm.description}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => setIsCreateOpen(false)}
+                disabled={creating}
+              >
+                Batal
+              </Button>
+              <Button
+                onClick={handleCreate}
+                disabled={creating || !createForm.name.trim()}
+                className="flex items-center gap-2"
+              >
+                {creating && <Loader2 className="h-4 w-4 animate-spin" />}
+                {creating ? "Menyimpan..." : "Simpan"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 }
+

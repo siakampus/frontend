@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { adminLecturesApi, adminUsersApi } from "@/lib/api";
+import { adminLecturesApi, adminUsersApi, adminLecturersApi } from "@/lib/api";
 import {
   BookOpen,
   Search,
@@ -24,44 +24,133 @@ import {
   Loader2,
   GraduationCap,
   Plus,
+  UserPlus,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-function LectureDetails({ lectureId }: { lectureId: string }) {
+function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; onLecturerChanged?: () => void }) {
   const [lecturers, setLecturers] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        const [lecRes, stuRes] = await Promise.all([
-          adminLecturesApi.listLecturers(lectureId),
-          adminUsersApi.list({ role: "student", classId: lectureId }),
-        ]);
+  // Add lecturer state
+  const [showAddLecturer, setShowAddLecturer] = useState(false);
+  const [lecturerSearch, setLecturerSearch] = useState("");
+  const [lecturerResults, setLecturerResults] = useState<any[]>([]);
+  const [searchingLecturers, setSearchingLecturers] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const [detailMsg, setDetailMsg] = useState("");
 
-        if (lecRes.ok && lecRes.data) {
-          const lData = lecRes.data as any;
-          setLecturers(lData.data || lData.lecturers || []);
-        }
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [lecRes, stuRes] = await Promise.all([
+        adminLecturesApi.listLecturers(lectureId),
+        adminUsersApi.list({ role: "student", classId: lectureId }),
+      ]);
 
-        if (stuRes.ok && stuRes.data) {
-          const sData = stuRes.data as any;
-          setStudents(sData.data || sData.users || []);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+      if (lecRes.ok && lecRes.data) {
+        const lData = lecRes.data as any;
+        setLecturers(lData.data || lData.lecturers || []);
       }
+
+      if (stuRes.ok && stuRes.data) {
+        const sData = stuRes.data as any;
+        setStudents(sData.data || sData.users || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [lectureId]);
 
+  const notifyDetail = (msg: string) => {
+    setDetailMsg(msg);
+    setTimeout(() => setDetailMsg(""), 3000);
+  };
+
+  // Search lecturers from the system
+  const handleSearchLecturers = async (query: string) => {
+    setLecturerSearch(query);
+    if (query.trim().length < 2) {
+      setLecturerResults([]);
+      return;
+    }
+    setSearchingLecturers(true);
+    try {
+      const res = await adminLecturersApi.list({ search: query.trim(), take: 10 });
+      if (res.ok && res.data) {
+        const body = res.data as any;
+        const list = body.data || body.lecturers || [];
+        // Filter out lecturers already assigned
+        const assignedIds = new Set(lecturers.map((l: any) => String(l.lecturerId || l.lecturer?.id || l.id)));
+        setLecturerResults(list.filter((l: any) => !assignedIds.has(String(l.id))));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSearchingLecturers(false);
+    }
+  };
+
+  const handleAssignLecturer = async (lecturer: any) => {
+    setAssigning(true);
+    try {
+      const lecturerId = parseInt(String(lecturer.id), 10);
+      const res = await adminLecturesApi.assignLecturer(lectureId, String(lecturerId));
+      if (res.ok) {
+        notifyDetail(`Dosen "${lecturer.fullName || lecturer.name}" berhasil ditambahkan.`);
+        setLecturerSearch("");
+        setLecturerResults([]);
+        setShowAddLecturer(false);
+        fetchData();
+        onLecturerChanged?.();
+      } else {
+        const errData = res.data as any;
+        alert(errData?.message || "Gagal menambahkan dosen.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat menambahkan dosen.");
+    } finally {
+      setAssigning(false);
+    }
+  };
+
+  const handleRemoveLecturer = async (lecturerEntry: any) => {
+    const lecturerId = lecturerEntry.lecturerId || lecturerEntry.lecturer?.id || lecturerEntry.id;
+    const lecturerName = lecturerEntry.lecturer?.fullName || lecturerEntry.lecturer?.name || lecturerEntry.fullName || lecturerEntry.name || "Dosen";
+    if (!confirm(`Hapus dosen "${lecturerName}" dari kelas ini?`)) return;
+
+    try {
+      const res = await adminLecturesApi.removeLecturer(lectureId, String(lecturerId));
+      if (res.ok) {
+        notifyDetail(`Dosen "${lecturerName}" berhasil dihapus dari kelas.`);
+        fetchData();
+        onLecturerChanged?.();
+      } else {
+        alert("Gagal menghapus dosen dari kelas.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan.");
+    }
+  };
+
   return (
     <div className="bg-muted/5 border-t px-6 py-4">
+      {detailMsg && (
+        <div className="text-xs font-medium px-3 py-2 rounded-md bg-primary/10 text-primary border border-primary/20 mb-3">
+          {detailMsg}
+        </div>
+      )}
       <Tabs defaultValue="dosen" className="w-full">
         <TabsList className="mb-4 bg-background border shadow-sm">
           <TabsTrigger value="dosen" className="gap-2 text-xs">
@@ -74,6 +163,87 @@ function LectureDetails({ lectureId }: { lectureId: string }) {
 
         <TabsContent value="dosen" className="mt-0 outline-none">
           <Card className="border shadow-sm bg-background">
+            {/* Header with add button */}
+            <div className="p-3 border-b flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
+                {lecturers.length} dosen terdaftar
+              </span>
+              <Button
+                size="sm"
+                variant={showAddLecturer ? "outline" : "default"}
+                className="h-7 text-xs gap-1.5"
+                onClick={() => {
+                  setShowAddLecturer(!showAddLecturer);
+                  setLecturerSearch("");
+                  setLecturerResults([]);
+                }}
+              >
+                {showAddLecturer ? (
+                  <><X className="h-3 w-3" /> Tutup</>
+                ) : (
+                  <><UserPlus className="h-3 w-3" /> Tambah Dosen</>
+                )}
+              </Button>
+            </div>
+
+            {/* Add lecturer search panel */}
+            {showAddLecturer && (
+              <div className="p-3 border-b bg-muted/5">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Cari dosen berdasarkan nama atau email..."
+                    className="pl-8 h-8 text-xs"
+                    value={lecturerSearch}
+                    onChange={(e) => handleSearchLecturers(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                {searchingLecturers && (
+                  <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Mencari...
+                  </div>
+                )}
+                {!searchingLecturers && lecturerSearch.trim().length >= 2 && lecturerResults.length === 0 && (
+                  <div className="mt-2 text-xs text-muted-foreground italic">
+                    Tidak ada dosen ditemukan.
+                  </div>
+                )}
+                {lecturerResults.length > 0 && (
+                  <div className="mt-2 border rounded-md divide-y bg-background max-h-[200px] overflow-y-auto">
+                    {lecturerResults.map((lr: any) => (
+                      <div
+                        key={lr.id}
+                        className="p-2.5 flex items-center justify-between hover:bg-muted/20 transition-colors"
+                      >
+                        <div>
+                          <div className="text-xs font-semibold text-gray-900">
+                            {lr.fullName || lr.name || "—"}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {lr.email || lr.nip || "—"}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          className="h-6 text-[10px] gap-1 px-2"
+                          disabled={assigning}
+                          onClick={() => handleAssignLecturer(lr)}
+                        >
+                          {assigning ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <><Plus className="h-3 w-3" /> Tambah</>
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Existing lecturers list */}
             {loading ? (
               <div className="p-8 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" /> Memuat data dosen...
@@ -92,6 +262,13 @@ function LectureDetails({ lectureId }: { lectureId: string }) {
                         {l.lecturer?.email || l.email || "—"}
                       </div>
                     </div>
+                    <button
+                      title="Hapus dosen dari kelas"
+                      onClick={() => handleRemoveLecturer(l)}
+                      className="p-1.5 rounded hover:bg-red-50 text-red-500 transition-colors self-end sm:self-auto"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -358,7 +535,7 @@ export default function AdminLecturesPage() {
                           {isExpanded && (
                             <tr>
                               <td colSpan={6} className="p-0 border-b">
-                                <LectureDetails lectureId={l.id} />
+                                <LectureDetails lectureId={l.id} onLecturerChanged={fetchLectures} />
                               </td>
                             </tr>
                           )}

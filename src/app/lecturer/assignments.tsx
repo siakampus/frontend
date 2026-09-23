@@ -11,11 +11,15 @@ import {
   ChevronRight,
   CheckCircle,
   Users,
-  Plus
+  Plus,
+  Download,
+  Paperclip,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 interface Course {
   id: number;
@@ -36,7 +40,8 @@ interface Submission {
   grade?: number;
   feedback?: string;
   createdAt?: string;
-  student?: { email?: string; name?: string };
+  fileUrl?: string;
+  student?: { email?: string; name?: string; creator?: { email?: string } };
 }
 
 export default function LecturerAssignmentsPage() {
@@ -322,12 +327,24 @@ export default function LecturerAssignmentsPage() {
                             >
                               <div className="flex-1 min-w-0">
                                 <div className="font-medium text-sm text-gray-900">
-                                  {sub.student?.name || sub.student?.email || `#${sub.id}`}
+                                  {sub.student?.name || sub.student?.creator?.email || sub.student?.email || `#${sub.id}`}
                                 </div>
                                 {sub.content && (
                                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                     {sub.content}
                                   </p>
+                                )}
+                                {sub.fileUrl && (
+                                  <a
+                                    href={`${API_BASE}${sub.fileUrl}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                                  >
+                                    <Paperclip className="h-3 w-3" />
+                                    Lihat File
+                                    <Download className="h-3 w-3" />
+                                  </a>
                                 )}
                                 <div className="text-xs text-muted-foreground mt-1">
                                   {sub.createdAt

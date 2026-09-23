@@ -11,8 +11,12 @@ import {
   ArrowLeft,
   Calendar,
   AlertCircle,
+  Paperclip,
+  Download,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
+
+const API_BASE = import.meta.env.VITE_PUBLIC_API_URL ?? "";
 
 interface Assignment {
   id: number;
@@ -147,6 +151,21 @@ export default function AssignmentDetailPage() {
                 <div>
                   <p className="text-xs text-green-600 uppercase font-semibold mb-1">Jawaban Anda</p>
                   <p className="text-sm text-gray-700 whitespace-pre-wrap">{submission.content}</p>
+                </div>
+              )}
+              {submission.fileUrl && (
+                <div>
+                  <p className="text-xs text-green-600 uppercase font-semibold mb-1">File Lampiran</p>
+                  <a
+                    href={`${API_BASE}${submission.fileUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-white text-green-700 border border-green-200 hover:bg-green-100 transition-colors"
+                  >
+                    <Paperclip className="h-3.5 w-3.5" />
+                    Lihat File
+                    <Download className="h-3.5 w-3.5" />
+                  </a>
                 </div>
               )}
               {submission.createdAt && (

@@ -618,11 +618,11 @@ export const assignmentsApi = {
     }),
 
   /** PATCH /assignments/submissions/:submissionId/grade — Grade a submission */
-  gradeSubmission: (submissionId: number | string, grade: number, feedback?: string) =>
+  gradeSubmission: (submissionId: number | string, score: number, feedback?: string) =>
     apiFetch(`/assignments/submissions/${submissionId}/grade`, {
       method: "PATCH",
       headers: authHeaders(),
-      body: JSON.stringify({ grade, feedback }),
+      body: JSON.stringify({ score, feedback }),
     }),
 
   /** POST /assignments/:id/submit — Submit an assignment (Student) */

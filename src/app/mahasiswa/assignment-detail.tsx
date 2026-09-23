@@ -28,7 +28,7 @@ interface Assignment {
 interface Submission {
   id: number;
   content?: string;
-  grade?: number;
+  score?: number;
   feedback?: string;
   createdAt?: string;
   fileUrl?: string;
@@ -173,11 +173,11 @@ export default function AssignmentDetailPage() {
                   Dikumpulkan pada: {new Date(submission.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
                 </p>
               )}
-              {submission.grade != null && (
+              {submission.score != null && (
                 <div className="flex items-center gap-3 mt-3 p-3 bg-white rounded-lg border border-green-200">
                   <div className="text-center">
                     <p className="text-xs text-muted-foreground">Nilai</p>
-                    <p className="text-2xl font-bold text-green-700">{submission.grade}</p>
+                    <p className="text-2xl font-bold text-green-700">{submission.score}</p>
                   </div>
                   {submission.feedback && (
                     <div className="flex-1">
@@ -187,7 +187,7 @@ export default function AssignmentDetailPage() {
                   )}
                 </div>
               )}
-              {submission.grade == null && (
+              {submission.score == null && (
                 <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 rounded-lg p-3 border border-amber-200">
                   <AlertCircle className="h-4 w-4" />
                   <span>Menunggu penilaian dari dosen.</span>

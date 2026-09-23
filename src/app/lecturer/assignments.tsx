@@ -37,7 +37,7 @@ interface Assignment {
 interface Submission {
   id: number;
   content?: string;
-  grade?: number;
+  score?: number;
   feedback?: string;
   createdAt?: string;
   fileUrl?: string;
@@ -358,11 +358,11 @@ export default function LecturerAssignmentsPage() {
                                 </div>
                               </div>
                               <div className="flex-shrink-0 text-right">
-                                {sub.grade != null ? (
+                                {sub.score != null ? (
                                   <div className="flex items-center gap-1.5">
                                     <CheckCircle className="h-4 w-4 text-green-500" />
                                     <span className="font-bold text-green-700 text-sm">
-                                      {sub.grade}
+                                      {sub.score}
                                     </span>
                                   </div>
                                 ) : gradingId === sub.id ? (

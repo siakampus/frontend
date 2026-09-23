@@ -53,8 +53,8 @@ export default function AssignmentDetailPage() {
       if (assignRes.status === 401) { navigate("/login"); return; }
       if (assignRes.ok) setAssignment(assignRes.data as Assignment);
       if (subRes.ok && subRes.data) {
-        const body = subRes.data as { data?: Submission };
-        setSubmission(body.data || (subRes.data as unknown as Submission) || null);
+        const body = subRes.data as { data?: Submission | null };
+        setSubmission(body.data ?? null);
       }
       setLoading(false);
     };
@@ -75,8 +75,8 @@ export default function AssignmentDetailPage() {
       notify("Tugas berhasil dikumpulkan.");
       const subRes = await assignmentsApi.getMySubmission(id);
       if (subRes.ok && subRes.data) {
-        const body = subRes.data as { data?: Submission };
-        setSubmission(body.data || (subRes.data as unknown as Submission) || null);
+        const body = subRes.data as { data?: Submission | null };
+        setSubmission(body.data ?? null);
       }
     } else {
       notify("Gagal mengumpulkan tugas.");

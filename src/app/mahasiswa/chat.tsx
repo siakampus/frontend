@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AppLayout } from "@/components/ui/app-layout";
 import { chatApi, type ChatTopic } from "@/lib/api";
-import { Send, Plus, Trash2, RefreshCw, Menu, X } from "lucide-react";
+import { Send, Plus, Trash2, RefreshCw, Menu, X, MessageCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ChatSession {
@@ -30,25 +30,8 @@ const SUGGESTIONS = [
   "Bagaimana cara mengajukan cuti akademik?",
 ];
 
-// Gemini-style sparkle SVG
-function SparkleIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path
-        d="M12 2 L13.5 9 L20 10.5 L13.5 12 L12 19 L10.5 12 L4 10.5 L10.5 9 Z"
-        fill="url(#sparkle-grad)"
-      />
-      <defs>
-        <linearGradient id="sparkle-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#8ab4f8" />
-          <stop offset="100%" stopColor="#c084fc" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
 
-// Animated typing dots
+
 function TypingDots() {
   return (
     <div className="flex gap-1.5 items-center py-1">
@@ -185,7 +168,7 @@ export default function ChatPage() {
 
   return (
     <AppLayout menuTemplate="student" sidebarTitle="SIA Dashboard" title="Chatbot" subtitle="">
-      {/* Full-screen dark chat container */}
+
       <div
         className="flex rounded-xl overflow-hidden shadow-2xl"
         style={{
@@ -193,7 +176,7 @@ export default function ChatPage() {
           background: "#1e2124",
         }}
       >
-        {/* ── Session Sidebar ── */}
+
         <aside
           style={{
             width: sidebarOpen ? "240px" : "0px",
@@ -206,7 +189,7 @@ export default function ChatPage() {
             flexDirection: "column",
           }}
         >
-          {/* Sidebar header */}
+
           <div style={{ padding: "16px", borderBottom: "1px solid #3a3d41" }}>
             <p style={{ color: "#8ab4f8", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>
               Topik
@@ -254,7 +237,7 @@ export default function ChatPage() {
             </button>
           </div>
 
-          {/* Session list */}
+
           <div style={{ flex: 1, overflowY: "auto" }}>
             {loadingSessions ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "20px" }}>
@@ -324,10 +307,10 @@ export default function ChatPage() {
           </div>
         </aside>
 
-        {/* ── Main chat area ── */}
+
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
 
-          {/* Top bar */}
+
           <div style={{
             display: "flex",
             alignItems: "center",
@@ -344,23 +327,14 @@ export default function ChatPage() {
             >
               {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </button>
-            <SparkleIcon className="h-5 w-5" />
+            <MessageCircle className="h-5 w-5" style={{ color: "#8ab4f8" }} />
             <span style={{ color: "#e8eaed", fontWeight: 600, fontSize: "15px" }}>UGN Customer Service</span>
-            <span style={{
-              fontSize: "10px",
-              padding: "2px 8px",
-              borderRadius: "20px",
-              background: "rgba(138,180,248,0.15)",
-              color: "#8ab4f8",
-              border: "1px solid rgba(138,180,248,0.3)",
-              fontWeight: 500,
-            }}>Preview</span>
           </div>
 
-          {/* Messages area */}
+
           <div style={{ flex: 1, overflowY: "auto", padding: "0 20px" }}>
             {isWelcomeScreen ? (
-              /* ── Welcome Screen ── */
+
               <div style={{
                 display: "flex",
                 flexDirection: "column",
@@ -371,7 +345,7 @@ export default function ChatPage() {
                 margin: "0 auto",
                 padding: "40px 0",
               }}>
-                <SparkleIcon className="h-10 w-10 mb-6" />
+                <MessageCircle className="h-10 w-10 mb-6" style={{ color: "#8ab4f8" }} />
                 <h1 style={{ fontSize: "28px", fontWeight: 400, lineHeight: 1.3, marginBottom: "24px" }}>
                   <span style={{ color: "#8ab4f8" }}>Selamat datang di</span>
                   <br />
@@ -397,7 +371,7 @@ export default function ChatPage() {
                   </ul>
                 </div>
 
-                {/* Input field on welcome screen */}
+
                 <form onSubmit={handleSubmit} style={{ width: "100%", marginBottom: "16px" }}>
                   <div style={{
                     display: "flex",
@@ -453,7 +427,7 @@ export default function ChatPage() {
                   </div>
                 </form>
 
-                {/* Suggestion chips */}
+
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
                   {SUGGESTIONS.map((s, i) => (
                     <button
@@ -482,7 +456,7 @@ export default function ChatPage() {
                 </div>
               </div>
             ) : (
-              /* ── Message thread ── */
+
               <div style={{ padding: "24px 0", display: "flex", flexDirection: "column", gap: "20px", maxWidth: "720px", margin: "0 auto" }}>
                 {loadingMessages ? (
                   <div style={{ textAlign: "center", color: "#5f6368", padding: "40px 0" }}>
@@ -499,7 +473,7 @@ export default function ChatPage() {
                         gap: "12px",
                       }}
                     >
-                      {/* Avatar */}
+
                       <div style={{
                         width: "32px",
                         height: "32px",
@@ -511,12 +485,12 @@ export default function ChatPage() {
                         background: msg.role === "user" ? "#8ab4f8" : "#3a3d41",
                         fontSize: "13px",
                         fontWeight: 600,
-                        color: msg.role === "user" ? "#1e2124" : "#8ab4f8",
+                        color: msg.role === "user" ? "#1e2124" : "#e8eaed",
                       }}>
-                        {msg.role === "user" ? "U" : <SparkleIcon className="h-4 w-4" />}
+                        {msg.role === "user" ? "U" : "CS"}
                       </div>
 
-                      {/* Bubble */}
+
                       <div
                         style={{
                           maxWidth: "75%",
@@ -536,15 +510,18 @@ export default function ChatPage() {
                   ))
                 )}
 
-                {/* Typing indicator */}
+
                 {sending && (
                   <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
                     <div style={{
                       width: "32px", height: "32px", borderRadius: "50%", flexShrink: 0,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       background: "#3a3d41",
+                      color: "#e8eaed",
+                      fontSize: "11px",
+                      fontWeight: 600,
                     }}>
-                      <SparkleIcon className="h-4 w-4" />
+                      CS
                     </div>
                     <div style={{ padding: "10px 16px", borderRadius: "4px 18px 18px 18px", background: "#2a2d31" }}>
                       <TypingDots />
@@ -556,7 +533,7 @@ export default function ChatPage() {
             )}
           </div>
 
-          {/* ── Input bar (when in conversation) ── */}
+
           {!isWelcomeScreen && (
             <div style={{ padding: "12px 20px 16px", borderTop: "1px solid #3a3d41" }}>
               <form onSubmit={handleSubmit} style={{ maxWidth: "720px", margin: "0 auto" }}>
@@ -614,7 +591,7 @@ export default function ChatPage() {
                 </div>
               </form>
 
-              {/* Disclaimer */}
+
               <p style={{ textAlign: "center", color: "#5f6368", fontSize: "11px", marginTop: "10px" }}>
                 UGN Customer Service dapat membuat kesalahan. Verifikasi informasi penting kepada staf akademik.
               </p>

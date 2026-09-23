@@ -18,9 +18,9 @@ import {
   Calendar,
   AlertCircle,
   FileText,
-  Sparkles,
   ChevronDown,
   ChevronUp,
+  RefreshCw,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -436,7 +436,7 @@ export default function CoursesPage() {
                                   disabled={summary?.loading}
                                   className="flex items-center gap-1.5 text-xs border-violet-300 text-violet-700 hover:bg-violet-50 hover:border-violet-400"
                                 >
-                                  <Sparkles className="h-3.5 w-3.5" />
+                                  <FileText className="h-3.5 w-3.5" />
                                   {summary?.loading
                                     ? "Meringkas..."
                                     : summary?.text
@@ -454,7 +454,7 @@ export default function CoursesPage() {
                                     className="text-xs text-violet-600 hover:bg-violet-50"
                                     title="Buat ulang ringkasan (lewati cache)"
                                   >
-                                    🔄 Regenerasi
+                                    <RefreshCw className="h-3 w-3 inline mr-1" /> Regenerasi
                                   </Button>
                                 )}
                               </div>
@@ -465,23 +465,22 @@ export default function CoursesPage() {
                                 <FileText className="h-4 w-4" /> Download Lampiran
                               </a>
                             )}
-                            {/* AI Summary panel */}
                             {summary?.expanded && summary?.text && (
                               <div className="mt-3 p-3 rounded-md bg-violet-50 border border-violet-200">
                                 <div className="flex items-center justify-between gap-2 mb-2">
-                                  <div className="flex items-center gap-1.5 text-violet-700 text-xs font-semibold uppercase tracking-wide">
-                                    <Sparkles className="h-3.5 w-3.5" />
+                                  <div className="flex items-center gap-1.5 text-violet-700 text-xs font-semibold">
+                                    <FileText className="h-3.5 w-3.5" />
                                     Ringkasan AI
                                   </div>
                                   {summary.cached && (
                                     <Badge variant="outline" className="text-[10px] border-violet-300 text-violet-600">
-                                      📦 Cached
+                                      Cached
                                     </Badge>
                                   )}
                                 </div>
                                 {summary.docInfo && (
                                   <div className="text-xs text-violet-600/80 mb-2">
-                                    📄 {summary.docInfo.fileType?.toUpperCase()} • {summary.docInfo.pageCount} halaman •{" "}
+                                    {summary.docInfo.fileType?.toUpperCase()} · {summary.docInfo.pageCount} halaman ·{" "}
                                     {Math.round(summary.docInfo.textLength / 1000)}K karakter
                                     {summary.docInfo.truncated && " (dipotong)"}
                                   </div>

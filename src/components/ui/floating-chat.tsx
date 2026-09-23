@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { chatApi, type ChatTopic } from "@/lib/api";
-import { Send, X, Minus, Plus, Trash2, ChevronLeft, RefreshCw, Sparkles } from "lucide-react";
+import { Send, X, Minus, Plus, Trash2, ChevronLeft, RefreshCw, MessageCircle } from "lucide-react";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+
 
 interface ChatSession {
   id: string;
@@ -29,7 +29,7 @@ const SUGGESTIONS = [
   "Cara mengajukan cuti akademik?",
 ];
 
-// ── Theme tokens — light, matches main dashboard ──────────────────────────────
+
 const T = {
   bg: "#ffffff",
   bgSub: "#f9fafb",       // gray-50
@@ -52,16 +52,9 @@ const T = {
   triggerShadow: "0 4px 16px rgba(0,0,0,0.15)",
 };
 
-// ── Sparkle icon ──────────────────────────────────────────────────────────────
-function SparkleIcon({ size = 18, color = "var(--primary, #4f46e5)" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <path d="M12 2 L13.5 9 L20 10.5 L13.5 12 L12 19 L10.5 12 L4 10.5 L10.5 9 Z" fill={color} />
-    </svg>
-  );
-}
 
-// ── Typing dots ───────────────────────────────────────────────────────────────
+
+
 function TypingDots() {
   return (
     <div style={{ display: "flex", gap: "4px", alignItems: "center", padding: "2px 0" }}>
@@ -82,7 +75,7 @@ function TypingDots() {
   );
 }
 
-// ── Floating chat widget ──────────────────────────────────────────────────────
+
 export default function FloatingChat() {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -174,7 +167,7 @@ export default function FloatingChat() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+
 
   return (
     <>
@@ -200,7 +193,7 @@ export default function FloatingChat() {
         .fc-icon-btn:hover { background: #f3f4f6 !important; }
       `}</style>
 
-      {/* ── Trigger button ── */}
+
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -218,11 +211,11 @@ export default function FloatingChat() {
           onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.2)"; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = T.triggerShadow; }}
         >
-          <Sparkles style={{ width: 22, height: 22, color: "#fff" }} />
+          <MessageCircle style={{ width: 22, height: 22, color: "#fff" }} />
         </button>
       )}
 
-      {/* ── Chat panel ── */}
+
       {open && (
         <div style={{
           position: "fixed", bottom: "96px", right: "28px",
@@ -238,7 +231,7 @@ export default function FloatingChat() {
           transition: "height 0.25s ease",
         }}>
 
-          {/* Header */}
+
           <div style={{
             display: "flex", alignItems: "center", gap: "8px",
             padding: "0 12px", height: "52px", flexShrink: 0,
@@ -255,7 +248,7 @@ export default function FloatingChat() {
               </button>
             )}
 
-            <SparkleIcon size={18} />
+            <MessageCircle style={{ width: 18, height: 18, color: "var(--primary, #4f46e5)", flexShrink: 0 }} />
             <span style={{ color: T.text, fontWeight: 600, fontSize: "14px", flex: 1 }}>
               UGN Customer Service
               {activeSession && view === "chat" && (
@@ -265,12 +258,7 @@ export default function FloatingChat() {
               )}
             </span>
 
-            {/* Preview badge */}
-            <span style={{
-              fontSize: "9px", padding: "2px 7px", borderRadius: "20px",
-              background: "#ede9fe", color: "var(--primary, #4f46e5)",
-              border: "1px solid #ddd6fe", fontWeight: 500, marginRight: "2px",
-            }}>Preview</span>
+
 
             <button
               className="fc-icon-btn"
@@ -288,15 +276,15 @@ export default function FloatingChat() {
             </button>
           </div>
 
-          {/* Body */}
+
           {!minimized && (
             <>
-              {/* ── Sessions / Welcome view ── */}
+
               {view === "sessions" && (
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                  {/* Welcome banner */}
+
                   <div style={{ padding: "20px 18px 14px", background: T.bg }}>
-                    <SparkleIcon size={28} />
+                    <MessageCircle style={{ width: 28, height: 28, color: "var(--primary, #4f46e5)" }} />
                     <h2 style={{ color: T.text, fontSize: "17px", fontWeight: 600, margin: "10px 0 3px", lineHeight: 1.3 }}>
                       Selamat datang di<br />
                       <span style={{ color: "var(--primary, #4f46e5)" }}>UGN Customer Service</span>
@@ -306,9 +294,9 @@ export default function FloatingChat() {
                     </p>
                   </div>
 
-                  {/* Input area */}
+
                   <div style={{ padding: "0 14px 12px", borderBottom: `1px solid ${T.border}` }}>
-                    {/* Text input box */}
+
                     <div style={{
                       display: "flex", alignItems: "flex-end", gap: "8px",
                       background: T.bgSub,
@@ -350,7 +338,7 @@ export default function FloatingChat() {
                       </button>
                     </div>
 
-                    {/* Topic + new session (secondary) */}
+
                     <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                       <select
                         value={selectedTopic}
@@ -384,7 +372,7 @@ export default function FloatingChat() {
                     </div>
                   </div>
 
-                  {/* Suggestion chips */}
+
                   <div style={{ padding: "12px 14px", borderBottom: `1px solid ${T.border}` }}>
                     <p style={{ color: T.textMuted, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px", fontWeight: 600 }}>
                       Pertanyaan umum
@@ -409,7 +397,7 @@ export default function FloatingChat() {
                     </div>
                   </div>
 
-                  {/* Past sessions */}
+
                   {sessions.length > 0 && (
                     <div className="fc-scroll" style={{ flex: 1, overflowY: "auto" }}>
                       <p style={{ color: T.textMuted, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.06em", padding: "10px 14px 5px", fontWeight: 600 }}>
@@ -457,10 +445,10 @@ export default function FloatingChat() {
                 </div>
               )}
 
-              {/* ── Chat view ── */}
+
               {view === "chat" && (
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                  {/* Messages */}
+
                   <div className="fc-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 14px", display: "flex", flexDirection: "column", gap: "12px" }}>
                     {loading ? (
                       <div style={{ textAlign: "center", color: T.textMuted, paddingTop: "40px" }}>
@@ -468,7 +456,7 @@ export default function FloatingChat() {
                       </div>
                     ) : messages.length === 0 ? (
                       <div style={{ textAlign: "center", color: T.textMuted, paddingTop: "50px" }}>
-                        <SparkleIcon size={32} />
+                        <MessageCircle style={{ width: 32, height: 32, color: "var(--primary, #4f46e5)" }} />
                         <p style={{ marginTop: "10px", fontSize: "13px" }}>Mulai percakapan baru</p>
                       </div>
                     ) : (
@@ -483,8 +471,9 @@ export default function FloatingChat() {
                               width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
                               background: "#ede9fe",
                               display: "flex", alignItems: "center", justifyContent: "center",
+                              fontSize: "10px", fontWeight: 600, color: "var(--primary, #4f46e5)",
                             }}>
-                              <SparkleIcon size={14} />
+                              CS
                             </div>
                           )}
                           <div style={{
@@ -503,8 +492,8 @@ export default function FloatingChat() {
                     )}
                     {sending && (
                       <div style={{ display: "flex", alignItems: "flex-end", gap: "8px" }}>
-                        <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#ede9fe", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                          <SparkleIcon size={14} />
+                        <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#ede9fe", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "10px", fontWeight: 600, color: "var(--primary, #4f46e5)" }}>
+                          CS
                         </div>
                         <div style={{ padding: "9px 14px", borderRadius: "4px 16px 16px 16px", background: T.aiBubble, boxShadow: "0 1px 2px rgba(0,0,0,0.06)" }}>
                           <TypingDots />
@@ -514,7 +503,7 @@ export default function FloatingChat() {
                     <div ref={messagesEndRef} />
                   </div>
 
-                  {/* Chat input */}
+
                   <div style={{ padding: "10px 12px 12px", borderTop: `1px solid ${T.border}`, background: T.bg }}>
                     <div style={{
                       display: "flex", alignItems: "flex-end", gap: "8px",

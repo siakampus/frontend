@@ -125,7 +125,9 @@ export default function AdminPaymentsPage() {
                     {payments.map((p) => (
                       <tr key={p.id} className="hover:bg-muted/10 transition-colors">
                         <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900">{p.user?.name || "—"}</div>
+                          <div className="font-medium text-gray-900">
+                            {(p.user as any)?.fullName || p.user?.name || (p.user?.email ? p.user.email.split("@")[0] : "—")}
+                          </div>
                           <div className="text-xs text-muted-foreground">{p.user?.email}</div>
                         </td>
                         <td className="px-4 py-3 text-sm">{p.billName || "—"}</td>

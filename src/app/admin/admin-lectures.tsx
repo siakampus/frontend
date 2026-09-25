@@ -214,33 +214,43 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
                 )}
                 {lecturerResults.length > 0 && (
                   <div className="mt-2 border rounded-md divide-y bg-background max-h-[200px] overflow-y-auto">
-                    {lecturerResults.map((lr: any) => (
-                      <div
-                        key={lr.id}
-                        className="p-2.5 flex items-center justify-between hover:bg-muted/20 transition-colors"
-                      >
-                        <div>
-                          <div className="text-xs font-semibold text-gray-900">
-                            {lr.fullName || lr.name || "—"}
-                          </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            {lr.email || lr.nip || "—"}
-                          </div>
-                        </div>
-                        <Button
-                          size="sm"
-                          className="h-6 text-[10px] gap-1 px-2"
-                          disabled={assigning}
-                          onClick={() => handleAssignLecturer(lr)}
+                    {lecturerResults.map((lr: any) => {
+                      const name = lr.fullName || lr.name || lr.user?.fullName || lr.user?.name || "—";
+                      const email = lr.email || lr.user?.email || "";
+                      const nip = lr.nip || lr.user?.nip || "";
+                      const facultyDept = [lr.department, lr.faculty].filter(Boolean).join(" • ");
+
+                      return (
+                        <div
+                          key={lr.id || lr.lecturerId}
+                          className="p-2.5 flex items-center justify-between hover:bg-muted/20 transition-colors"
                         >
-                          {assigning ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <><Plus className="h-3 w-3" /> Tambah</>
-                          )}
-                        </Button>
-                      </div>
-                    ))}
+                          <div>
+                            <div className="text-xs font-semibold text-gray-900">
+                              {name}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-1.5">
+                              {email && <span>{email}</span>}
+                              {nip && <span>• NIP: {nip}</span>}
+                              {facultyDept && <span>• {facultyDept}</span>}
+                              {!email && !nip && !facultyDept && <span>—</span>}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="h-6 text-[10px] gap-1 px-2"
+                            disabled={assigning}
+                            onClick={() => handleAssignLecturer(lr)}
+                          >
+                            {assigning ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <><Plus className="h-3 w-3" /> Tambah</>
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -257,23 +267,68 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
               </div>
             ) : (
               <div className="divide-y max-h-[300px] overflow-y-auto">
-                {lecturers.map((l: any) => (
-                  <div key={l.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-muted/30 transition-colors gap-2">
-                    <div>
-                      <div className="text-sm font-semibold text-primary">{l.lecturer?.fullName || l.lecturer?.name || l.fullName || l.name || "—"}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {l.lecturer?.email || l.email || "—"}
-                      </div>
-                    </div>
-                    <button
-                      title="Hapus dosen dari kelas"
-                      onClick={() => handleRemoveLecturer(l)}
-                      className="p-1.5 rounded hover:bg-red-50 text-red-500 transition-colors self-end sm:self-auto"
+                {lecturers.map((l: any) => {
+                  const name =
+                    l.lecturer?.fullName ||
+                    l.lecturer?.name ||
+                    l.lecturer?.user?.fullName ||
+                    l.lecturer?.user?.name ||
+                    l.user?.fullName ||
+                    l.user?.name ||
+                    l.fullName ||
+                    l.name ||
+                    "—";
+                  const email =
+                    l.lecturer?.email ||
+                    l.lecturer?.user?.email ||
+                    l.user?.email ||
+                    l.email ||
+                    "";
+                  const nip =
+                    l.lecturer?.nip ||
+                    l.lecturer?.user?.nip ||
+                    l.user?.nip ||
+                    l.nip ||
+                    "";
+                  const facultyDept = [
+                    l.lecturer?.department || l.department,
+                    l.lecturer?.faculty || l.faculty,
+                  ]
+                    .filter(Boolean)
+                    .join(" • ");
+
+                  return (
+                    <div
+                      key={l.id || l.lecturerId || l.lecturer?.id}
+                      className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-muted/30 transition-colors gap-2"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
+                      <div>
+                        <div className="text-sm font-semibold text-primary">{name}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap items-center gap-2">
+                          {email && <span>{email}</span>}
+                          {nip && (
+                            <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-normal">
+                              NIP: {nip}
+                            </Badge>
+                          )}
+                          {facultyDept && (
+                            <span className="text-[11px] text-muted-foreground/80">
+                              {facultyDept}
+                            </span>
+                          )}
+                          {!email && !nip && !facultyDept && <span>—</span>}
+                        </div>
+                      </div>
+                      <button
+                        title="Hapus dosen dari kelas"
+                        onClick={() => handleRemoveLecturer(l)}
+                        className="p-1.5 rounded hover:bg-red-50 text-red-500 transition-colors self-end sm:self-auto"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </Card>
@@ -291,21 +346,49 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
               </div>
             ) : (
               <div className="divide-y max-h-[300px] overflow-y-auto">
-                {students.map((s: any) => (
-                  <div key={s.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-muted/30 transition-colors gap-2">
-                    <div>
-                      <div className="text-sm font-semibold text-primary">{s.student?.name || s.name || "—"}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {s.student?.email || s.email || "—"}
+                {students.map((s: any) => {
+                  const studentName =
+                    s.student?.fullName ||
+                    s.student?.name ||
+                    s.student?.user?.fullName ||
+                    s.student?.user?.name ||
+                    s.user?.fullName ||
+                    s.user?.name ||
+                    s.fullName ||
+                    s.name ||
+                    "—";
+                  const studentEmail =
+                    s.student?.email ||
+                    s.student?.user?.email ||
+                    s.user?.email ||
+                    s.email ||
+                    "";
+                  const nim =
+                    s.student?.registration?.nim ||
+                    s.registration?.nim ||
+                    s.student?.nim ||
+                    s.nim ||
+                    "";
+
+                  return (
+                    <div
+                      key={s.id || s.studentId}
+                      className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-muted/30 transition-colors gap-2"
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-primary">{studentName}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {studentEmail || "—"}
+                        </div>
                       </div>
+                      {nim && (
+                        <Badge variant="outline" className="text-[10px]">
+                          NIM: {nim}
+                        </Badge>
+                      )}
                     </div>
-                    {(s.student?.registration?.nim || s.registration?.nim) && (
-                      <Badge variant="outline" className="text-[10px]">
-                        NIM: {s.student?.registration?.nim || s.registration?.nim}
-                      </Badge>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </Card>

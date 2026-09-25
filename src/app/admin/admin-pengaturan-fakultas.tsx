@@ -157,7 +157,7 @@ function FacultyDetails({ faculty, children }: { faculty: Faculty; children: Rea
                 {students.map((s) => (
                   <div key={s.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-muted/30 transition-colors gap-2">
                     <div>
-                      <div className="text-sm font-semibold text-primary">{s.name || "—"}</div>
+                      <div className="text-sm font-semibold text-primary">{(s as any).fullName || s.name || (s.email ? s.email.split("@")[0] : "—")}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">{s.email}</div>
                     </div>
                   </div>

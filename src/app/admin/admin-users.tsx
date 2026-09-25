@@ -42,9 +42,50 @@ interface User {
   id: string;
   email: string;
   name?: string;
+  fullName?: string;
+  namaLengkap?: string;
   role: string;
   recordStatus: string;
   createdAt: string;
+  lecturer?: { fullName?: string; name?: string; nip?: string };
+  lecturerProfile?: { fullName?: string; name?: string; nip?: string };
+  student?: { fullName?: string; name?: string; nim?: string };
+  studentProfile?: { fullName?: string; name?: string; nim?: string };
+  registration?: { fullName?: string; name?: string; namaLengkap?: string; nim?: string };
+  registrationData?: { fullName?: string; name?: string; namaLengkap?: string; nim?: string };
+  profile?: { fullName?: string; name?: string };
+  guestProfile?: { fullName?: string; name?: string };
+}
+
+function getUserDisplayName(u: User): string {
+  const name =
+    u.fullName ||
+    u.name ||
+    u.namaLengkap ||
+    u.lecturer?.fullName ||
+    u.lecturer?.name ||
+    u.lecturerProfile?.fullName ||
+    u.lecturerProfile?.name ||
+    u.student?.fullName ||
+    u.student?.name ||
+    u.studentProfile?.fullName ||
+    u.studentProfile?.name ||
+    u.registration?.fullName ||
+    u.registration?.namaLengkap ||
+    u.registration?.name ||
+    u.registrationData?.fullName ||
+    u.registrationData?.namaLengkap ||
+    u.registrationData?.name ||
+    u.profile?.fullName ||
+    u.profile?.name ||
+    u.guestProfile?.fullName ||
+    u.guestProfile?.name;
+
+  if (name && name.trim()) return name.trim();
+  if (u.email) {
+    return u.email.split("@")[0];
+  }
+  return "—";
 }
 
 const ROLE_COLORS: Record<string, string> = {
@@ -443,7 +484,7 @@ export default function AdminUsersPage() {
                     {users.map((u) => (
                       <tr key={u.id} className="hover:bg-muted/10 transition-colors">
                         <td className="px-4 py-3">
-                          <div className="font-medium text-gray-900">{u.name || "—"}</div>
+                          <div className="font-medium text-gray-900">{getUserDisplayName(u)}</div>
                           <div className="text-xs text-muted-foreground">{u.email}</div>
                         </td>
                         <td className="px-4 py-3">

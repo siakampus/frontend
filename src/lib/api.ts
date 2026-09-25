@@ -921,15 +921,18 @@ export const adminLecturesApi = {
     }),
 
   /** POST /admin/lectures/:id/lecturers — Assign lecturer to lecture */
-  assignLecturer: (id: string, lecturerId: string) =>
-    apiFetch(`/admin/lectures/${id}/lecturers`, {
+  assignLecturer: (id: string, lecturerId: number | string) => {
+    const num = Number(lecturerId);
+    const resolvedId = !isNaN(num) && lecturerId !== "" && lecturerId !== null ? num : lecturerId;
+    return apiFetch(`/admin/lectures/${id}/lecturers`, {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ lecturerId }),
-    }),
+      body: JSON.stringify({ lecturerId: resolvedId }),
+    });
+  },
 
   /** DELETE /admin/lectures/:id/lecturers/:lecturerId — Remove lecturer from lecture */
-  removeLecturer: (id: string, lecturerId: string) =>
+  removeLecturer: (id: string, lecturerId: number | string) =>
     apiFetch(`/admin/lectures/${id}/lecturers/${lecturerId}`, {
       method: "DELETE",
       headers: authHeaders(),
@@ -942,15 +945,18 @@ export const adminLecturesApi = {
     }),
 
   /** POST /admin/lectures/:id/students — Add student to lecture */
-  addStudent: (id: string, studentId: string) =>
-    apiFetch(`/admin/lectures/${id}/students`, {
+  addStudent: (id: string, studentId: number | string) => {
+    const num = Number(studentId);
+    const resolvedId = !isNaN(num) && studentId !== "" && studentId !== null ? num : studentId;
+    return apiFetch(`/admin/lectures/${id}/students`, {
       method: "POST",
       headers: authHeaders(),
-      body: JSON.stringify({ studentId }),
-    }),
+      body: JSON.stringify({ studentId: resolvedId }),
+    });
+  },
 
   /** DELETE /admin/lectures/:id/students/:studentId — Remove student from lecture */
-  removeStudent: (id: string, studentId: string) =>
+  removeStudent: (id: string, studentId: number | string) =>
     apiFetch(`/admin/lectures/${id}/students/${studentId}`, {
       method: "DELETE",
       headers: authHeaders(),

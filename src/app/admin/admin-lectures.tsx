@@ -103,10 +103,13 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
   const handleAssignLecturer = async (lecturer: any) => {
     setAssigning(true);
     try {
-      const lecturerId = parseInt(String(lecturer.id), 10);
-      const res = await adminLecturesApi.assignLecturer(lectureId, String(lecturerId));
+      const rawId = lecturer.id ?? lecturer.lecturerId ?? lecturer.userId;
+      const numId = parseInt(String(rawId), 10);
+      const lecturerId = !isNaN(numId) ? numId : rawId;
+      const res = await adminLecturesApi.assignLecturer(lectureId, lecturerId);
       if (res.ok) {
-        notifyDetail(`Dosen "${lecturer.fullName || lecturer.name}" berhasil ditambahkan.`);
+        const lecturerName = lecturer.fullName || lecturer.name || "Dosen";
+        notifyDetail(`Dosen "${lecturerName}" berhasil ditambahkan.`);
         setLecturerSearch("");
         setLecturerResults([]);
         setShowAddLecturer(false);
@@ -125,12 +128,12 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
   };
 
   const handleRemoveLecturer = async (lecturerEntry: any) => {
-    const lecturerId = lecturerEntry.lecturerId || lecturerEntry.lecturer?.id || lecturerEntry.id;
+    const rawId = lecturerEntry.lecturerId ?? lecturerEntry.lecturer?.id ?? lecturerEntry.id;
     const lecturerName = lecturerEntry.lecturer?.fullName || lecturerEntry.lecturer?.name || lecturerEntry.fullName || lecturerEntry.name || "Dosen";
     if (!confirm(`Hapus dosen "${lecturerName}" dari kelas ini?`)) return;
 
     try {
-      const res = await adminLecturesApi.removeLecturer(lectureId, String(lecturerId));
+      const res = await adminLecturesApi.removeLecturer(lectureId, rawId);
       if (res.ok) {
         notifyDetail(`Dosen "${lecturerName}" berhasil dihapus dari kelas.`);
         fetchData();

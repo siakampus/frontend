@@ -30,7 +30,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; onLecturerChanged?: () => void }) {
+function LectureDetails({
+  lectureId,
+  onLectureChanged,
+}: {
+  lectureId: string;
+  onLectureChanged?: (lectureId: string, counts: { lecturers: number; students: number }) => void;
+}) {
   const [lecturers, setLecturers] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,25 +47,47 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
   const [lecturerResults, setLecturerResults] = useState<any[]>([]);
   const [searchingLecturers, setSearchingLecturers] = useState(false);
   const [assigning, setAssigning] = useState(false);
+
+  // Add student state
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [studentSearch, setStudentSearch] = useState("");
+  const [studentResults, setStudentResults] = useState<any[]>([]);
+  const [searchingStudents, setSearchingStudents] = useState(false);
+  const [assigningStudent, setAssigningStudent] = useState(false);
+
   const [detailMsg, setDetailMsg] = useState("");
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [lecRes, stuRes] = await Promise.all([
+      const [lecRes, stuRes, stuClassRes] = await Promise.all([
         adminLecturesApi.listLecturers(lectureId),
-        adminUsersApi.list({ role: "student", classId: lectureId }),
+        adminLecturesApi.listStudents(lectureId).catch(() => null),
+        adminUsersApi.list({ role: "student", classId: lectureId }).catch(() => null),
       ]);
 
-      if (lecRes.ok && lecRes.data) {
+      let lecturerList: any[] = [];
+      if (lecRes && lecRes.ok && lecRes.data) {
         const lData = lecRes.data as any;
-        setLecturers(lData.data || lData.lecturers || []);
+        lecturerList = lData.data || lData.lecturers || (Array.isArray(lData) ? lData : []);
+        setLecturers(lecturerList);
       }
 
-      if (stuRes.ok && stuRes.data) {
+      let studentList: any[] = [];
+      if (stuRes && stuRes.ok && stuRes.data) {
         const sData = stuRes.data as any;
-        setStudents(sData.data || sData.users || []);
+        studentList = sData.data || sData.students || (Array.isArray(sData) ? sData : []);
       }
+      if (studentList.length === 0 && stuClassRes && stuClassRes.ok && stuClassRes.data) {
+        const sData = stuClassRes.data as any;
+        studentList = sData.data || sData.users || (Array.isArray(sData) ? sData : []);
+      }
+      setStudents(studentList);
+
+      onLectureChanged?.(lectureId, {
+        lecturers: lecturerList.length,
+        students: studentList.length,
+      });
     } catch (err) {
       console.error(err);
     } finally {
@@ -88,10 +116,21 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
       const res = await adminLecturersApi.list({ search: query.trim(), take: 10 });
       if (res.ok && res.data) {
         const body = res.data as any;
-        const list = body.data || body.lecturers || [];
+        const list = body.data || body.lecturers || body.users || (Array.isArray(body) ? body : []);
         // Filter out lecturers already assigned
-        const assignedIds = new Set(lecturers.map((l: any) => String(l.lecturerId || l.lecturer?.id || l.id)));
-        setLecturerResults(list.filter((l: any) => !assignedIds.has(String(l.id))));
+        const assignedIds = new Set(
+          lecturers.map((l: any) =>
+            String(l.lecturerId ?? l.lecturer?.id ?? l.id ?? l.lecturer?.userId ?? l.userId)
+          )
+        );
+        setLecturerResults(
+          list.filter((l: any) => {
+            const id1 = String(l.id);
+            const id2 = String(l.lecturerId);
+            const id3 = String(l.userId);
+            return !assignedIds.has(id1) && !assignedIds.has(id2) && !assignedIds.has(id3);
+          })
+        );
       }
     } catch (err) {
       console.error(err);
@@ -108,13 +147,17 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
       const lecturerId = !isNaN(numId) ? numId : rawId;
       const res = await adminLecturesApi.assignLecturer(lectureId, lecturerId);
       if (res.ok) {
-        const lecturerName = lecturer.fullName || lecturer.name || "Dosen";
+        const lecturerName =
+          lecturer.fullName ||
+          lecturer.name ||
+          lecturer.user?.fullName ||
+          lecturer.user?.name ||
+          "Dosen";
         notifyDetail(`Dosen "${lecturerName}" berhasil ditambahkan.`);
         setLecturerSearch("");
         setLecturerResults([]);
         setShowAddLecturer(false);
         fetchData();
-        onLecturerChanged?.();
       } else {
         const errData = res.data as any;
         alert(errData?.message || "Gagal menambahkan dosen.");
@@ -129,7 +172,12 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
 
   const handleRemoveLecturer = async (lecturerEntry: any) => {
     const rawId = lecturerEntry.lecturerId ?? lecturerEntry.lecturer?.id ?? lecturerEntry.id;
-    const lecturerName = lecturerEntry.lecturer?.fullName || lecturerEntry.lecturer?.name || lecturerEntry.fullName || lecturerEntry.name || "Dosen";
+    const lecturerName =
+      lecturerEntry.lecturer?.fullName ||
+      lecturerEntry.lecturer?.name ||
+      lecturerEntry.fullName ||
+      lecturerEntry.name ||
+      "Dosen";
     if (!confirm(`Hapus dosen "${lecturerName}" dari kelas ini?`)) return;
 
     try {
@@ -137,9 +185,97 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
       if (res.ok) {
         notifyDetail(`Dosen "${lecturerName}" berhasil dihapus dari kelas.`);
         fetchData();
-        onLecturerChanged?.();
       } else {
         alert("Gagal menghapus dosen dari kelas.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan.");
+    }
+  };
+
+  // Search students from the system
+  const handleSearchStudents = async (query: string) => {
+    setStudentSearch(query);
+    if (query.trim().length < 2) {
+      setStudentResults([]);
+      return;
+    }
+    setSearchingStudents(true);
+    try {
+      const res = await adminUsersApi.list({ role: "student", search: query.trim(), take: 10 });
+      if (res.ok && res.data) {
+        const body = res.data as any;
+        const list = body.data || body.users || (Array.isArray(body) ? body : []);
+        const assignedIds = new Set(
+          students.map((s: any) =>
+            String(s.studentId ?? s.student?.id ?? s.id ?? s.student?.userId ?? s.userId)
+          )
+        );
+        setStudentResults(
+          list.filter((s: any) => {
+            const id1 = String(s.id);
+            const id2 = String(s.studentId);
+            const id3 = String(s.userId);
+            return !assignedIds.has(id1) && !assignedIds.has(id2) && !assignedIds.has(id3);
+          })
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSearchingStudents(false);
+    }
+  };
+
+  const handleAddStudent = async (student: any) => {
+    setAssigningStudent(true);
+    try {
+      const rawId = student.id ?? student.studentId ?? student.userId;
+      const numId = parseInt(String(rawId), 10);
+      const studentId = !isNaN(numId) ? numId : rawId;
+      const res = await adminLecturesApi.addStudent(lectureId, studentId);
+      if (res.ok) {
+        const studentName =
+          student.fullName ||
+          student.name ||
+          student.user?.fullName ||
+          student.user?.name ||
+          "Mahasiswa";
+        notifyDetail(`Mahasiswa "${studentName}" berhasil ditambahkan.`);
+        setStudentSearch("");
+        setStudentResults([]);
+        setShowAddStudent(false);
+        fetchData();
+      } else {
+        const errData = res.data as any;
+        alert(errData?.message || "Gagal menambahkan mahasiswa.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat menambahkan mahasiswa.");
+    } finally {
+      setAssigningStudent(false);
+    }
+  };
+
+  const handleRemoveStudent = async (studentEntry: any) => {
+    const rawId = studentEntry.studentId ?? studentEntry.student?.id ?? studentEntry.id;
+    const studentName =
+      studentEntry.student?.fullName ||
+      studentEntry.student?.name ||
+      studentEntry.fullName ||
+      studentEntry.name ||
+      "Mahasiswa";
+    if (!confirm(`Hapus mahasiswa "${studentName}" dari kelas ini?`)) return;
+
+    try {
+      const res = await adminLecturesApi.removeStudent(lectureId, rawId);
+      if (res.ok) {
+        notifyDetail(`Mahasiswa "${studentName}" berhasil dihapus dari kelas.`);
+        fetchData();
+      } else {
+        alert("Gagal menghapus mahasiswa dari kelas.");
       }
     } catch (err) {
       console.error(err);
@@ -157,10 +293,10 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
       <Tabs defaultValue="dosen" className="w-full">
         <TabsList className="mb-4 bg-background border shadow-sm">
           <TabsTrigger value="dosen" className="gap-2 text-xs">
-            <GraduationCap className="h-3.5 w-3.5" /> Dosen
+            <GraduationCap className="h-3.5 w-3.5" /> Dosen ({lecturers.length})
           </TabsTrigger>
           <TabsTrigger value="mahasiswa" className="gap-2 text-xs">
-            <Users className="h-3.5 w-3.5" /> Mahasiswa
+            <Users className="h-3.5 w-3.5" /> Mahasiswa ({students.length})
           </TabsTrigger>
         </TabsList>
 
@@ -336,6 +472,94 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
 
         <TabsContent value="mahasiswa" className="mt-0 outline-none">
           <Card className="border shadow-sm bg-background">
+            {/* Header with add button */}
+            <div className="p-3 border-b flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
+                {students.length} mahasiswa terdaftar
+              </span>
+              <Button
+                size="sm"
+                variant={showAddStudent ? "outline" : "default"}
+                className="h-7 text-xs gap-1.5"
+                onClick={() => {
+                  setShowAddStudent(!showAddStudent);
+                  setStudentSearch("");
+                  setStudentResults([]);
+                }}
+              >
+                {showAddStudent ? (
+                  <><X className="h-3 w-3" /> Tutup</>
+                ) : (
+                  <><UserPlus className="h-3 w-3" /> Tambah Mahasiswa</>
+                )}
+              </Button>
+            </div>
+
+            {/* Add student search panel */}
+            {showAddStudent && (
+              <div className="p-3 border-b bg-muted/5">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Cari mahasiswa berdasarkan nama atau email..."
+                    className="pl-8 h-8 text-xs"
+                    value={studentSearch}
+                    onChange={(e) => handleSearchStudents(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                {searchingStudents && (
+                  <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin" /> Mencari...
+                  </div>
+                )}
+                {!searchingStudents && studentSearch.trim().length >= 2 && studentResults.length === 0 && (
+                  <div className="mt-2 text-xs text-muted-foreground italic">
+                    Tidak ada mahasiswa ditemukan.
+                  </div>
+                )}
+                {studentResults.length > 0 && (
+                  <div className="mt-2 border rounded-md divide-y bg-background max-h-[200px] overflow-y-auto">
+                    {studentResults.map((sr: any) => {
+                      const name = sr.fullName || sr.name || sr.user?.fullName || sr.user?.name || "—";
+                      const email = sr.email || sr.user?.email || "";
+                      const nim = sr.registration?.nim || sr.nim || "";
+
+                      return (
+                        <div
+                          key={sr.id || sr.studentId}
+                          className="p-2.5 flex items-center justify-between hover:bg-muted/20 transition-colors"
+                        >
+                          <div>
+                            <div className="text-xs font-semibold text-gray-900">
+                              {name}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-1.5">
+                              {email && <span>{email}</span>}
+                              {nim && <span>• NIM: {nim}</span>}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="h-6 text-[10px] gap-1 px-2"
+                            disabled={assigningStudent}
+                            onClick={() => handleAddStudent(sr)}
+                          >
+                            {assigningStudent ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <><Plus className="h-3 w-3" /> Tambah</>
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Existing students list */}
             {loading ? (
               <div className="p-8 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" /> Memuat data mahasiswa...
@@ -381,11 +605,20 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
                           {studentEmail || "—"}
                         </div>
                       </div>
-                      {nim && (
-                        <Badge variant="outline" className="text-[10px]">
-                          NIM: {nim}
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2 self-end sm:self-auto">
+                        {nim && (
+                          <Badge variant="outline" className="text-[10px]">
+                            NIM: {nim}
+                          </Badge>
+                        )}
+                        <button
+                          title="Hapus mahasiswa dari kelas"
+                          onClick={() => handleRemoveStudent(s)}
+                          className="p-1.5 rounded hover:bg-red-50 text-red-500 transition-colors"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -401,14 +634,46 @@ function LectureDetails({ lectureId, onLecturerChanged }: { lectureId: string; o
 interface Lecture {
   id: string;
   name: string;
-  semester?: string;
+  semester?: string | number;
+  academicYear?: string;
+  academicTerm?: string;
+  term?: string;
   recordStatus?: string;
   createdAt?: string;
-  _count?: { students?: number; lecturers?: number };
+  students?: any[];
+  lecturers?: any[];
+  _count?: {
+    students?: number;
+    lecturers?: number;
+    lectureStudents?: number;
+    lectureLecturers?: number;
+    classStudents?: number;
+    classLecturers?: number;
+  };
+}
+
+function getSemesterDisplay(l: Lecture): string {
+  const sem =
+    l.semester ??
+    l.academicTerm ??
+    l.term ??
+    l.academicYear ??
+    (l as any).period ??
+    (l as any).academicPeriod;
+
+  if (sem !== undefined && sem !== null && String(sem).trim() !== "") {
+    const s = String(sem).trim();
+    if (/^\d+$/.test(s)) {
+      return `Semester ${s}`;
+    }
+    return s;
+  }
+  return "—";
 }
 
 export default function AdminLecturesPage() {
   const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [countsMap, setCountsMap] = useState<Record<string, { lecturers?: number; students?: number }>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [semester, setSemester] = useState("");
@@ -436,6 +701,13 @@ export default function AdminLecturesPage() {
     });
   };
 
+  const updateLectureCounts = (lectureId: string, counts: { lecturers: number; students: number }) => {
+    setCountsMap((prev) => ({
+      ...prev,
+      [lectureId]: counts,
+    }));
+  };
+
   const fetchLectures = async () => {
     setLoading(true);
     const res = await adminLecturesApi.list({
@@ -446,8 +718,46 @@ export default function AdminLecturesPage() {
     });
     if (res.status === 401) { navigate("/login"); return; }
     if (res.ok && res.data) {
-      const body = res.data as { data?: Lecture[] };
-      setLectures(body.data || (res.data as unknown as Lecture[]) || []);
+      const body = res.data as { data?: Lecture[]; lectures?: Lecture[] };
+      const list = body.data || body.lectures || (Array.isArray(body) ? body : []);
+      setLectures(list);
+
+      // Fetch accurate counts in background for each lecture
+      list.forEach(async (lec: Lecture) => {
+        try {
+          const lecId = String(lec.id);
+          const [lecRes, stuRes, stuClassRes] = await Promise.all([
+            adminLecturesApi.listLecturers(lecId).catch(() => null),
+            adminLecturesApi.listStudents(lecId).catch(() => null),
+            adminUsersApi.list({ role: "student", classId: lecId }).catch(() => null),
+          ]);
+
+          let lecturerCount = 0;
+          if (lecRes && lecRes.ok && lecRes.data) {
+            const d = lecRes.data as any;
+            const arr = d.data || d.lecturers || (Array.isArray(d) ? d : []);
+            lecturerCount = arr.length;
+          }
+
+          let studentCount = 0;
+          if (stuRes && stuRes.ok && stuRes.data) {
+            const d = stuRes.data as any;
+            const arr = d.data || d.students || (Array.isArray(d) ? d : []);
+            studentCount = arr.length;
+          } else if (stuClassRes && stuClassRes.ok && stuClassRes.data) {
+            const d = stuClassRes.data as any;
+            const arr = d.data || d.users || (Array.isArray(d) ? d : []);
+            studentCount = arr.length;
+          }
+
+          setCountsMap((prev) => ({
+            ...prev,
+            [lecId]: { lecturers: lecturerCount, students: studentCount },
+          }));
+        } catch (e) {
+          console.error(e);
+        }
+      });
     }
     setLoading(false);
   };
@@ -518,7 +828,7 @@ export default function AdminLecturesPage() {
               />
             </div>
             <Input
-              placeholder="Semester (mis: 2024/2025)"
+              placeholder="Semester (mis: 1 atau 2024/2025)"
               className="w-52"
               value={semester}
               onChange={(e) => setSemester(e.target.value)}
@@ -581,6 +891,25 @@ export default function AdminLecturesPage() {
                   <tbody className="divide-y">
                     {lectures.map((l) => {
                       const isExpanded = expandedLectures.has(l.id);
+                      const lecId = String(l.id);
+                      const lecturerCount =
+                        l._count?.lecturers ??
+                        l._count?.lectureLecturers ??
+                        l._count?.classLecturers ??
+                        (Array.isArray(l.lecturers) ? l.lecturers.length : undefined) ??
+                        (l as any).lecturerCount ??
+                        (l as any).lecturersCount ??
+                        countsMap[lecId]?.lecturers;
+
+                      const studentCount =
+                        l._count?.students ??
+                        l._count?.lectureStudents ??
+                        l._count?.classStudents ??
+                        (Array.isArray(l.students) ? l.students.length : undefined) ??
+                        (l as any).studentCount ??
+                        (l as any).studentsCount ??
+                        countsMap[lecId]?.students;
+
                       return (
                         <React.Fragment key={l.id}>
                           <tr 
@@ -591,15 +920,15 @@ export default function AdminLecturesPage() {
                               {isExpanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                               {l.name}
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground text-xs">{l.semester || "—"}</td>
+                            <td className="px-4 py-3 text-muted-foreground text-xs">{getSemesterDisplay(l)}</td>
                             <td className="px-4 py-3">
                               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Users className="h-3.5 w-3.5" />
-                                {l._count?.students ?? "—"}
+                                {studentCount !== undefined ? studentCount : "—"}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-xs text-muted-foreground">
-                              {l._count?.lecturers ?? "—"}
+                              {lecturerCount !== undefined ? lecturerCount : "—"}
                             </td>
                             <td className="px-4 py-3">
                               <Badge variant={l.recordStatus === "active" ? "default" : "outline"} className="text-xs">
@@ -621,7 +950,10 @@ export default function AdminLecturesPage() {
                           {isExpanded && (
                             <tr>
                               <td colSpan={6} className="p-0 border-b">
-                                <LectureDetails lectureId={l.id} onLecturerChanged={fetchLectures} />
+                                <LectureDetails
+                                  lectureId={l.id}
+                                  onLectureChanged={updateLectureCounts}
+                                />
                               </td>
                             </tr>
                           )}
@@ -711,4 +1043,3 @@ export default function AdminLecturesPage() {
     </div>
   );
 }
-

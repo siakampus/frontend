@@ -25,6 +25,7 @@ import {
   GraduationCap,
   Plus,
   UserPlus,
+  Pencil,
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -692,6 +693,53 @@ export default function AdminLecturesPage() {
     description: "",
   });
 
+  // Edit dialog state
+  const [editLecture, setEditLecture] = useState<Lecture | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    semester: "",
+  });
+
+  const openEditModal = (l: Lecture) => {
+    setEditLecture(l);
+    setEditForm({
+      name: l.name || "",
+      semester: l.semester !== undefined && l.semester !== null ? String(l.semester) : "",
+    });
+  };
+
+  const handleEdit = async () => {
+    if (!editLecture) return;
+    if (!editForm.name.trim()) {
+      alert("Nama kelas wajib diisi.");
+      return;
+    }
+
+    setEditing(true);
+    try {
+      const payload: Record<string, unknown> = {
+        name: editForm.name.trim(),
+        semester: editForm.semester ? parseInt(editForm.semester, 10) : null,
+      };
+
+      const res = await adminLecturesApi.update(String(editLecture.id), payload);
+      if (res.ok) {
+        notify("Data kelas berhasil diperbarui.");
+        setEditLecture(null);
+        fetchLectures();
+      } else {
+        const errData = res.data as any;
+        alert(errData?.message || "Gagal memperbarui kelas.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat memperbarui kelas.");
+    } finally {
+      setEditing(false);
+    }
+  };
+
   const toggleLecture = (id: string) => {
     setExpandedLectures((prev) => {
       const next = new Set(prev);
@@ -827,12 +875,18 @@ export default function AdminLecturesPage() {
                 onKeyDown={(e) => e.key === "Enter" && fetchLectures()}
               />
             </div>
-            <Input
-              placeholder="Semester (mis: 1 atau 2024/2025)"
-              className="w-52"
+            <select
+              className="border rounded-md px-3 py-2 text-sm bg-background text-foreground"
               value={semester}
               onChange={(e) => setSemester(e.target.value)}
-            />
+            >
+              <option value="">Semua Semester</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                <option key={s} value={String(s)}>
+                  Semester {s}
+                </option>
+              ))}
+            </select>
             <select
               className="border rounded-md px-3 py-2 text-sm bg-white"
               value={statusFilter}
@@ -936,7 +990,14 @@ export default function AdminLecturesPage() {
                               </Badge>
                             </td>
                             <td className="px-4 py-3">
-                              <div className="flex items-center justify-center">
+                              <div className="flex items-center justify-center gap-1">
+                                <button
+                                  title="Edit Kelas"
+                                  onClick={(e) => { e.stopPropagation(); openEditModal(l); }}
+                                  className="p-1.5 rounded hover:bg-blue-50 text-blue-600 transition-colors"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
                                 <button
                                   title="Hapus Kelas"
                                   onClick={(e) => { e.stopPropagation(); handleDelete(l.id, l.name); }}
@@ -994,14 +1055,21 @@ export default function AdminLecturesPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="create-semester">Semester</Label>
-                <Input
+                <select
                   id="create-semester"
-                  placeholder="Contoh: 1"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={createForm.semester}
                   onChange={(e) =>
                     setCreateForm((prev) => ({ ...prev, semester: e.target.value }))
                   }
-                />
+                >
+                  <option value="">Pilih Semester (Opsional)</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                    <option key={s} value={String(s)}>
+                      Semester {s}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-2">
@@ -1036,6 +1104,71 @@ export default function AdminLecturesPage() {
               >
                 {creating && <Loader2 className="h-4 w-4 animate-spin" />}
                 {creating ? "Menyimpan..." : "Simpan"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog Edit Kelas */}
+        <Dialog open={!!editLecture} onOpenChange={(open) => !open && setEditLecture(null)}>
+          <DialogContent className="sm:max-w-[480px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-primary">
+                <Pencil className="h-5 w-5" /> Edit Kelas
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">
+                  Nama Kelas <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="edit-name"
+                  placeholder="Contoh: TI-2026-B"
+                  value={editForm.name}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                  onKeyDown={(e) => e.key === "Enter" && handleEdit()}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-semester">Semester</Label>
+                <select
+                  id="edit-semester"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={editForm.semester}
+                  onChange={(e) =>
+                    setEditForm((prev) => ({ ...prev, semester: e.target.value }))
+                  }
+                >
+                  <option value="">Pilih Semester (Opsional)</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                    <option key={s} value={String(s)}>
+                      Semester {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => setEditLecture(null)}
+                disabled={editing}
+              >
+                Batal
+              </Button>
+              <Button
+                onClick={handleEdit}
+                disabled={editing || !editForm.name.trim()}
+                className="flex items-center gap-2"
+              >
+                {editing && <Loader2 className="h-4 w-4 animate-spin" />}
+                {editing ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
           </DialogContent>

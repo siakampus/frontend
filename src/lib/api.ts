@@ -1280,6 +1280,51 @@ export const adminPaymentsApi = {
       method: "PATCH",
       headers: authHeaders(),
     }),
+
+  /** GET /admin/payments/eligible-bills — List unpaid/pending bills for manual recording */
+  getEligibleBills: () =>
+    apiFetch<{ success: boolean; data: any[] }>("/admin/payments/eligible-bills", {
+      headers: authHeaders(),
+    }),
+
+  /** GET /admin/payments/students-search — Search students by name, email, or NIM */
+  searchStudents: (query?: string) => {
+    const q = new URLSearchParams();
+    if (query) q.set("q", query);
+    return apiFetch<{ success: boolean; data: any[] }>(`/admin/payments/students-search?${q}`, {
+      headers: authHeaders(),
+    });
+  },
+
+  /** POST /admin/payments/manual — Record manual offline payment */
+  recordManualPayment: (payload: {
+    billId: number;
+    amount?: number;
+    paymentMethod: string;
+    paymentDate?: string;
+    referenceNote?: string;
+    paymentProofFileId?: number | null;
+  }) =>
+    apiFetch<{ success: boolean; message: string; payment: any; billId: number; billName: string }>(
+      "/admin/payments/manual",
+      {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      }
+    ),
+
+  /** POST /admin/bills/heregistrasi — Create new Heregistrasi UKT bill for a student */
+  createHeregistrasiBill: (payload: {
+    userId: number;
+    termName?: string;
+    amount?: number;
+  }) =>
+    apiFetch<{ success: boolean; message: string; bill: any }>("/admin/bills/heregistrasi", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
 };
 
 // ─────────────────────────────────────────────

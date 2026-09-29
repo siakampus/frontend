@@ -17,9 +17,11 @@ import {
   X,
   ExternalLink,
   RotateCcw,
+  PlusCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BuktiRegistrasiModal from "@/components/payment/BuktiRegistrasiModal";
+import CatatPembayaranModal from "@/components/payment/CatatPembayaranModal";
 
 interface Payment {
   id: string | number;
@@ -58,6 +60,9 @@ export default function AdminPaymentsPage() {
   // Bukti Registrasi Modal State
   const [receiptBillId, setReceiptBillId] = useState<number | null>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+
+  // Catat Pembayaran Modal State
+  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -147,7 +152,20 @@ export default function AdminPaymentsPage() {
 
   const notify = (msg: string) => {
     setActionMsg(msg);
-    setTimeout(() => setActionMsg(""), 3500);
+    setTimeout(() => setActionMsg(""), 4500);
+  };
+
+  const handlePaymentSuccess = (paymentInfo: {
+    billId: number;
+    billName: string;
+    isUkt: boolean;
+  }) => {
+    notify(`Pembayaran untuk "${paymentInfo.billName}" berhasil dicatat & diverifikasi.`);
+    fetchPayments();
+    if (paymentInfo.isUkt && paymentInfo.billId) {
+      setReceiptBillId(paymentInfo.billId);
+      setIsReceiptOpen(true);
+    }
   };
 
   const handleConfirm = async (id: string | number) => {
@@ -243,6 +261,12 @@ export default function AdminPaymentsPage() {
             className="h-10 px-4 flex items-center gap-2 cursor-pointer font-medium"
           >
             <RefreshCw className="h-4 w-4" /> Muat Ulang
+          </Button>
+          <Button
+            onClick={() => setIsAddPaymentOpen(true)}
+            className="h-10 px-4 bg-primary hover:bg-primary-dark text-white font-medium flex items-center gap-2 cursor-pointer shadow-xs"
+          >
+            <PlusCircle className="h-4 w-4" /> Catat Pembayaran
           </Button>
         </CardContent>
       </Card>
@@ -579,6 +603,13 @@ export default function AdminPaymentsPage() {
         isOpen={isReceiptOpen}
         onClose={() => setIsReceiptOpen(false)}
         billId={receiptBillId}
+      />
+
+      {/* Catat Pembayaran & Terbitkan Tagihan Modal */}
+      <CatatPembayaranModal
+        isOpen={isAddPaymentOpen}
+        onClose={() => setIsAddPaymentOpen(false)}
+        onSuccess={handlePaymentSuccess}
       />
     </div>
   );

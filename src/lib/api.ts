@@ -439,6 +439,144 @@ export const paymentApi = {
 };
 
 // ─────────────────────────────────────────────
+// Virtual Account Payment Gateway (UGM Simaster Style)
+// ─────────────────────────────────────────────
+
+export interface BankInstructionItem {
+  channel: 'ATM' | 'MBANKING' | 'IBANKING' | 'TELLER';
+  title: string;
+  steps: string[];
+}
+
+export interface BankConfig {
+  code: string;
+  name: string;
+  shortName: string;
+  prefix: string;
+  billerCode?: string;
+  color: string;
+  badgeBg: string;
+  instructions: BankInstructionItem[];
+}
+
+export interface VirtualAccountItem {
+  bankCode: string;
+  bankName: string;
+  prefix: string;
+  nim: string;
+  vaNumber: string;
+  studentName: string;
+  majorName: string;
+  facultyName: string;
+  billId: number;
+  billName: string;
+  amount: number;
+  academicTermName: string;
+  status: string;
+  expiryDate: string;
+  instructions: BankInstructionItem[];
+}
+
+export interface MyBillResponse {
+  studentIdentity: {
+    fullName: string;
+    nim: string;
+    majorName: string;
+    facultyName: string;
+    isStudent: boolean;
+  };
+  bill: {
+    id: number;
+    name: string;
+    status: string;
+    amount: number;
+    amountFormatted: string;
+    isVerified: boolean;
+    academicTermName: string;
+    deadline: string;
+  };
+  virtualAccounts: VirtualAccountItem[];
+}
+
+export interface BuktiRegistrasiResponse {
+  nomorBukti: string;
+  tanggalCetak: string;
+  identitasMahasiswa: {
+    nama: string;
+    nim: string;
+    fakultas: string;
+    programStudi: string;
+    jenjang: string;
+    angkatan: string;
+    statusAkademik: string;
+  };
+  rincianPembayaran: {
+    billId: number;
+    posTagihan: string;
+    semester: string;
+    tahunAkademik: string;
+    bank: string;
+    nomorVirtualAccount: string;
+    nomorTransaksi: string;
+    tanggalBayar: string;
+    jumlahBayar: number;
+    jumlahBayarFormatted: string;
+    terbilang: string;
+    status: string;
+  };
+  hakAkademik: string;
+  verifikasi: {
+    kodeKeamanan: string;
+    qrData: string;
+    tandaTangan: string;
+  };
+}
+
+export const paymentGatewayApi = {
+  /** GET /api/payment/banks — List all partner banks */
+  getBanks: () =>
+    apiFetch<{ data: BankConfig[] }>("/api/payment/banks", {
+      headers: authHeaders(),
+    }),
+
+  /** GET /api/payment/my-bill — Get student's active bill and VAs based on NIM */
+  getMyBill: (billId?: number | string) => {
+    const q = billId ? `?billId=${billId}` : "";
+    return apiFetch<{ data: MyBillResponse }>(`/api/payment/my-bill${q}`, {
+      headers: authHeaders(),
+    });
+  },
+
+  /** POST /api/payment/va/inquiry — Simulate bank inquiry by VA number */
+  inquiryVa: (vaNumber: string) =>
+    apiFetch("/api/payment/va/inquiry", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ vaNumber }),
+    }),
+
+  /** POST /api/payment/va/pay — Process payment via Virtual Account */
+  payVa: (payload: { vaNumber: string; bankCode?: string; billId?: number; amount?: number }) =>
+    apiFetch("/api/payment/va/pay", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(payload),
+    }),
+
+  /** GET /api/payment/receipt/:billId — Get official Bukti Registrasi / Pembayaran */
+  getReceipt: (billId: number | string) =>
+    apiFetch<{ data: BuktiRegistrasiResponse }>(`/api/payment/receipt/${billId}`, {
+      headers: authHeaders(),
+    }),
+
+  /** GET /api/payment/history — Get student's full registration & payment history */
+  getHistory: () =>
+    apiFetch("/api/payment/history", {
+      headers: authHeaders(),
+    }),
+};
+
+// ─────────────────────────────────────────────
 // Courses
 // ─────────────────────────────────────────────
 

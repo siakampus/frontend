@@ -1,159 +1,210 @@
+import React, { useState, useEffect } from "react";
 import {
   CreditCard,
   Banknote,
-} from "lucide-react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+  Copy,
+  CheckCircle,
+  Building2,
+  Loader2,
+  ChevronLeft,
+} from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import React, { useState } from "react"
-// --- PATH IMPORT APP LAYOUT YANG BENAR ---
-import { AppLayout } from "@/components/ui/app-layout" 
-
-// Mock data untuk instruksi pembayaran
-const paymentInstructions: { [key: string]: { name: string, instructions: string[] } } = {
-    'bca': { 
-        name: 'Bank BCA', 
-        instructions: [
-            "1. Masukkan Kartu ATM dan PIN Anda.",
-            "2. Pilih menu 'Transaksi Lainnya'.",
-            "3. Pilih menu 'Transfer' lalu 'Ke Rek BCA' atau 'Pembayaran' (tergantung ATM).",
-            "4. Masukkan Nomor Virtual Account (VA) yang Anda dapatkan.",
-            "5. Masukkan jumlah nominal tagihan (Rp 500.000).",
-            "6. Konfirmasi pembayaran dan simpan bukti transfer."
-        ]
-    },
-    'mandiri': { 
-        name: 'Bank Mandiri', 
-        instructions: [
-            "1. Pilih menu 'Bayar/Beli'.",
-            "2. Pilih 'Multi Payment'.",
-            "3. Masukkan Kode Perusahaan (Cth: UGN 88999).",
-            "4. Masukkan Nomor Virtual Account (VA) dan pilih 'Lanjut'.",
-            "5. Pastikan detail pembayaran sudah benar, lalu konfirmasi."
-        ]
-    },
-    'bri': { 
-        name: 'Bank BRI', 
-        instructions: [
-            "1. Pilih menu 'Transaksi Lain'.",
-            "2. Pilih 'Pembayaran' lalu 'BRIVA'.",
-            "3. Masukkan Nomor Virtual Account (VA).",
-            "4. Konfirmasi nama dan jumlah tagihan yang muncul di layar.",
-            "5. Selesaikan transaksi."
-        ]
-    },
-    'gopay': { 
-        name: 'GoPay (E-Wallet)', 
-        instructions: [
-            "1. Buka aplikasi Gojek dan pilih menu 'Bayar'.",
-            "2. Pilih 'Metode Pembayaran' dan masukkan Virtual Account UGN (atau kode bank terkait).",
-            "3. Konfirmasi jumlah tagihan sebesar Rp 500.000.",
-            "4. Masukkan PIN GoPay Anda."
-        ]
-    },
-};
-
-const banks = [
-    { value: 'bca', label: 'Bank BCA' },
-    { value: 'mandiri', label: 'Bank Mandiri' },
-    { value: 'bri', label: 'Bank BRI' },
-    { value: 'gopay', label: 'GoPay (E-Wallet)' },
-];
+} from "@/components/ui/select";
+import { AppLayout } from "@/components/ui/app-layout";
+import { paymentGatewayApi, type MyBillResponse, type VirtualAccountItem } from "@/lib/api";
+import { Link } from "react-router-dom";
 
 export default function PaymentInstructionsPage() {
-    const [selectedBankKey, setSelectedBankKey] = useState<string | null>('bca');
-    
-    const vaNumber = '700011234567890'; // VA yang sudah di-generate
-    const biayaPendaftaran = 500000;
-    const deadline = "20 Desember 2025, 23:59 WIB";
+  const [billData, setBillData] = useState<MyBillResponse | null>(null);
+  const [selectedBankCode, setSelectedBankCode] = useState<string>("MANDIRI");
+  const [selectedChannel, setSelectedChannel] = useState<"MBANKING" | "ATM" | "IBANKING" | "TELLER">("MBANKING");
+  const [isCopied, setIsCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-    const selectedInstructions = selectedBankKey ? paymentInstructions[selectedBankKey] : null;
+  useEffect(() => {
+    paymentGatewayApi
+      .getMyBill()
+      .then((res) => {
+        if (res.ok && res.data?.data) {
+          setBillData(res.data.data);
+        }
+      })
+      .catch((err) => console.error("Error loading bill:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
-    return (
-        // Menggunakan AppLayout untuk menyediakan Sidebar dan Header
-        <AppLayout
-            menuTemplate="admisi" // Menggunakan menu untuk admisi
-            title="Sarjana Reguler 2025" // Judul utama di Header
-            subtitle="Instruksi Pembayaran" // Subtitle di Header
-            backTo="/pendaftaran/billing" // Rute kembali ke halaman billing
-        >
-            {/* Konten Halaman (children) */}
-            <Card className="shadow-sm border rounded-lg max-w-4xl gap-2 mx-auto">
-                <CardHeader className="pb-2 border-b border-gray-200">
-                    <h1 className="text-xl font-bold flex items-center gap-2">
-                        <CreditCard className="h-5 w-5 text-primary"/> Petunjuk Pembayaran
-                    </h1>
-                    <p className="text-sm text-muted-foreground mt-1">
-                        Lakukan pembayaran biaya pendaftaran menggunakan Nomor Virtual Account (VA) yang sudah digenerate.
-                    </p>
-                </CardHeader>
-                <CardContent className="space-y-6 p-6">
-                    
-                    {/* Detail Tagihan Statis */}
-                    <div className="p-4 border rounded-lg bg-yellow-50 border-yellow-300 space-y-2">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm font-semibold text-gray-700">Nomor VA Anda</span>
-                            <span className="text-base font-mono font-bold text-primary">{vaNumber}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm font-semibold text-gray-700">Total Tagihan</span>
-                            <span className="text-lg font-bold text-red-600">Rp {biayaPendaftaran.toLocaleString('id-ID')}</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-2 border-t border-yellow-200">
-                            <span className="text-sm font-semibold text-gray-700">Batas Waktu Pembayaran</span>
-                            <Badge className="bg-yellow-600 text-white font-bold">{deadline}</Badge>
-                        </div>
+  const selectedVa: VirtualAccountItem | undefined =
+    billData?.virtualAccounts.find((va) => va.bankCode === selectedBankCode) ||
+    billData?.virtualAccounts[0];
+
+  const handleCopy = () => {
+    if (selectedVa?.vaNumber) {
+      navigator.clipboard.writeText(selectedVa.vaNumber);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
+  const channelInstructions = selectedVa?.instructions.find(
+    (inst) => inst.channel === selectedChannel
+  );
+
+  return (
+    <AppLayout
+      menuTemplate="admisi"
+      title="Sarjana Reguler 2025"
+      subtitle="Instruksi Pembayaran Virtual Account"
+      backTo="/pendaftaran/billing"
+    >
+      <Card className="shadow-sm border rounded-lg max-w-4xl gap-2 mx-auto">
+        <CardHeader className="pb-2 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold flex items-center gap-2 text-gray-900">
+              <CreditCard className="h-5 w-5 text-primary" /> Petunjuk Pembayaran Virtual Account
+            </h1>
+            <Link to="/pendaftaran/billing">
+              <Button variant="ghost" size="sm" className="text-xs gap-1 cursor-pointer">
+                <ChevronLeft className="h-4 w-4" /> Kembali ke Tagihan
+              </Button>
+            </Link>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Panduan lengkap pembayaran tagihan perkuliahan/pendaftaran menggunakan Virtual Account bank mitra resmi UGN (formula UGM: [Prefix Bank] + [NIM]).
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-6 p-6">
+          {loading ? (
+            <div className="flex items-center justify-center p-8 gap-2 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span>Memuat instruksi pembayaran...</span>
+            </div>
+          ) : (
+            <>
+              {/* Detail Tagihan Box */}
+              {selectedVa && (
+                <div className="p-5 border rounded-xl bg-gradient-to-r from-blue-900 to-indigo-950 text-white space-y-3 shadow-xs">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                      <span className="text-xs text-blue-200 uppercase tracking-wider font-semibold">
+                        Nomor Virtual Account ({selectedVa.bankName})
+                      </span>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="text-2xl sm:text-3xl font-mono font-black tracking-widest text-amber-300">
+                          {selectedVa.vaNumber}
+                        </span>
+                        <Button
+                          onClick={handleCopy}
+                          size="sm"
+                          variant="secondary"
+                          className="h-8 text-xs font-semibold gap-1 cursor-pointer"
+                        >
+                          {isCopied ? <CheckCircle className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                          {isCopied ? "Tersalin!" : "Salin"}
+                        </Button>
+                      </div>
                     </div>
 
-                    
-                    {/* Dropdown Bank dan Instruksi */}
-                    <div className="space-y-4 pt-4 border-t">
-                        <h2 className="text-lg font-bold flex items-center gap-2">
-                            <Banknote className="h-5 w-5"/> Pilih Metode Pembayaran untuk Instruksi
-                        </h2>
-                        <div className="space-y-2">
-                            <Label htmlFor="select-bank">Pilih Bank / Metode Pembayaran</Label>
-                            <Select onValueChange={setSelectedBankKey} defaultValue={selectedBankKey || undefined}>
-                                <SelectTrigger id="select-bank" className="w-full md:w-96"><SelectValue placeholder="Pilih Bank" /></SelectTrigger>
-                                <SelectContent>
-                                    {banks.map(bank => (
-                                        <SelectItem key={bank.value} value={bank.value}>{bank.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <div className="sm:text-right">
+                      <span className="text-xs text-blue-200 block uppercase font-medium">Total Tagihan</span>
+                      <span className="text-xl sm:text-2xl font-bold font-mono text-white">
+                        {billData?.bill.amountFormatted || "Rp 500.000"}
+                      </span>
+                    </div>
+                  </div>
 
-                        {selectedInstructions && (
-                            <Card className="border-primary/50 bg-primary/5">
-                                <CardHeader className="text-primary font-bold">
-                                    Cara Pembayaran via {paymentInstructions[selectedBankKey!].name}
-                                </CardHeader>
-                                <CardContent>
-                                    <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
-                                        {selectedInstructions.instructions.map((step, index) => (
-                                            <li key={index} className="pl-1">{step}</li>
-                                        ))}
-                                    </ol>
-                                </CardContent>
-                            </Card>
-                        )}
+                  <div className="pt-2 border-t border-white/20 flex flex-wrap justify-between items-center text-xs text-blue-200">
+                    <span>
+                      Formula VA: <span className="font-mono text-white">{selectedVa.prefix} (Kode Bank) + {selectedVa.nim} (NIM/ID)</span>
+                    </span>
+                    <span>Batas Bayar: <span className="font-semibold text-white">{billData?.bill.deadline}</span></span>
+                  </div>
+                </div>
+              )}
+
+              {/* Bank & Saluran Selector */}
+              <div className="space-y-4 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="select-bank" className="text-xs font-bold text-gray-700">
+                      Pilih Bank Mitra
+                    </Label>
+                    <Select value={selectedBankCode} onValueChange={setSelectedBankCode}>
+                      <SelectTrigger id="select-bank" className="mt-1 w-full">
+                        <SelectValue placeholder="Pilih Bank" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {billData?.virtualAccounts.map((va) => (
+                          <SelectItem key={va.bankCode} value={va.bankCode}>
+                            {va.bankName} (Prefix: {va.prefix})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-bold text-gray-700">Pilih Saluran Pembayaran</Label>
+                    <div className="grid grid-cols-4 gap-1 mt-1">
+                      {[
+                        { key: "MBANKING", label: "M-Banking" },
+                        { key: "ATM", label: "ATM" },
+                        { key: "IBANKING", label: "i-Banking" },
+                        { key: "TELLER", label: "Teller" },
+                      ].map((ch) => (
+                        <button
+                          key={ch.key}
+                          onClick={() => setSelectedChannel(ch.key as any)}
+                          className={`py-2 text-xs font-semibold rounded-md border transition-all cursor-pointer ${
+                            selectedChannel === ch.key
+                              ? "bg-blue-900 text-white border-blue-900 shadow-xs"
+                              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                          }`}
+                        >
+                          {ch.label}
+                        </button>
+                      ))}
                     </div>
-                    
-                    <div className="pt-4 border-t">
-                        <p className="text-xs text-muted-foreground mt-2">
-                            Setelah pembayaran berhasil, status tagihan Anda akan otomatis terperbarui. Kembali ke halaman sebelumnya untuk memantau status.
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
-            {/* Akhir Konten Halaman */}
-        </AppLayout>
-    )
+                  </div>
+                </div>
+
+                {/* Instructions Card */}
+                {channelInstructions && (
+                  <Card className="border-blue-200 bg-blue-50/30">
+                    <CardHeader className="text-blue-950 font-bold text-sm border-b border-blue-100 py-3">
+                      Langkah Pembayaran via {channelInstructions.title}
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      <ol className="list-decimal list-inside space-y-2.5 text-xs text-gray-700 leading-relaxed">
+                        {channelInstructions.steps.map((step, idx) => (
+                          <li key={idx} className="pl-1">
+                            {step}
+                          </li>
+                        ))}
+                      </ol>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <div className="p-4 bg-gray-50 rounded-lg border text-xs text-gray-600 space-y-1">
+                  <p className="font-semibold text-gray-800">Catatan Penting:</p>
+                  <p>1. Pastikan nama mahasiswa/pendaftar yang muncul pada layar konfirmasi sesuai dengan akun Anda.</p>
+                  <p>2. Nomor Virtual Account bersifat unik dan langsung terhubung dengan NIM / data diri mahasiswa.</p>
+                  <p>3. Setelah pembayaran selesai, sistem akan memverifikasi secara otomatis tanpa perlu konfirmasi manual.</p>
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </AppLayout>
+  );
 }

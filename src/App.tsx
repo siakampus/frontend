@@ -54,8 +54,12 @@ import AssignmentDetailPage from "./app/mahasiswa/assignment-detail";
 import ChatPage from "./app/mahasiswa/chat";
 import HeregistrasiPage from "./app/mahasiswa/heregistrasi";
 
-// ── TUGAS AKHIR ──
-import TugasAkhirPage from "./app/mahasiswa/tugas-akhir";
+// ── TUGAS AKHIR PAGES ──
+import PengajuanTAPage from "./app/mahasiswa/tugas-akhir/pengajuan";
+import CatatanBimbinganPage from "./app/mahasiswa/tugas-akhir/catatan-bimbingan";
+import DosenPembimbingPage from "./app/mahasiswa/tugas-akhir/dosen-pembimbing";
+import PengajuanUjianPage from "./app/mahasiswa/tugas-akhir/pengajuan-ujian";
+import InformasiUjianPage from "./app/mahasiswa/tugas-akhir/informasi-ujian";
 import MahasiswaBimbinganPage from "./app/lecturer/tugas-akhir/mahasiswa-bimbingan";
 import LecturerCatatanBimbinganPage from "./app/lecturer/tugas-akhir/catatan-bimbingan";
 import AdminPengajuanTAPage from "./app/admin/tugas-akhir/pengajuan";
@@ -115,9 +119,29 @@ export default function App() {
             } />
 
             {/* Student Tugas Akhir */}
-            <Route path="/mahasiswa/tugas-akhir" element={
+            <Route path="/mahasiswa/tugas-akhir/pengajuan" element={
               <ProtectedRoute allowedRoles={["student"]}>
-                <TugasAkhirPage />
+                <PengajuanTAPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/tugas-akhir/catatan-bimbingan" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <CatatanBimbinganPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/tugas-akhir/dosen-pembimbing" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <DosenPembimbingPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/tugas-akhir/pengajuan-ujian" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <PengajuanUjianPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/tugas-akhir/informasi-ujian" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <InformasiUjianPage />
               </ProtectedRoute>
             } />
 

@@ -30,11 +30,7 @@ export const STUDENT_MENU: SidebarItem[] = [
   { label: "Mata Kuliah", to: "/mahasiswa/courses", icon: <BookOpen className="h-4 w-4" /> },
   { label: "KRS", to: "/mahasiswa/krs", icon: <FileText className="h-4 w-4" /> },
   { label: "Riwayat Heregistrasi", to: "/mahasiswa/heregistrasi", icon: <CreditCard className="h-4 w-4" /> },
-  { label: "Pengajuan TA", to: "/mahasiswa/tugas-akhir/pengajuan", icon: <ClipboardList className="h-4 w-4" /> },
-  { label: "Catatan Bimbingan", to: "/mahasiswa/tugas-akhir/catatan-bimbingan", icon: <FileText className="h-4 w-4" /> },
-  { label: "Dosen Pembimbing", to: "/mahasiswa/tugas-akhir/dosen-pembimbing", icon: <Users className="h-4 w-4" /> },
-  { label: "Pengajuan Ujian", to: "/mahasiswa/tugas-akhir/pengajuan-ujian", icon: <GraduationCap className="h-4 w-4" /> },
-  { label: "Informasi Ujian", to: "/mahasiswa/tugas-akhir/informasi-ujian", icon: <GraduationCap className="h-4 w-4" /> },
+  { label: "Tugas Akhir", to: "/mahasiswa/tugas-akhir", icon: <ClipboardList className="h-4 w-4" /> },
 ];
 
 export const ADMIN_MENU: SidebarItem[] = [

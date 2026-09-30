@@ -1503,3 +1503,178 @@ export const krsApi = {
       headers: authHeaders(),
     }),
 };
+
+// ─────────────────────────────────────────────
+// Tugas Akhir (Thesis / Final Project)
+// ─────────────────────────────────────────────
+
+export const thesisApi = {
+  // Pengajuan TA
+  createThesis: (data: { title: string; topic?: string; abstract?: string; notes?: string }) =>
+    apiFetch("/thesis", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    }),
+
+  getMyThesis: () =>
+    apiFetch("/thesis/my-thesis", { headers: authHeaders() }),
+
+  updateThesis: (id: number, data: { title?: string; topic?: string; abstract?: string; notes?: string }) =>
+    apiFetch(`/thesis/${id}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    }),
+
+  submitForReview: (id: number) =>
+    apiFetch(`/thesis/${id}/submit`, {
+      method: "POST",
+      headers: authHeaders(),
+    }),
+
+  getAllTheses: (params?: string) =>
+    apiFetch(`/thesis${params ? `?${params}` : ""}`, {
+      headers: authHeaders(),
+    }),
+
+  getThesisById: (id: number) =>
+    apiFetch(`/thesis/${id}`, { headers: authHeaders() }),
+
+  approveThesis: (id: number) =>
+    apiFetch(`/thesis/${id}/approve`, {
+      method: "PUT",
+      headers: authHeaders(),
+    }),
+
+  rejectThesis: (id: number, reason: string) =>
+    apiFetch(`/thesis/${id}/reject`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ reason }),
+    }),
+
+  requestRevision: (id: number, reason: string) =>
+    apiFetch(`/thesis/${id}/revision`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ reason }),
+    }),
+
+  // Dosen Pembimbing
+  getSupervisors: (thesisId: number) =>
+    apiFetch(`/thesis/${thesisId}/supervisors`, {
+      headers: authHeaders(),
+    }),
+
+  assignSupervisor: (thesisId: number, data: { lecturerId: number; role: string }) =>
+    apiFetch(`/thesis/${thesisId}/supervisors`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    }),
+
+  replaceSupervisor: (thesisId: number, supervisorId: number, newLecturerId: number) =>
+    apiFetch(`/thesis/${thesisId}/supervisors/${supervisorId}/replace`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ newLecturerId }),
+    }),
+
+  getMyStudents: () =>
+    apiFetch("/thesis/my-students", { headers: authHeaders() }),
+
+  // Catatan Bimbingan
+  getGuidanceLogs: (thesisId: number) =>
+    apiFetch(`/thesis/${thesisId}/guidance`, {
+      headers: authHeaders(),
+    }),
+
+  addGuidanceLog: (thesisId: number, data: {
+    supervisorId: number;
+    date: string;
+    topic: string;
+    notes: string;
+    studentNotes?: string;
+    progress?: string;
+  }) =>
+    apiFetch(`/thesis/${thesisId}/guidance`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    }),
+
+  updateGuidanceLog: (thesisId: number, logId: number, data: Record<string, unknown>) =>
+    apiFetch(`/thesis/${thesisId}/guidance/${logId}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    }),
+
+  confirmGuidanceLog: (thesisId: number, logId: number) =>
+    apiFetch(`/thesis/${thesisId}/guidance/${logId}/confirm`, {
+      method: "PUT",
+      headers: authHeaders(),
+    }),
+
+  getConfirmedCount: (thesisId: number) =>
+    apiFetch(`/thesis/${thesisId}/guidance/count`, {
+      headers: authHeaders(),
+    }),
+
+  // Pengajuan & Info Ujian
+  requestExam: (thesisId: number, notes?: string) =>
+    apiFetch(`/thesis/${thesisId}/exam/request`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ notes }),
+    }),
+
+  getExamRequest: (thesisId: number) =>
+    apiFetch(`/thesis/${thesisId}/exam/request`, {
+      headers: authHeaders(),
+    }),
+
+  approveExamRequest: (thesisId: number) =>
+    apiFetch(`/thesis/${thesisId}/exam/approve`, {
+      method: "PUT",
+      headers: authHeaders(),
+    }),
+
+  rejectExamRequest: (thesisId: number, reason: string) =>
+    apiFetch(`/thesis/${thesisId}/exam/reject`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ reason }),
+    }),
+
+  scheduleExam: (thesisId: number, data: {
+    examDate: string;
+    examTime: string;
+    room?: string;
+    examiners?: { lecturerId: number; role: string }[];
+  }) =>
+    apiFetch(`/thesis/${thesisId}/exam/schedule`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    }),
+
+  getExamInfo: (thesisId: number) =>
+    apiFetch(`/thesis/${thesisId}/exam/info`, {
+      headers: authHeaders(),
+    }),
+
+  setExamResult: (thesisId: number, data: {
+    result: string;
+    grade?: string;
+    score?: number;
+    revisionNotes?: string;
+    revisionDeadline?: string;
+  }) =>
+    apiFetch(`/thesis/${thesisId}/exam/result`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(data),
+    }),
+};

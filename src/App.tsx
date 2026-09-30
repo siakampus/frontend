@@ -54,6 +54,18 @@ import AssignmentDetailPage from "./app/mahasiswa/assignment-detail";
 import ChatPage from "./app/mahasiswa/chat";
 import HeregistrasiPage from "./app/mahasiswa/heregistrasi";
 
+// ── TUGAS AKHIR PAGES ──
+import PengajuanTAPage from "./app/mahasiswa/tugas-akhir/pengajuan";
+import CatatanBimbinganPage from "./app/mahasiswa/tugas-akhir/catatan-bimbingan";
+import DosenPembimbingPage from "./app/mahasiswa/tugas-akhir/dosen-pembimbing";
+import PengajuanUjianPage from "./app/mahasiswa/tugas-akhir/pengajuan-ujian";
+import InformasiUjianPage from "./app/mahasiswa/tugas-akhir/informasi-ujian";
+import MahasiswaBimbinganPage from "./app/lecturer/tugas-akhir/mahasiswa-bimbingan";
+import LecturerCatatanBimbinganPage from "./app/lecturer/tugas-akhir/catatan-bimbingan";
+import AdminPengajuanTAPage from "./app/admin/tugas-akhir/pengajuan";
+import AdminDosenPembimbingPage from "./app/admin/tugas-akhir/dosen-pembimbing";
+import AdminUjianTAPage from "./app/admin/tugas-akhir/ujian";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -103,6 +115,33 @@ export default function App() {
             <Route path="/mahasiswa/assignments/:id" element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <AssignmentDetailPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Student Tugas Akhir */}
+            <Route path="/mahasiswa/tugas-akhir/pengajuan" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <PengajuanTAPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/tugas-akhir/catatan-bimbingan" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <CatatanBimbinganPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/tugas-akhir/dosen-pembimbing" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <DosenPembimbingPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/tugas-akhir/pengajuan-ujian" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <PengajuanUjianPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/mahasiswa/tugas-akhir/informasi-ujian" element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <InformasiUjianPage />
               </ProtectedRoute>
             } />
 
@@ -200,6 +239,18 @@ export default function App() {
               </ProtectedRoute>
             } />
 
+            {/* Lecturer Tugas Akhir */}
+            <Route path="/lecturer/tugas-akhir/mahasiswa-bimbingan" element={
+              <ProtectedRoute allowedRoles={["lecturer"]}>
+                <MahasiswaBimbinganPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/lecturer/tugas-akhir/catatan-bimbingan/:thesisId" element={
+              <ProtectedRoute allowedRoles={["lecturer"]}>
+                <LecturerCatatanBimbinganPage />
+              </ProtectedRoute>
+            } />
+
             {/* ===================== ADMIN ROUTES ===================== */}
             <Route path="/admin" element={
               <ProtectedRoute allowedRoles={["admin"]}>
@@ -223,6 +274,9 @@ export default function App() {
               <Route path="lectures" element={<AdminLecturesPage />} />
               <Route path="payments" element={<AdminPaymentsPage />} />
               <Route path="registration/config" element={<AdminRegistrationConfigPage />} />
+              <Route path="tugas-akhir/pengajuan" element={<AdminPengajuanTAPage />} />
+              <Route path="tugas-akhir/dosen-pembimbing" element={<AdminDosenPembimbingPage />} />
+              <Route path="tugas-akhir/ujian" element={<AdminUjianTAPage />} />
             </Route>
 
           </Routes>

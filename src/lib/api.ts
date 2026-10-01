@@ -1510,21 +1510,52 @@ export const krsApi = {
 
 export const thesisApi = {
   // Pengajuan TA
-  createThesis: (data: { title: string; topic?: string; abstract?: string; notes?: string }) =>
+  createThesis: (data: {
+    title: string;
+    topic?: string;
+    abstract?: string;
+    notes?: string;
+    supervisor1Id?: number | null;
+    supervisor2Id?: number | null;
+  }) =>
     apiFetch("/thesis", {
       method: "POST",
       headers: authHeaders(),
       body: JSON.stringify(data),
     }),
 
-  getMyThesis: () =>
-    apiFetch("/thesis/my-thesis", { headers: authHeaders() }),
+  getMyThesis: (thesisId?: number) =>
+    apiFetch(`/thesis/my-thesis${thesisId ? `?thesisId=${thesisId}` : ""}`, {
+      headers: authHeaders(),
+    }),
 
-  updateThesis: (id: number, data: { title?: string; topic?: string; abstract?: string; notes?: string }) =>
+  getMyTheses: () =>
+    apiFetch("/thesis/my-theses", { headers: authHeaders() }),
+
+  getAvailableLecturers: () =>
+    apiFetch("/thesis/lecturers", { headers: authHeaders() }),
+
+  updateThesis: (
+    id: number,
+    data: {
+      title?: string;
+      topic?: string;
+      abstract?: string;
+      notes?: string;
+      supervisor1Id?: number | null;
+      supervisor2Id?: number | null;
+    },
+  ) =>
     apiFetch(`/thesis/${id}`, {
       method: "PUT",
       headers: authHeaders(),
       body: JSON.stringify(data),
+    }),
+
+  deleteThesis: (id: number) =>
+    apiFetch(`/thesis/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
     }),
 
   submitForReview: (id: number) =>
